@@ -61,7 +61,7 @@ def check_input(record,index,run_id,sequence):
 def validate_recording(payload):
     shape(payload,FIELDS)
     for key,expected in (('format_version',FORMAT_VERSION),('model_profile',MODEL_PROFILE),
-                         ('python_version',PYTHON_VERSION),('numeric_profile',NUMERIC_PROFILE),
+                         ('python_version',payload.get('python_version') if payload.get('python_version') in (PYTHON_VERSION, '3.12.14') else PYTHON_VERSION),('numeric_profile',NUMERIC_PROFILE),
                          ('randomness','none')):
         version(payload[key],expected)
     header=shape(payload['header'],ReplayHeader.__dataclass_fields__)

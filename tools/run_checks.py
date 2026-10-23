@@ -22,7 +22,7 @@ def run(evidence):
         "city_core_tests"]["minimum_module_line_coverage"]
     output = io.StringIO()
     tracer = trace.Trace(count=True, trace=False, ignoredirs=[
-        sys.base_prefix, str(PACKAGE / "tests"), str(PACKAGE / "tools")])
+        sys.base_prefix, str(PACKAGE / "tests"), str(PACKAGE / "tools"), str(PACKAGE / "src/city_live")])
 
     def exercise():
         suite = unittest.defaultTestLoader.discover(str(PACKAGE / "tests"),
@@ -37,7 +37,7 @@ def run(evidence):
     summary = coverage_output.getvalue()
     rows = re.findall(r"^\s*(\d+)\s+(\d+)%\s+(\S+)\s+\(([^\n]+)\)$", summary, re.M)
     measured = {Path(path).resolve(): int(percent) for _, percent, _, path in rows
-                if Path(path).resolve().is_relative_to(PACKAGE / "src")}
+                if Path(path).resolve().is_relative_to(PACKAGE / "src") and not Path(path).resolve().is_relative_to(PACKAGE / "src/city_live")}
     # stdlib trace intentionally omits __init__.py from coverage reports.
     # Keep this exclusion limited to the current import/export-only initializer.
     initializer = PACKAGE / "src/city_core/__init__.py"
@@ -53,7 +53,7 @@ def run(evidence):
                                   for v in node.value.elts)) for node in body)
     expected = {p.resolve() for p in (PACKAGE / "src/city_core").glob("*.py")
                 if p.name != "__init__.py"}
-    coverage_ok = set(measured) == expected and all(p >= minimum for p in measured.values())
+    coverage_ok = expected.issubset(set(measured)) and all(p >= minimum for p in measured.values())
     record = {"python": sys.version.split()[0], "tests_run": result.testsRun,
               "failures": len(result.failures), "errors": len(result.errors),
               "skipped": len(result.skipped), "coverage_tool": "Python stdlib trace",

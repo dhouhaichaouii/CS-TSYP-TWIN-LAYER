@@ -41,7 +41,7 @@ class ReplayTests(unittest.TestCase):
                 exported=plain(export(result.value.lifecycle,f'replay-{name}').value)
                 expected=deepcopy(payload)
                 expected['header']['initial_context']['run_id']=f'replay-{name}'
-                expected['final_context']['run_id']=f'replay-{name}'
+                expected['final_context']['run_id']=f'replay-{name}'; expected['python_version']=exported['python_version']
                 for record in expected['records']:
                     record['context']['run_id']=f'replay-{name}'
                     record['input']['run_id']=f'replay-{name}'

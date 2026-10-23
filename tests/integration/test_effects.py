@@ -12,7 +12,9 @@ from tests.support import city
 
 class EffectIntegrationTests(unittest.TestCase):
     def test_documented_first_effect_receipt_matches_real_core(self):
-        root = Path(__file__).resolve().parents[3]
+        p2 = Path(__file__).resolve().parents[2]
+        p3 = Path(__file__).resolve().parents[3]
+        root = p2 if (p2 / "docs" / "architecture" / "PERSON_A_INTERNAL_CONTRACT.md").exists() else p3
         contract = (root / "docs/architecture/PERSON_A_INTERNAL_CONTRACT.md").read_text(encoding="utf-8")
         section = contract.split("## 6.", 1)[1].split("## 7.", 1)[0]
         blocks = re.findall(r"```json\n(.*?)```", section, re.S)
