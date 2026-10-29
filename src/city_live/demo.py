@@ -13,6 +13,7 @@ def checkpoint(city):
             'basin_m3': physical['water']['basin_volume_m3'],
             'low_queue': physical['roads']['R-LOW']['queue_vehicles'],
             'hospital_powered': data['power']['hospital_powered'],
+            'sensor_model': data['sensor_model'],
             'industrial_pm25': physical['air']['Z-INDUSTRIAL']['pm25_ug_m3']}
 
 
@@ -33,13 +34,13 @@ def drive(city, emit):
     city.incident('pollution')
     advance(600)
     checkpoints['flood'] = checkpoint(city)
-    city.sensor_fault('S-WATER-03', 'FALSE_READING', {'value': 180})
+    city.sensor_fault('DTN-WLV-01', 'FALSE_READING', {'value': 180})
     advance(5)
-    spoof = city.sensor_compare('S-WATER-03')
+    spoof = city.sensor_compare('DTN-WLV-01')
     public = city.public.observations()
     assert all('actual_value' not in row and 'fault' not in row and 'delta' not in row for row in public)
     assert spoof['actual_value'] != spoof['reported_value'] == 180
-    city.sensor_clear('S-WATER-03')
+    city.sensor_clear('DTN-WLV-01')
     city.sensor_fault('DTN-TRF-01', 'DEAD', {})
     advance(5)
     assert city.sensor_compare('DTN-TRF-01')['status'] == 'FAILED'
@@ -101,10 +102,9 @@ def demonstrate(emit=lambda row: None):
                 'paced_ticks': paced_tick, 'pause_stable': paused_equal,
                 'checkpoints': first[0], 'spoof': first[1],
                 'core_replay_equal': replay_equal, 'seeded_repeat_equal': repeated,
-                'proposed_sensor_count': 16, 'grounded_proposed_sensors': 3,
-                'blocked_demo_steps': {'Port water spoof/failure': 'No harbour physics or approved mapping',
-                    'Port/industrial true backup': 'Sources unsupported; registry relationships only',
-                    'New actuator physics': 'No approved new pump/valve/phase model'},
+                'proposed_sensor_count': 16, 'grounded_proposed_sensors': 16,
+                'blocked_demo_steps': {'New actuator commands': 'New linked device command semantics remain separate',
+                    'Partner integration': 'Real Brain/Guardian and B/C integration unverified'},
                 'safe_export': {'schema_version': 'twin-export-0.1-local',
                                 'observations': city.public.observations()}}
     finally:

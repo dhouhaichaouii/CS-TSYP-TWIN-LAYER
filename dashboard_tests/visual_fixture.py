@@ -11,7 +11,7 @@ city = LiveCity('browser-a', tick_budget=5000)
 bridge = None
 try:
     secret = sys.stdin.readline().rstrip('\n')
-    city.sensor_fault('S-WATER-03', 'FALSE_READING', {'value': 180})
+    city.sensor_fault('DTN-WLV-01', 'FALSE_READING', {'value': 180})
     for _ in range(10): city.step()
     bridge = DashboardBridge(city, secret, port=0)
     del secret

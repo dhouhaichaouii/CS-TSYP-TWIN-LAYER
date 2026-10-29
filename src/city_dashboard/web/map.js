@@ -10,7 +10,9 @@ export class CityMap{
  constructor(container,onSelect){this.container=container;this.onSelect=onSelect;this.layers=new Map();this.selected=null;this.tracks=new Map();this.run=null;this.box=[0,0,1536,1024];this.ready=this.init();}
  async init(){
   const [layout,source]=await Promise.all([fetch('/map-layout.json').then(r=>r.json()),fetch('/city-map.svg').then(r=>r.text())]);
-  this.layout=layout;this.anchors=new Map(layout.anchors.map(a=>[a.id,a]));
+  const port={id:'PRT',x:1320,y:850,district:'PRT',selectable:true};
+  this.baseDevices=layout.devices.filter(d=>!d.id.startsWith('S-'));
+  this.layout={...layout,anchors:[...layout.anchors,port],devices:[...this.baseDevices]};this.anchors=new Map(this.layout.anchors.map(a=>[a.id,a]));
   this.svg=new DOMParser().parseFromString(source,'image/svg+xml').documentElement;
   this.svg.setAttribute('aria-label','Convergence City interactive map');this.svg.removeAttribute('aria-labelledby');
   this.svg.querySelector('title').textContent='Convergence City';this.svg.querySelector('desc').textContent='Illustrative map with selectable catalog assets. Overlays show committed operator state only.';
@@ -20,11 +22,12 @@ export class CityMap{
   this.water=svgNode('ellipse',{cx:900,cy:810,rx:170,ry:68,fill:'#45b8ee',opacity:0,'pointer-events':'none'});this.layers.get('Water').append(this.water);
   this.powerMarkers=new Map();for(const id of ['F-ESS','F-URBAN','F-IND']){const a=this.anchors.get(id);const p=svgNode('circle',{cx:a.x,cy:a.y,r:23,fill:'none',stroke:'#7bd8eb','stroke-width':5,'pointer-events':'none'});this.layers.get('Power').append(p);this.powerMarkers.set(id,p);}
   this.airMarkers=new Map();for(const a of layout.anchors.filter(a=>a.id.startsWith('Z-'))){const p=svgNode('circle',{cx:a.x,cy:a.y,r:48,fill:'#d2ad67',opacity:0,'pointer-events':'none'});this.layers.get('Air').append(p);this.airMarkers.set(a.id,p);}
-  this.sensorMarkers=[];for(const device of layout.devices.filter(d=>d.id.startsWith('S-'))){const a=this.anchors.get(device.target_id);if(!a)continue;const p=svgNode('circle',{cx:a.x+18,cy:a.y-18,r:5,fill:'#ffd38a','pointer-events':'none'});this.layers.get('Sensor').append(p);this.sensorMarkers.push(p);}
+  this.sensorMarkers=[];
+  const portLabel=svgNode('text',{x:1190,y:910,fill:'#ffd38a','font-size':17});portLabel.textContent='Port / separate schematic model';this.layers.get('Sensor').append(portLabel);this.portLabel=portLabel;
   this.responderMarkers=new Map();this.responderRoutes=new Map();this.responderLabels=new Map();for(const id of ['AMB-01','AMB-02','POL-01']){const a=this.anchors.get(id);const p=svgNode('circle',{cx:a.x,cy:a.y,r:9,fill:'#bca6ff',stroke:'#fff','stroke-width':2,'pointer-events':'none'});this.layers.get('Emergency').append(p);this.responderMarkers.set(id,p);p.setAttribute('data-responder',id);
    const route=svgNode('polyline',{fill:'none',stroke:'#c9b3ff','stroke-width':4,'stroke-dasharray':'8 6','pointer-events':'none'});const label=svgNode('text',{fill:'#e6d8ff','font-size':17,'paint-order':'stroke',stroke:'#071723','stroke-width':4,'pointer-events':'none'});this.layers.get('Emergency').append(route,label);this.responderRoutes.set(id,route);this.responderLabels.set(id,label);
   }
-  this.markers=new Map();for(const a of layout.anchors){const g=svgNode('g',{role:'button',tabindex:0,'aria-label':a.id,'aria-pressed':'false',transform:`translate(${a.x} ${a.y})`});g.append(svgNode('circle',{r:13,fill:'#102e41',stroke:'#8bd8e8','stroke-width':3}));const title=svgNode('title',{});title.textContent=a.id;g.append(title,svgNode('circle',{r:28,fill:'transparent',stroke:'transparent','stroke-width':14,'vector-effect':'non-scaling-stroke',class:'hit-target'}));g.addEventListener('click',()=>this.onSelect(a.id));g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();this.onSelect(a.id);}});this.svg.append(g);this.markers.set(a.id,g);}
+  this.markers=new Map();for(const a of this.layout.anchors){const g=svgNode('g',{role:'button',tabindex:0,'aria-label':a.id,'aria-pressed':'false',transform:`translate(${a.x} ${a.y})`});g.append(svgNode('circle',{r:13,fill:'#102e41',stroke:'#8bd8e8','stroke-width':3}));const title=svgNode('title',{});title.textContent=a.id;g.append(title,svgNode('circle',{r:28,fill:'transparent',stroke:'transparent','stroke-width':14,'vector-effect':'non-scaling-stroke',class:'hit-target'}));g.addEventListener('click',()=>this.onSelect(a.id));g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();this.onSelect(a.id);}});this.svg.append(g);this.markers.set(a.id,g);}
   this.svg.addEventListener('keydown',e=>{if(e.target!==this.svg)return;const amount=this.box[2]*.05;if(e.key.startsWith('Arrow')){e.preventDefault();if(e.key==='ArrowLeft')this.box[0]-=amount;if(e.key==='ArrowRight')this.box[0]+=amount;if(e.key==='ArrowUp')this.box[1]-=amount;if(e.key==='ArrowDown')this.box[1]+=amount;this.apply();}if(['+','=','-','0'].includes(e.key)){e.preventDefault();e.key==='0'?this.fitCity():this.zoom(e.key==='-'?1.25:.8);}});
   this.svg.addEventListener('wheel',e=>{e.preventDefault();this.zoom(e.deltaY<0?.85:1.18);},{passive:false});
   let drag=null;this.svg.addEventListener('pointerdown',e=>{if(e.target.closest('[role=button]'))return;this.svg.focus();drag={x:e.clientX,y:e.clientY,box:[...this.box]};this.svg.setPointerCapture(e.pointerId);});
@@ -38,6 +41,7 @@ export class CityMap{
  selectEntity(id){this.selected=id;const target=this.layout?.devices.find(d=>d.id===id)?.target_id||id;for(const [key,g] of this.markers)g.setAttribute('aria-pressed',String(key===target));}
  renderFrame(frame,{stale=false}={}){
   if(!this.svg)return;const d=frame?.visibility==='PRIVATE_OPERATOR_ONLY'?frame.diagnostics:null;
+  this.renderSensors(frame);
   if(this.run!==frame?.run_id||!d){this.tracks.clear();this.run=frame?.run_id;}
   this.layers.get('Traffic').classList.toggle('flowing',!!d&&!stale&&frame.status.state==='RUNNING');
   for(const [id,p] of this.pulses){const usable=d?.traffic[id].usable&&d?.traffic[id].capacity_veh_s>0;p.setAttribute('visibility',usable?'visible':'hidden');p.style.animationDuration=`${Math.max(.25,3/((frame?.status?.speed||1)*Math.max(.2,d?.traffic[id].capacity_veh_s||.5)))}s`;}
@@ -55,5 +59,18 @@ export class CityMap{
   }
   this.water.setAttribute('opacity',d?Math.min(.7,Math.max(0,d.flood['R-LOW'].depth_m*2)):0);
   for(const [id,p] of this.powerMarkers){const power=d?.power.feeders[id];p.setAttribute('stroke',power?(power.energized?'#72dfae':'#ffbd6c'):'#456273');p.setAttribute('visibility',power?'visible':'hidden');}
+ }
+ renderSensors(frame){
+  // Observation history includes retired devices. Only an operator registry
+  // can identify active sensors; the reported view keeps its historical feed.
+  const sensors=frame?.visibility==='PRIVATE_OPERATOR_ONLY'?frame.sensors.filter(s=>s.active):[];
+  const zones={DTN:'Z-DOWNTOWN',IND:'Z-INDUSTRIAL',RES:'Z-RESIDENTIAL',PRT:'PRT'};
+  const devices=sensors.map(s=>({id:s.sensor_id,family:s.type,location_id:s.zone_id,target_id:zones[s.zone_id]}));
+  this.layout={...this.layout,devices:[...this.baseDevices,...devices]};
+  const identity=devices.map(d=>d.id).join('|');if(identity===this.sensorIdentity)return;this.sensorIdentity=identity;
+  for(const node of this.sensorMarkers)node.remove();this.sensorMarkers=[];
+  const counts={};for(const device of devices){const a=this.anchors.get(device.target_id);if(!a)continue;const index=counts[device.location_id]||0;counts[device.location_id]=index+1;
+   const p=svgNode('circle',{cx:a.x+20+(index%2)*18,cy:a.y-22-Math.floor(index/2)*18,r:6,fill:'#ffd38a','data-sensor':device.id,'pointer-events':'none'});const title=svgNode('title',{});title.textContent=device.id;p.append(title);this.layers.get('Sensor').append(p);this.sensorMarkers.push(p);
+  }
  }
 }

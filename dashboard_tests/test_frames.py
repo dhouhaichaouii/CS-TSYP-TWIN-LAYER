@@ -52,7 +52,7 @@ class FrameTests(unittest.TestCase):
 
     def test_report_capability_has_no_private_values_and_preserves_delayed_identity(self):
         from city_dashboard.frames import read_reported_frame
-        self.city.sensor_fault('S-WATER-03', 'DELAYED', {'lag_ticks': 5})
+        self.city.sensor_fault('DTN-WLV-01', 'DELAYED', {'lag_ticks': 5})
         for _ in range(10):
             self.city.step()
         frame = read_reported_frame(self.city.public)
@@ -66,7 +66,7 @@ class FrameTests(unittest.TestCase):
             elif isinstance(value, list):
                 for item in value: check(item)
         check(frame)
-        r = next(r for r in reversed(frame['records']) if r['sensor_id'] == 'S-WATER-03')
+        r = next(r for r in reversed(frame['records']) if r['sensor_id'] == 'DTN-WLV-01')
         self.assertEqual((r['sim_tick'], r['delivery_tick']), (5, 10))
         self.assertEqual(r['timestamp'], '2026-10-18T00:00:05Z')
         self.assertEqual(r, next(x for x in self.city.public.observations() if x['seq'] == r['seq']))
@@ -75,6 +75,7 @@ class FrameTests(unittest.TestCase):
         from city_dashboard.frames import read_reported_frame
         empty = read_reported_frame(self.city.public)
         self.assertEqual((empty['run_id'], empty['records'], empty['frame_seq']), ('frames', [], 0))
+        self.city.sensor_fault('PRT-WLV-01', 'DEAD', {})
         for _ in range(10): self.city.step()
         page = read_reported_frame(self.city.public, {'run_id': 'frames', 'after_seq': 0, 'limit': 1})
         self.assertEqual(len(page['records']), 1)

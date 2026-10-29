@@ -21,9 +21,9 @@ class ConsoleTests(unittest.TestCase):
         execute(self.city, 'incident accident R-LOW')
         execute(self.city, 'step 10')
         self.assertEqual(execute(self.city, 'status')['sim_tick'], 10)
-        execute(self.city, 'sensor fault S-WATER-01 FALSE_READING 180')
+        execute(self.city, 'sensor fault PRT-WLV-01 FALSE_READING 180')
         execute(self.city, 'step 5')
-        self.assertEqual(execute(self.city, 'sensor compare S-WATER-01')['reported_value'], 180)
+        self.assertEqual(execute(self.city, 'sensor compare PRT-WLV-01')['reported_value'], 180)
         with tempfile.TemporaryDirectory() as folder:
             output = Path(folder) / 'safe.json'
             execute(self.city, f'export "{output.as_posix()}"')
@@ -55,7 +55,7 @@ class ConsoleTests(unittest.TestCase):
         self.assertEqual(rows[-1]['data']['sim_tick'], 5)
 
     def test_command_family_validation(self):
-        for line in ('speed', 'step -1', 'sensor fault S-WATER-01 NOISE nan',
+        for line in ('speed', 'step -1', 'sensor fault PRT-WLV-01 NOISE nan',
                      'sensor status MISSING', 'schedule a nope power_outage', 'reset', 'status extra'):
             with self.subTest(line=line), self.assertRaises(LiveError):
                 execute(self.city, line)

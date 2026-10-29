@@ -23,16 +23,16 @@ class AdversarialTests(unittest.TestCase):
     def test_scheduled_fault_observation_changes_without_changing_physics(self):
         city = LiveCity('scheduled-fault')
         self.addCleanup(city.close)
-        city.schedule('spoof', 5, 'sensor_fault', {'sensor_id': 'S-WATER-01',
+        city.schedule('spoof', 5, 'sensor_fault', {'sensor_id': 'PRT-WLV-01',
                       'fault_type': 'FALSE_READING', 'parameters': {'value': 180}}, run_id='scheduled-fault')
         for _ in range(10):
             city.step()
-        self.assertEqual(city.sensor_compare('S-WATER-01')['reported_value'], 180)
-        self.assertEqual(city.sensor_compare('S-WATER-01')['actual_value'], 290)
-        city.schedule('clear', 10, 'sensor_clear', {'sensor_id': 'S-WATER-01'}, run_id='scheduled-fault')
+        self.assertEqual(city.sensor_compare('PRT-WLV-01')['reported_value'], 180)
+        self.assertEqual(city.sensor_compare('PRT-WLV-01')['actual_value'], 50)
+        city.schedule('clear', 10, 'sensor_clear', {'sensor_id': 'PRT-WLV-01'}, run_id='scheduled-fault')
         for _ in range(5):
             city.step()
-        self.assertEqual(city.sensor_compare('S-WATER-01')['delta'], 0)
+        self.assertEqual(city.sensor_compare('PRT-WLV-01')['delta'], 0)
 
     def test_stale_command_and_revision_rejected_before_effect(self):
         city = LiveCity('stale')
@@ -84,10 +84,10 @@ class AdversarialTests(unittest.TestCase):
     def test_delayed_warmup_is_null_not_fake_zero_and_no_global_randomness(self):
         city = LiveCity('warmup')
         self.addCleanup(city.close)
-        city.sensor_fault('S-WATER-01', 'DELAYED', {'lag_ticks': 600})
+        city.sensor_fault('PRT-WLV-01', 'DELAYED', {'lag_ticks': 600})
         for _ in range(5):
             city.step()
-        reading = city.sensor_compare('S-WATER-01')
+        reading = city.sensor_compare('PRT-WLV-01')
         self.assertIsNone(reading['reported_value'])
         self.assertFalse(reading['available'])
         fault = create_fault('n', 'NOISE', 0, {'amplitude': 5}, 0)
@@ -138,10 +138,10 @@ class AdversarialTests(unittest.TestCase):
                      'recover rain', 'recover pollution', 'incident valve .3', 'command valve .8 .42',
                      'command pump on', 'inspect', 'events', 'observations',
                      'schedule pending 20 power_outage', 'cancel pending', 'step 5',
-                     'sensor fault S-WATER-01 OFFSET 3', 'sensor clear S-WATER-01',
-                     'sensor fault S-WATER-01 DROPOUT 10', 'sensor repair S-WATER-01',
-                     'sensor fault S-WATER-01 DELAYED 2', 'sensor repair S-WATER-01',
-                     'sensor fault S-WATER-01 DEAD', 'sensor replace S-WATER-01 S-WATER-04',
+                     'sensor fault PRT-WLV-01 OFFSET 3', 'sensor clear PRT-WLV-01',
+                     'sensor fault PRT-WLV-01 DROPOUT 10', 'sensor repair PRT-WLV-01',
+                     'sensor fault PRT-WLV-01 DELAYED 2', 'sensor repair PRT-WLV-01',
+                     'sensor fault PRT-WLV-01 DEAD', 'sensor replace PRT-WLV-01 PRT-WLV-04',
                      'scenarios run normal', 'stop', 'step', 'watch 0'):
             with self.subTest(line=line):
                 execute(city, line)
@@ -189,9 +189,9 @@ class AdversarialTests(unittest.TestCase):
         city = LiveCity('reg')
         self.addCleanup(city.close)
         with self.assertRaises(LiveError):
-            city.sensor_replace('S-WATER-01', 's-water-04')
-        city.sensor_replace('S-WATER-01', 'S-WATER-04')
-        row = next(r for r in city.sensors() if r['sensor_id'] == 'S-WATER-04')
+            city.sensor_replace('PRT-WLV-01', 'prt-wlv-04')
+        city.sensor_replace('PRT-WLV-01', 'PRT-WLV-04')
+        row = next(r for r in city.sensors() if r['sensor_id'] == 'PRT-WLV-04')
         self.assertEqual(row['registered_run_id'], 'reg')
 
     def test_scheduled_final_budget_tick_rejected_instead_of_stranded(self):

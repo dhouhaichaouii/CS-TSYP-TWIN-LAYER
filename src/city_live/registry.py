@@ -1,10 +1,9 @@
-"""Versioned proposed registry plus preserved legacy IDs and permanent history."""
+"""PDF-only live registry with permanent replacement history."""
 from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 import re
 
-from city_core.catalog import baseline_catalog
 from .records import LiveError, identifier
 
 UNITS = {'water_level': 'cm', 'flow': 'L/s', 'pressure': 'bar', 'temperature': '°C',
@@ -57,25 +56,7 @@ def validate_registry(entries):
 
 
 def load_registry():
-    legacy = []
-    for device in baseline_catalog()['devices']:
-        if not device['id'].startswith('S-'):
-            continue
-        family, target = device['family'], device['target_id']
-        limits, interval, source = (0, 1000000), 10, None
-        if family == 'water_level':
-            source = {'B-01': 'basin', 'RIVER-01': 'river', 'FLOOD-01': 'surface'}[target]
-            limits, interval = (0, 300), 5
-        elif family == 'traffic_camera':
-            source = f'departures:{target}'
-        elif family == 'power_load':
-            source = f'power:{target}'
-        elif family == 'air_quality':
-            source, interval = f'air:{target}', 60
-        legacy.append(Sensor(device['id'], device['location_id'], family, UNITS[family],
-            f'Local aggregate {family} adapter for {target}', limits, limits, interval,
-            (), (), source, proposal=False))
-    return tuple(sorted((*proposed_registry(), *legacy), key=lambda row: row.sensor_id))
+    return tuple(sorted(proposed_registry(), key=lambda row: row.sensor_id))
 
 
 def replacement(registry, old_id, new_id, tick, run_id=None):
@@ -93,7 +74,9 @@ def replacement(registry, old_id, new_id, tick, run_id=None):
                          or int(new_id[-2:]) <= int(old_id[-2:])):
         raise LiveError('INVALID_ARGUMENT')
     new = replace(old, sensor_id=new_id, replaces=old_id, registered_tick=tick, registered_run_id=run_id)
-    result = (*tuple(replace(row, active=False) if row.sensor_id == old_id else row
+    result = (*tuple(replace(row, active=False) if row.sensor_id == old_id else
+                     replace(row, backup_ids=tuple(new_id if ref == old_id else ref for ref in row.backup_ids))
+                     if row.active and old_id in row.backup_ids else row
                      for row in registry), new)
     validate_registry(result)
     return result

@@ -16,6 +16,7 @@ from .scenarios import PRESETS, effect_for, validate
 from .sensors import SensorBank
 from .demand import TrafficDemand
 from .operator import OperatorControls
+from .sensor_physics import SensorPhysics, advance as advance_sensor_physics, measurements
 
 
 def serialized(method):
@@ -53,6 +54,7 @@ class LiveCity(OperatorControls):
         self._actions, self._commands, self._events = (), freeze({}), ()
         self._effect_counter, self._private_seq = 0, 0
         self._traffic = TrafficDemand(self._seed)
+        self._sensor_physics = SensorPhysics()
         self._sensors.reset()
         self._store.reset(self._run_id)
 
@@ -119,7 +121,8 @@ class LiveCity(OperatorControls):
         departures = {road: max(0, old.queue_vehicles + old.arrival_rate_veh_s
             - committed.physical_state.roads[road].queue_vehicles)
             for road, old in before.physical_state.roads.items()}
-        expired = self._sensors.capture(committed, departures)
+        self._sensor_physics = advance_sensor_physics(self._sensor_physics, committed, self._epoch)
+        expired = self._sensors.capture(committed, departures, measurements(self._sensor_physics))
         for sensor_id in expired:
             self._event('FAULT_CLEARED', {'sensor_id': sensor_id, 'automatic': True})
         previous = self._sensors.latest

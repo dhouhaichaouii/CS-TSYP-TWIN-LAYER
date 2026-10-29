@@ -4,7 +4,8 @@ function metric(name,value){const row=document.createElement('div');row.classNam
 export function renderMetrics(frame){
  const box=el('metrics');box.replaceChildren();const d=frame?.visibility==='PRIVATE_OPERATOR_ONLY'?frame.diagnostics:null;
  if(!d){box.textContent='Physical state requires operator access.';return;}
- const rows=[['Basin level',fmt(d.water_levels.basin_m,'m')],['Basin volume',fmt(d.physical_state.water.basin_volume_m3,'m³')],['Surface volume',fmt(d.physical_state.water.surface_volume_m3,'m³')],['R-LOW depth',fmt(d.flood['R-LOW'].depth_m,'m')],['Rain',fmt(d.physical_state.water.rain_mm_h,'mm/h')],['Pump',d.power.pump_running?'RUNNING':'STOPPED'],['Hospital',d.power.hospital_powered?'POWERED':'NO POWER']];
+ const model=d.sensor_model;
+ const rows=[...(model?[['Harbour level',fmt(model.harbour_volume_m3/10,'cm')],['Process temperature',fmt(model.process_c,'°C')],['Storm drain level',fmt(model.drain_volume_m3,'cm')],['Reservoir level',fmt(model.reservoir_volume_m3,'cm')]]:[]),['Basin level',fmt(d.water_levels.basin_m,'m')],['Basin volume',fmt(d.physical_state.water.basin_volume_m3,'m³')],['Surface volume',fmt(d.physical_state.water.surface_volume_m3,'m³')],['R-LOW depth',fmt(d.flood['R-LOW'].depth_m,'m')],['Rain',fmt(d.physical_state.water.rain_mm_h,'mm/h')],['Pump',d.power.pump_running?'RUNNING':'STOPPED'],['Hospital',d.power.hospital_powered?'POWERED':'NO POWER']];
  for(const [id,r] of Object.entries(d.physical_state.roads))rows.push([`${id} queue`,fmt(r.queue_vehicles,'veh')],[`${id} capacity`,fmt(d.traffic[id].capacity_veh_s,'veh/s')]);
  for(const [id,r] of Object.entries(d.power.feeders))rows.push([id,fmt(r.delivered_load_kw,'kW')]);
  for(const [id,r] of Object.entries(d.physical_state.air))rows.push([id.replace('Z-',''),fmt(r.pm25_ug_m3,'µg/m³')]);

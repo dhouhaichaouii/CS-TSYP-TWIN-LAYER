@@ -42,7 +42,7 @@ async function main() {
     await page.locator('#visibility').filter({hasText:'REPORTED_ONLY'}).waitFor();
     const reported=JSON.parse(await page.locator('#frame').textContent());
     assert.equal(reported.run_id,'browser-a');
-    const water=reported.records.filter(r=>r.sensor_id==='S-WATER-03').at(-1);
+    const water=reported.records.filter(r=>r.sensor_id==='DTN-WLV-01').at(-1);
     assert.equal(water.reported_value,180);
     assert.ok(reported.records.some(r=>r.reported_value===null));
     assert.doesNotMatch(JSON.stringify(reported),/actual_value|delta|fault|diagnostics|revision|FALSE_READING/);
@@ -51,7 +51,7 @@ async function main() {
     await page.locator('#visibility').filter({hasText:'PRIVATE_OPERATOR_ONLY'}).waitFor();
     assert.equal(await page.locator('#secret').inputValue(),'');
     const privateFrame=JSON.parse(await page.locator('#frame').textContent());
-    assert.ok(privateFrame.diagnostics.active_faults['S-WATER-03']);
+    assert.ok(privateFrame.diagnostics.active_faults['DTN-WLV-01']);
     const second=await context.newPage();
     await second.goto(url);
     await second.getByLabel('Launch passphrase').fill(secret);
