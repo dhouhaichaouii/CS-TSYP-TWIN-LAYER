@@ -69,12 +69,8 @@ class TwinFacade:
             status = self._city.status()
             sim_tick = status["sim_tick"]
 
-            # Pull observations from PublicReader
+            # Pull observations from PublicReader (live simulation data)
             raw_readings = self._city.public.observations()
-
-            # If the public store has no sampled readings yet, construct baseline readings
-            if not raw_readings:
-                raw_readings = self._build_baseline_readings(sim_tick)
 
         # Apply filtering
         filtered = list(raw_readings)
