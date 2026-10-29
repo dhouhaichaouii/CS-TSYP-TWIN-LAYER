@@ -8,7 +8,7 @@ from .records import LiveError, timestamp
 from .registry import load_registry, replacement
 
 
-def measurement(source, snapshot, departures):
+def measurement(source, snapshot, departures, model_values=None):
     physical = snapshot.physical_state
     if source is None:
         return None
@@ -17,6 +17,10 @@ def measurement(source, snapshot, departures):
                   'surface': physical.water.surface_depth_m}[source]
         return metres * 100
     family, target = source.split(':', 1)
+    if family == 'model':
+        if model_values is None or target not in model_values:
+            raise LiveError('INVALID_BINDING')
+        return model_values[target]
     if family == 'departures':
         return departures[target]
     if family == 'power':
@@ -67,7 +71,7 @@ class SensorBank:
         self.registry = updated
         self.latest = freeze({key: value for key, value in self.latest.items() if key != old_id})
 
-    def capture(self, snapshot, departures):
+    def capture(self, snapshot, departures, model_values=None):
         tick = snapshot.context.tick
         if tick <= self.last_tick:
             raise LiveError('DUPLICATE_SAMPLE_TICK')
@@ -75,7 +79,7 @@ class SensorBank:
         for sensor in self.registry:
             if not sensor.active:
                 continue
-            value = measurement(sensor.source, snapshot, departures)
+            value = measurement(sensor.source, snapshot, departures, model_values)
             history = self.buffers.get(sensor.sensor_id, ())
             # A delayed window needs its entire sampling interval before the
             # delayed endpoint; point measurements need only that endpoint.
@@ -117,7 +121,7 @@ class SensorBank:
         true = round(actual, 2) if actual is not None else None
         if actual is None and value is None and status == 'OK':
             status = 'OFFLINE'
-        return {'schema_version': 'twin-reading-0.1-local', 'sensor_id': sensor.sensor_id,
+        return {'schema_version': 'twin-reading-0.2-local', 'sensor_id': sensor.sensor_id,
                 'zone_id': sensor.zone_id, 'type': sensor.type, 'unit': sensor.unit,
                 'timestamp': timestamp(self.epoch, max(0, sample_tick)), 'sim_tick': max(0, sample_tick),
                 'delivery_tick': tick, 'actual_value': true, 'reported_value': value,

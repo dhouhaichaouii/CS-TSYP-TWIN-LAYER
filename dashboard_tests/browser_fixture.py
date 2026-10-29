@@ -1,4 +1,5 @@
 """Private subprocess fixture; control stdin is never an HTTP endpoint."""
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -7,11 +8,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from city_dashboard.server import DashboardBridge
 from city_live.runtime import LiveCity
 
-city = LiveCity('browser-a', tick_budget=20)
+parser = argparse.ArgumentParser()
+parser.add_argument('--tick-budget', type=int, default=20)
+city = LiveCity('browser-a', tick_budget=parser.parse_args().tick_budget)
 bridge = None
 try:
     secret = sys.stdin.readline().rstrip('\n')
-    city.sensor_fault('S-WATER-03', 'FALSE_READING', {'value': 180})
+    city.sensor_fault('IND-TMP-01', 'DEAD', {})
+    city.sensor_fault('DTN-WLV-01', 'FALSE_READING', {'value': 180})
     for _ in range(10): city.step()
     bridge = DashboardBridge(city, secret, port=0)
     del secret

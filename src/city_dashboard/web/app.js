@@ -62,6 +62,7 @@ function render() {
   document.body.classList.toggle('stale',store.stale);
   element('clock').textContent=store.frame?.status ? `${store.frame.status.state} · t=${store.frame.sim_tick}s · ${store.frame.status.speed}×` : 'Reported observations only';
   renderMetrics(store.frame);renderReports(store.frame);cityMap.renderFrame(store.frame,{stale:store.stale});cityMap.selectEntity(store.selection);describeSelection(store.frame,store.selection,cityMap.layout);
+  if(cityMap.layout){const signature=cityMap.layout.devices.map(d=>d.id).join('|');if(signature!==element('asset-list').dataset.inventory){element('asset-list').dataset.inventory=signature;element('search').dispatchEvent(new Event('input'));}}
   element('frame').textContent = store.frame ? JSON.stringify(store.frame, null, 2) : 'No data.';
   performance.measure('city-frame-render','city-render-start');performance.clearMarks('city-render-start');
 }

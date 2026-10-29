@@ -15,4 +15,4 @@ class DemonstrationTests(unittest.TestCase):
         self.assertEqual(result['spoof']['reported_value'], 180)
         self.assertNotEqual(result['spoof']['actual_value'], 180)
         self.assertEqual(result['proposed_sensor_count'], 16)
-        self.assertEqual(result['grounded_proposed_sensors'], 3)
+        self.assertEqual(result['grounded_proposed_sensors'], 16)

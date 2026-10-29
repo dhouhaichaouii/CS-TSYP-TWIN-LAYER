@@ -24,20 +24,20 @@ class ReviewRegressions(unittest.TestCase):
         self.addCleanup(city.close)
         for _ in range(5):
             city.step()
-        city.sensor_fault('S-WATER-01', 'DELAYED', {'lag_ticks': 1})
+        city.sensor_fault('PRT-WLV-01', 'DELAYED', {'lag_ticks': 1})
         city.incident('heavy_rain')
         for _ in range(10):
             city.step()
-        previous = city.sensor_compare('S-WATER-01')['reported_value']
-        self.assertEqual(previous, 290.45)
-        city.sensor_clear('S-WATER-01')
-        city.sensor_fault('S-WATER-01', 'STUCK', {})
+        previous = city.sensor_compare('PRT-WLV-01')['reported_value']
+        self.assertEqual(previous, 50.45)
+        city.sensor_clear('PRT-WLV-01')
+        city.sensor_fault('PRT-WLV-01', 'STUCK', {})
         for _ in range(5):
             city.step()
-        self.assertEqual(city.sensor_compare('S-WATER-01')['reported_value'], previous)
+        self.assertEqual(city.sensor_compare('PRT-WLV-01')['reported_value'], previous)
 
     def test_stuck_without_previous_available_report_rejects(self):
         city = LiveCity('never-sampled')
         self.addCleanup(city.close)
         with self.assertRaisesRegex(LiveError, 'NO_VALID_SAMPLE'):
-            city.sensor_fault('S-WATER-01', 'STUCK', {})
+            city.sensor_fault('PRT-WLV-01', 'STUCK', {})

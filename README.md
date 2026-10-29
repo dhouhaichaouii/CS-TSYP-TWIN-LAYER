@@ -1,3 +1,28 @@
+# Sensor fix — 29 October 2026
+
+The live simulation now uses only the sixteen sensors from the supplied sensor
+specification. All sixteen have physical sources; legacy S-* sensors are disabled.
+The dashboard, fault controls, replacement history and demonstrations use this
+inventory. Restart an already running dashboard after updating.
+
+From this repository folder, with Python 3.12 installed:
+
+```powershell
+python -X utf8 tools/run_dashboard.py --port 0 --open
+```
+
+Choose a launch passphrase, keep the console open, and connect operator in the
+browser. Healthy readings appear at their full 5, 10 or 60 simulated-second interval.
+Type `quit` in the console to shut down.
+
+[Sensor model and migration](docs/SENSORS.md) ·
+[Verification and remaining limits](docs/SENSOR_VERIFICATION.md)
+
+The earlier notes below preserve the original planning-workspace handover; their
+links outside this repository refer to that historical workspace.
+
+---
+
 **Local dashboard:** double-click [Start Dashboard.cmd](Start%20Dashboard.cmd),
 choose a hidden launch passphrase and connect operator in the opened browser.
 [Controls, recovery and limitations](../docs/architecture/dashboard/README.md) ·

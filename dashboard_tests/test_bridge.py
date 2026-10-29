@@ -58,14 +58,14 @@ class BridgeTests(unittest.TestCase):
 
     def test_report_route_is_safe_even_with_operator_cookie(self):
         cookie = self.login()
-        self.city.sensor_fault('S-WATER-03', 'FALSE_READING', {'value': 180})
+        self.city.sensor_fault('DTN-WLV-01', 'FALSE_READING', {'value': 180})
         for _ in range(10): self.city.step()
         _, _, data = self.request('GET', '/api/report/frame', headers={'Cookie': cookie})
         frame = json.loads(data)['data']
         self.assertEqual(frame['visibility'], 'REPORTED_ONLY')
         for word in ('actual_value', 'delta', 'fault', 'diagnostics', 'revision', 'FALSE_READING'):
             self.assertNotIn(word, data.decode())
-        r = next(r for r in frame['records'] if r['sensor_id'] == 'S-WATER-03')
+        r = next(r for r in frame['records'] if r['sensor_id'] == 'DTN-WLV-01')
         self.assertEqual(r['reported_value'], 180)
         self.assertEqual(self.request('POST', '/api/operator/command', {'method': 'reset'})[0], 401)
 

@@ -20,7 +20,7 @@ async function main(){
   await page.goto(url);await page.getByLabel('Launch passphrase').fill(secret);await page.getByRole('button',{name:'Connect operator',exact:true}).click();
   await page.locator('#visibility').filter({hasText:'PRIVATE_OPERATOR_ONLY'}).waitFor();
   assert.equal(await page.locator('#city-map svg').count(),1,'D03 interactive SVG missing');
-  assert.equal(await page.locator('#asset-list option').count(),56,'35 entities + 21 bindings');
+  assert.equal(await page.locator('#asset-list option').count(),60,'35 original entities + Port schematic + 8 actuators + 16 PDF sensors');
   await page.selectOption('#asset-list','R-LOW');assert.match(await page.locator('#selected').innerText(),/R-LOW/);
   const before=await page.locator('#city-map svg').getAttribute('viewBox');await page.getByRole('button',{name:'Zoom in',exact:true}).click();
   assert.notEqual(await page.locator('#city-map svg').getAttribute('viewBox'),before);
@@ -46,7 +46,7 @@ async function main(){
   assert.equal(await page.locator('#metrics').innerText(),'Physical state requires operator access.');
   assert.doesNotMatch(await page.locator('#selected').innerText(),/50.0|active_faults|physical_state/);
   for(const width of [1920,1366,768,375]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),JSON.stringify(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,wide:[...document.querySelectorAll("body *")].filter(e=>e.getBoundingClientRect().right>innerWidth).map(e=>e.tagName+"#"+e.id).slice(0,12)}))));}
-  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(evidence,'result.json'),JSON.stringify({passed:true,checks:['56 assets','select/escape','zoom/fit','layers','real metrics','stale/reconnect','privacy switch','four widths','no page errors']}));
+  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(evidence,'result.json'),JSON.stringify({passed:true,checks:['60 assets including PDF inventory','select/escape','zoom/fit','layers','real metrics','stale/reconnect','privacy switch','four widths','no page errors']}));
   console.log('D03 browser passed');
  }finally{clearTimeout(timer);if(browser)await browser.close();child.stdin.end('{"op":"quit"}\n');await new Promise(r=>child.once('exit',r));assert.equal(stderr,'');}
 }

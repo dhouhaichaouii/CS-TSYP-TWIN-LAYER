@@ -26,6 +26,7 @@ class OperatorControls:
     def diagnostics(self):
         snapshot = self._snapshot()
         return {'visibility': 'PRIVATE_OPERATOR_ONLY', 'context': plain(snapshot.context),
+                'sensor_model': plain(self._sensor_physics),
                 'physical_state': plain(snapshot.physical_state),
                 'power': {**plain(snapshot.power), 'hospital_powered': snapshot.power.hospital_powered},
                 'traffic': plain(snapshot.traffic), 'flood': plain(snapshot.flood),
