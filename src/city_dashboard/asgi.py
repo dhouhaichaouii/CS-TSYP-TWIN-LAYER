@@ -67,14 +67,14 @@ def create_dashboard_router(owner, secret, *, secure_cookies=False):
             raise LiveError('INVALID_ARGUMENT')
         return value
 
-    @router.get('/api/report/frame')
+    @router.get('/api/report/frame', include_in_schema=False)
     async def report_frame(request: Request):
         rejected = await guard(request)
         if rejected:
             return rejected
         return reply({'ok': True, 'data': read_reported_frame(owner.public)})
 
-    @router.get('/api/operator/frame')
+    @router.get('/api/operator/frame', include_in_schema=False)
     async def operator_frame(request: Request):
         rejected = await guard(request)
         if rejected:
@@ -85,7 +85,7 @@ def create_dashboard_router(owner, secret, *, secure_cookies=False):
         except LiveError as exc:
             return error(ERROR_STATUS.get(exc.code, 401), exc.code)
 
-    @router.post('/api/session')
+    @router.post('/api/session', include_in_schema=False)
     async def login(request: Request):
         rejected = await guard(request, post=True)
         if rejected:
@@ -103,7 +103,7 @@ def create_dashboard_router(owner, secret, *, secure_cookies=False):
         except (ValueError, TypeError, UnicodeError, RecursionError, KeyError):
             return error(400, 'INVALID_ARGUMENT')
 
-    @router.post('/api/logout')
+    @router.post('/api/logout', include_in_schema=False)
     async def logout(request: Request):
         rejected = await guard(request, post=True)
         if rejected:
@@ -120,7 +120,7 @@ def create_dashboard_router(owner, secret, *, secure_cookies=False):
         except (ValueError, TypeError, UnicodeError, RecursionError):
             return error(400, 'INVALID_ARGUMENT')
 
-    @router.post('/api/operator/command')
+    @router.post('/api/operator/command', include_in_schema=False)
     async def operator_command(request: Request):
         rejected = await guard(request, post=True)
         if rejected:

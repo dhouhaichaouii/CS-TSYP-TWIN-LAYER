@@ -80,6 +80,21 @@ class MCPServerTests(unittest.IsolatedAsyncioTestCase):
         for tool in tools:
             self.assertTrue(tool.description and len(tool.description) > 20, f"Tool {tool.name} lacks rich docstring")
 
+        by_name = {tool.name: tool for tool in tools}
+        expected_parameters = {
+            "get_sensor_readings": {"zone_id", "sensor_id", "sensor_type"},
+            "get_city_state": {"zone_id"},
+            "get_events_since": {"seq"},
+            "send_actuator_command": {"device_id", "command", "params", "request_id", "context"},
+            "isolate_device": {"device_id", "reason"},
+            "restore_device": {"device_id"},
+        }
+        for name, expected in expected_parameters.items():
+            with self.subTest(tool=name):
+                properties = by_name[name].inputSchema["properties"]
+                self.assertEqual(set(properties), expected)
+                self.assertNotIn("token", properties)
+
     async def test_mcp_get_sensor_readings(self):
         """Verify invoking get_sensor_readings via MCP call_tool with a valid token."""
         content, meta = await self.call_tool_as(

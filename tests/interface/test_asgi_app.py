@@ -124,6 +124,26 @@ class UnifiedAsgiAppTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200, response.text)
                 self.assertIn("secure", response.headers["set-cookie"].casefold())
 
+    def test_openapi_describes_rest_query_and_json_body_parameters(self):
+        schema = self.app.openapi()
+        sensors = schema["paths"]["/api/v1/sensors"]["get"]
+        self.assertEqual(
+            {parameter["name"] for parameter in sensors["parameters"]},
+            {"zone_id", "sensor_id", "sensor_type"},
+        )
+        events = schema["paths"]["/api/v1/events"]["get"]
+        self.assertEqual(events["parameters"][0]["name"], "seq")
+        command = schema["paths"]["/api/v1/commands"]["post"]
+        command_schema = command["requestBody"]["content"]["application/json"]["schema"]
+        self.assertEqual(
+            set(command_schema["required"]),
+            {"device_id", "command", "request_id"},
+        )
+        self.assertEqual(command_schema["properties"]["params"]["type"], "object")
+        response_schema = command["responses"]["200"]["content"]["application/json"]["schema"]
+        self.assertEqual(response_schema["properties"]["ok"]["type"], "boolean")
+        self.assertNotIn("/api/operator/command", schema["paths"])
+
     def test_real_mcp_client_and_rest_share_one_runtime_and_facade(self):
         created_cities = []
         created_facades = []

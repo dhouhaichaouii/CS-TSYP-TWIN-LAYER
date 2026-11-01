@@ -133,6 +133,25 @@ class DashboardBridge:
             def _error(self, code, name):
                 self._reply(code, {'ok': False, 'error': {'code': name}})
 
+            def _discard_small_body(self, length=None):
+                if length is None:
+                    lengths = self.headers.get_all('Content-Length', [])
+                    if (self.headers.get('Transfer-Encoding') or len(lengths) != 1 or
+                            not lengths[0].isascii() or not lengths[0].isdigit()):
+                        return
+                    try:
+                        length = int(lengths[0])
+                    except ValueError:
+                        return
+                if length > 65536:
+                    return
+                remaining = length
+                while remaining:
+                    chunk = self.rfile.read(min(8192, remaining))
+                    if not chunk:
+                        return
+                    remaining -= len(chunk)
+
             def _guard(self):
                 hosts = self.headers.get_all('Host', [])
                 origins = self.headers.get_all('Origin', [])
@@ -140,12 +159,18 @@ class DashboardBridge:
                     (origins and origins != [bridge.url]) or
                     self.headers.get('Sec-Fetch-Site') not in (None, 'same-origin', 'none') or
                     (self.command == 'POST' and origins != [bridge.url])):
+                    if self.command == 'POST':
+                        self._discard_small_body()
                     self._error(403, 'ORIGIN_REJECTED')
                     return False
                 if not bridge._rate.allow():
+                    if self.command == 'POST':
+                        self._discard_small_body()
                     self._error(429, 'RATE_LIMITED')
                     return False
                 if '?' in self.path or len(self.path) > 128:
+                    if self.command == 'POST':
+                        self._discard_small_body()
                     self._error(400, 'INVALID_ARGUMENT')
                     return False
                 return True
@@ -170,15 +195,11 @@ class DashboardBridge:
                     # Drain small rejected bodies before closing the HTTP/1.0
                     # socket so clients can reliably receive the 413 response.
                     if length <= 65536:
-                        remaining = length
-                        while remaining:
-                            chunk = self.rfile.read(min(8192, remaining))
-                            if not chunk:
-                                raise LiveError('INVALID_ARGUMENT')
-                            remaining -= len(chunk)
+                        self._discard_small_body(length)
                     self._error(413, 'BODY_TOO_LARGE')
                     return None
                 if self.headers.get('Content-Type') != 'application/json':
+                    self._discard_small_body(length)
                     self._error(415, 'CONTENT_TYPE')
                     return None
                 raw = self.rfile.read(length)
