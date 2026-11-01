@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: person-a-city-core
+Version: 0.1.0
+Summary: Provisional local city core with validated effects, power and water balance
+Requires-Python: >=3.12
+Requires-Dist: fastapi<1,>=0.116
+Requires-Dist: mcp<2,>=1.16
+Requires-Dist: uvicorn<1,>=0.35
