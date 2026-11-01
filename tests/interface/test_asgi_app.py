@@ -32,6 +32,7 @@ class UnifiedAsgiAppTests(unittest.TestCase):
             "TWIN_ALLOW_INSECURE_DEV_TOKENS": "0",
             **{f"TWIN_TOKEN_{role}": token for role, token in self.tokens.items()},
             "TWIN_ALLOWED_HOSTS": "testserver,localhost,127.0.0.1",
+            "TWIN_DASHBOARD_SECRET": "test-dashboard-passphrase-for-asgi!",
             "TWIN_ALLOWED_ORIGINS": "",
             "TWIN_LOG_DIR": self.temp_dir.name,
             "TWIN_RUN_ID": "asgi-integration-test",
@@ -43,6 +44,85 @@ class UnifiedAsgiAppTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp_dir.cleanup()
+
+    def test_dashboard_operator_and_brain_rest_share_the_deployed_city_owner(self):
+        with TestClient(self.app) as client:
+            origin = "http://testserver"
+            self.assertEqual(client.get("/").status_code, 200)
+            for asset in ("/styles.css", "/app.js", "/api.js", "/map-layout.json", "/city-map.svg"):
+                with self.subTest(asset=asset):
+                    self.assertEqual(client.get(asset).status_code, 200)
+            self.assertEqual(client.get("/api/operator/frame").status_code, 401)
+            report = client.get("/api/report/frame")
+            self.assertEqual(report.status_code, 200)
+            self.assertEqual(report.json()["data"]["visibility"], "REPORTED_ONLY")
+
+            login = client.post(
+                "/api/session",
+                json={"secret": os.environ["TWIN_DASHBOARD_SECRET"]},
+                headers={"Origin": origin},
+            )
+            self.assertEqual(login.status_code, 200, login.text)
+            self.assertIn("HttpOnly", login.headers["set-cookie"])
+            self.assertEqual(client.get("/api/report/frame?unexpected=1").status_code, 400)
+            rejected_origin = client.post(
+                "/api/logout", json={}, headers={"Origin": "https://attacker.example"}
+            )
+            self.assertEqual(rejected_origin.status_code, 403)
+
+            status = client.get("/api/operator/frame")
+            self.assertEqual(status.status_code, 200, status.text)
+            frame = status.json()["data"]
+            paused = client.post(
+                "/api/operator/command",
+                json={"command_id": "asgi-dashboard-pause", "run_id": frame["run_id"],
+                      "expected_revision": None, "kind": "pause", "args": {}},
+                headers={"Origin": origin},
+            )
+            self.assertEqual(paused.status_code, 200, paused.text)
+            frame = client.get("/api/operator/frame").json()["data"]
+
+            dashboard_write = client.post(
+                "/api/operator/command",
+                json={"command_id": "asgi-dashboard-valve", "run_id": frame["run_id"],
+                      "expected_revision": frame["revision"], "kind": "device",
+                      "args": {"device_id": "A-VALVE-01", "requested": 0.65}},
+                headers={"Origin": origin},
+            )
+            self.assertEqual(dashboard_write.status_code, 200, dashboard_write.text)
+            brain_token = os.environ["TWIN_TOKEN_BRAIN"]
+            rest_state = client.get("/api/v1/state", headers={"Authorization": f"Bearer {brain_token}"})
+            self.assertEqual(rest_state.status_code, 200)
+            self.assertEqual(rest_state.json()["data"]["zones"]["PRT"]["valves"]["V-12"], "OPEN_65%")
+
+            brain_write = client.post(
+                "/api/v1/commands",
+                json={"request_id": "asgi-brain-valve", "device_id": "V-12",
+                      "command": "set_opening", "params": {"open_pct": 22},
+                      "context": {"run_id": frame["run_id"]}},
+                headers={"Authorization": f"Bearer {brain_token}"},
+            )
+            self.assertEqual(brain_write.status_code, 200, brain_write.text)
+            operator_frame = client.get("/api/operator/frame").json()["data"]
+            self.assertAlmostEqual(
+                operator_frame["diagnostics"]["physical_state"]["valve"]["effective_opening_fraction"],
+                0.22,
+            )
+
+            logged_out = client.post("/api/logout", json={}, headers={"Origin": origin})
+            self.assertEqual(logged_out.status_code, 200)
+            self.assertEqual(client.get("/api/operator/frame").status_code, 401)
+
+    def test_dashboard_cookie_can_be_forced_secure_behind_tls_proxy(self):
+        with patch.dict(os.environ, {"TWIN_DASHBOARD_COOKIE_SECURE": "true"}):
+            with TestClient(self.app, base_url="https://testserver") as client:
+                response = client.post(
+                    "/api/session",
+                    json={"secret": os.environ["TWIN_DASHBOARD_SECRET"]},
+                    headers={"Origin": "https://testserver"},
+                )
+                self.assertEqual(response.status_code, 200, response.text)
+                self.assertIn("secure", response.headers["set-cookie"].casefold())
 
     def test_real_mcp_client_and_rest_share_one_runtime_and_facade(self):
         created_cities = []
@@ -153,6 +233,36 @@ class UnifiedAsgiAppTests(unittest.TestCase):
                 self.assertEqual(rest_response.status_code, 200, rest_response.text)
                 rest_data = rest_response.json()["data"]
 
+                dashboard_client = httpx.AsyncClient(base_url=base_url)
+                dashboard_login = await dashboard_client.post(
+                    "/api/session",
+                    json={"secret": os.environ["TWIN_DASHBOARD_SECRET"]},
+                    headers={"Origin": base_url},
+                )
+                self.assertEqual(dashboard_login.status_code, 200, dashboard_login.text)
+                operator_frame = await dashboard_client.get("/api/operator/frame")
+                self.assertEqual(operator_frame.status_code, 200, operator_frame.text)
+                operator_data = operator_frame.json()["data"]
+                paused = await dashboard_client.post(
+                    "/api/operator/command",
+                    json={"command_id": "network-dashboard-pause",
+                          "run_id": operator_data["run_id"], "expected_revision": None,
+                          "kind": "pause", "args": {}},
+                    headers={"Origin": base_url},
+                )
+                self.assertEqual(paused.status_code, 200, paused.text)
+                operator_data = (await dashboard_client.get("/api/operator/frame")).json()["data"]
+                dashboard_command = await dashboard_client.post(
+                    "/api/operator/command",
+                    json={"command_id": "network-dashboard-valve",
+                          "run_id": operator_data["run_id"],
+                          "expected_revision": operator_data["revision"],
+                          "kind": "device",
+                          "args": {"device_id": "A-VALVE-01", "requested": 0.44}},
+                    headers={"Origin": base_url},
+                )
+                self.assertEqual(dashboard_command.status_code, 200, dashboard_command.text)
+
                 async with streamablehttp_client(
                     f"{base_url}{MCP_MOUNT_PATH}",
                     headers={"Authorization": f"Bearer {brain_token}"},
@@ -181,7 +291,7 @@ class UnifiedAsgiAppTests(unittest.TestCase):
                             mcp_state = await session.call_tool("get_city_state", {})
                             self.assertEqual(
                                 mcp_state.structuredContent["data"]["zones"]["PRT"]["valves"]["V-12"],
-                                "OPEN_65%",
+                                "OPEN_44%",
                             )
 
                             mcp_command = {
@@ -207,6 +317,13 @@ class UnifiedAsgiAppTests(unittest.TestCase):
                                 rest_state.json()["data"]["zones"]["PRT"]["valves"]["V-12"],
                                 "OPEN_22%",
                             )
+                            operator_after_brain = await dashboard_client.get("/api/operator/frame")
+                            self.assertEqual(operator_after_brain.status_code, 200)
+                            self.assertAlmostEqual(
+                                operator_after_brain.json()["data"]["diagnostics"][
+                                    "physical_state"]["valve"]["effective_opening_fraction"],
+                                0.22,
+                            )
                             readings = await session.call_tool(
                                 "get_sensor_readings",
                                 {"sensor_type": "water_level"},
@@ -215,6 +332,7 @@ class UnifiedAsgiAppTests(unittest.TestCase):
                         self.assertIs(app.state.mcp_server, mcp_server)
                         self.assertIs(app.state.facade, facade)
                     finally:
+                        await dashboard_client.aclose()
                         await read_stream.aclose()
 
                 guardian_token = os.environ["TWIN_TOKEN_GUARDIAN"]

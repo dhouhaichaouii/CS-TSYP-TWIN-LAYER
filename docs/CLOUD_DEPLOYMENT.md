@@ -4,7 +4,9 @@ This repository includes a Render Blueprint at the root (`render.yaml`). It
 builds the existing Dockerfile as one Frankfurt web service, checks
 `/health/ready`, configures the service's generated hostname as its allowed
 host, and asks Render to generate distinct random values for all four role
-tokens. The Blueprint does not contain credentials.
+tokens plus the dashboard operator passphrase. The Blueprint does not contain
+credentials. The Person A city dashboard is served by the same application and
+uses the same in-memory city owner as REST and MCP.
 
 ## Deploy
 
@@ -24,9 +26,13 @@ tokens. The Blueprint does not contain credentials.
    Never share the other role credentials or put any token in a public issue,
    source file, or shared test report. Rotate a role's token after testing if
    its handling is uncertain.
+6. Share `TWIN_DASHBOARD_SECRET` only with the city operator who needs to use
+   the dashboard at the service root (`https://<service>.onrender.com/`). It is
+   a separate credential from all Brain/Guardian tokens.
 
-Render provides an HTTPS endpoint for the public web service. The API still
-requires a role Bearer token; `/docs` describes the API, and
+Render provides an HTTPS endpoint for the public web service. Dashboard
+operator controls require the dashboard passphrase; REST and MCP still require
+role Bearer tokens. `/docs` describes the REST API, and
 `/api/v1/sensors` and `/api/v1/state` require authentication. Give each team
 the HTTPS base URL and its own token through separate private channels.
 

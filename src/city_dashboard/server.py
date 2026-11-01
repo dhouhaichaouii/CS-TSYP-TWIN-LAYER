@@ -167,6 +167,15 @@ class DashboardBridge:
                     raise LiveError('INVALID_ARGUMENT')
                 length = int(lengths[0])
                 if length > 4096:
+                    # Drain small rejected bodies before closing the HTTP/1.0
+                    # socket so clients can reliably receive the 413 response.
+                    if length <= 65536:
+                        remaining = length
+                        while remaining:
+                            chunk = self.rfile.read(min(8192, remaining))
+                            if not chunk:
+                                raise LiveError('INVALID_ARGUMENT')
+                            remaining -= len(chunk)
                     self._error(413, 'BODY_TOO_LARGE')
                     return None
                 if self.headers.get('Content-Type') != 'application/json':

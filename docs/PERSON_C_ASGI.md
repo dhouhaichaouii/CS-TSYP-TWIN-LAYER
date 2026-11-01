@@ -2,8 +2,9 @@
 
 `src/twin_app.py` is the network-facing application entry point. Its FastAPI
 lifespan creates one `LiveCity`, one `TwinFacade`, one FastMCP server, one
-in-memory event store, and one JSONL logger. The REST routes and the mounted
-MCP server share that same facade and runtime.
+in-memory event store, and one JSONL logger. The dashboard, REST routes, and
+mounted MCP server share that same facade and runtime. The dashboard is served
+at `/`; its operator routes use a separate passphrase-backed browser session.
 
 ## Local startup
 
@@ -26,6 +27,7 @@ Required environment variables:
 | `TWIN_TOKEN_GUARDIAN` | Guardian role credential; unique, at least 32 characters, and 16 distinct characters |
 | `TWIN_TOKEN_OPERATOR` | Operator role credential; unique, at least 32 characters, and 16 distinct characters |
 | `TWIN_TOKEN_EVALUATOR` | Evaluator role credential; unique, at least 32 characters, and 16 distinct characters |
+| `TWIN_DASHBOARD_SECRET` | Private dashboard passphrase; 16-256 characters and distinct from every role token |
 | `TWIN_ALLOWED_HOSTS` | Comma-separated exact HTTP hostnames accepted by the app and MCP |
 
 Optional variables:
@@ -37,6 +39,7 @@ Optional variables:
 | `TWIN_RUN_ID` | Explicit simulation run ID; otherwise generated at startup |
 | `TWIN_LOG_DIR` | JSONL log directory; defaults to `logs` |
 | `TWIN_TRUSTED_PROXY_IPS` | Uvicorn trusted reverse-proxy IPs/CIDRs; defaults to `127.0.0.1` |
+| `TWIN_DASHBOARD_COOKIE_SECURE` | Set to `true` when TLS terminates at a reverse proxy; Render Blueprint enables this |
 
 Generate independent credentials from cryptographically secure randomness
 (for example, `secrets.token_urlsafe(32)`) and store each in the host's secret
@@ -52,14 +55,21 @@ no `Origin` header; if `Origin` is supplied, it must exactly match
 `TWIN_ALLOWED_ORIGINS`. Configure origins only for browser-based clients. CORS
 is enabled only when that list is non-empty.
 
-REST and MCP require `Authorization: Bearer <role-token>`. MCP authentication
-happens before the Streamable HTTP app or any tool runs. Tokens are not MCP
-tool arguments. REST rejects credentials in URLs and JSON bodies. Missing or
-invalid credentials return HTTP 401; authenticated roles lacking permission
-receive HTTP 403. The built-in development tokens and development-token mode
-are rejected at startup.
+REST and MCP require `Authorization: Bearer <role-token>`. The dashboard is at
+`/` and can show the reported view without a session. Operator controls require
+the `TWIN_DASHBOARD_SECRET` passphrase; login sets a same-origin, HttpOnly,
+SameSite=Strict cookie, marked Secure on HTTPS (or when
+`TWIN_DASHBOARD_COOKIE_SECURE=true` behind a TLS-terminating proxy). The
+operator session is separate from Brain and Guardian role tokens. Keep the
+passphrase private and share it only with authorized city operators.
 
-Public HTTPS is terminated by Railway's proxy; the app validates the original
+MCP authentication happens before the Streamable HTTP app or any tool runs.
+Tokens are not MCP tool arguments. REST rejects credentials in URLs and JSON
+bodies. Missing or invalid credentials return HTTP 401; authenticated roles
+lacking permission receive HTTP 403. The built-in development tokens and
+development-token mode are rejected at startup.
+
+Public HTTPS is terminated by the hosting platform's proxy; the app validates the original
 `Host` header and uses Uvicorn proxy headers for scheme/client metadata. Set
 `TWIN_TRUSTED_PROXY_IPS` only to the actual ingress proxy IPs/CIDRs for the
 deployment; do not trust arbitrary forwarded headers. The app does not use
@@ -89,6 +99,10 @@ async with streamablehttp_client(
 
 | Interface | Endpoint |
 |---|---|
+| City dashboard | `/` |
+| Dashboard reported frame | `GET /api/report/frame` |
+| Dashboard private operator frame | `GET /api/operator/frame` (session cookie) |
+| Dashboard operator login/logout/commands | `POST /api/session`, `/api/logout`, `/api/operator/command` |
 | MCP Streamable HTTP | `POST /mcp/` (Bearer header required for all MCP requests) |
 | REST sensors | `GET /api/v1/sensors` |
 | REST city state | `GET /api/v1/state` |

@@ -26,3 +26,7 @@ services:
         generateValue: true
       - key: TWIN_TOKEN_EVALUATOR
         generateValue: true
+      - key: TWIN_DASHBOARD_SECRET
+        generateValue: true
+      - key: TWIN_DASHBOARD_COOKIE_SECURE
+        value: "true"

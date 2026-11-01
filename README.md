@@ -43,8 +43,11 @@ For Docker and remote partner deployment, see the
 [Sensor model and migration](docs/SENSORS.md) ·
 [Verification and remaining limits](docs/SENSOR_VERIFICATION.md)
 
-The earlier notes below preserve the original planning-workspace handover; their
-links outside this repository refer to that historical workspace.
+The deployed ASGI app serves the dashboard at `/` alongside REST and MCP, all
+against one city owner. Configure `TWIN_DASHBOARD_SECRET` as described in
+[Person C unified ASGI application](docs/PERSON_C_ASGI.md). The earlier notes
+below preserve the original planning-workspace handover; their links outside
+this repository refer to that historical workspace.
 
 ---
 

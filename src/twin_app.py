@@ -18,6 +18,7 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from city_dashboard.asgi import create_dashboard_router
 from city_live.runtime import LiveCity
 from twin_interface.auth import (
     CREDENTIAL_FIELD_NAMES,
@@ -148,6 +149,11 @@ def _load_runtime_settings() -> tuple[str, int, list[str], list[str], Path]:
 
     run_id = os.environ.get("TWIN_RUN_ID") or f"twin-{uuid4().hex}"
     log_dir = Path(os.environ.get("TWIN_LOG_DIR", str(DEFAULT_LOG_DIR)))
+    dashboard_secret = os.environ.get("TWIN_DASHBOARD_SECRET", "")
+    if not 16 <= len(dashboard_secret) <= 256 or dashboard_secret != dashboard_secret.strip():
+        raise RuntimeError("TWIN_DASHBOARD_SECRET must contain 16-256 non-whitespace-padded characters.")
+    if dashboard_secret in token_values.values():
+        raise RuntimeError("TWIN_DASHBOARD_SECRET must be distinct from all role tokens.")
     return run_id, port, allowed_hosts, allowed_origins, log_dir
 
 
@@ -264,9 +270,18 @@ def create_app(
         city = None
         logger = None
         mount: Mount | None = None
+        dashboard_routes = []
         try:
             run_id, port, allowed_hosts, allowed_origins, log_dir = _load_runtime_settings()
             city = city_factory(run_id)
+            dashboard_router = create_dashboard_router(
+                city,
+                os.environ["TWIN_DASHBOARD_SECRET"],
+                secure_cookies=os.environ.get("TWIN_DASHBOARD_COOKIE_SECURE", "").lower()
+                in {"1", "true", "yes", "on"},
+            )
+            dashboard_routes = list(dashboard_router.routes)
+            app.router.routes.extend(dashboard_routes)
             logger = ScenarioLogger("twin", run_id, log_dir=log_dir)
             event_store = EventStore()
             facade = facade_factory(city, event_store=event_store, scenario_logger=logger)
@@ -293,6 +308,7 @@ def create_app(
             app.state.scenario_logger = logger
             app.state.mcp_server = mcp
             app.state.mcp_asgi = mcp_asgi
+            app.state.dashboard_router = dashboard_router
             mount = Mount(MCP_MOUNT_PATH, app=mcp_asgi, name="mcp-streamable-http")
             app.router.routes.append(mount)
             city.start()
@@ -309,9 +325,12 @@ def create_app(
                 finally:
                     if mount is not None and mount in app.router.routes:
                         app.router.routes.remove(mount)
+                    for route in dashboard_routes:
+                        if route in app.router.routes:
+                            app.router.routes.remove(route)
                     for name in (
                         "city", "facade", "event_store", "scenario_logger",
-                        "mcp_server", "mcp_asgi",
+                        "mcp_server", "mcp_asgi", "dashboard_router",
                     ):
                         if hasattr(app.state, name):
                             delattr(app.state, name)
@@ -338,7 +357,10 @@ def create_app(
         else:
             report = facade.health_report(
                 "twin_app",
-                service_checks={"mcp_service": getattr(request.app.state, "mcp_server", None) is not None},
+                service_checks={
+                    "mcp_service": getattr(request.app.state, "mcp_server", None) is not None,
+                    "dashboard_service": getattr(request.app.state, "dashboard_router", None) is not None,
+                },
             )
         return JSONResponse(report, status_code=readiness_http_status(report))
 
