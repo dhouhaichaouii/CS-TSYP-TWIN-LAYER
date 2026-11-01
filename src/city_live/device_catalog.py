@@ -93,8 +93,8 @@ class DeviceCatalog:
         if row.family == "pump":
             if type(requested) is not bool or type(actual) is not bool:
                 raise LiveError("INVALID_ARGUMENT")
-            return ({"tag": "pump_enable", "target_id": row.target_id, "enabled": actual},
-                    actual)
+            return ({"tag": "pump_speed", "target_id": row.target_id,
+                     "speed_fraction": 1.0 if actual else 0.0}, actual)
         if row.family == "valve":
             numeric(requested, 0, 1)
             numeric(actual, 0, 1)

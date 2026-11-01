@@ -119,7 +119,7 @@ class AdversarialTests(unittest.TestCase):
         self.addCleanup(city.close)
         command = city.command('A-SIG-01', 'stop', command_id='sig')
         self.assertEqual(command['status'], 'COMPLETED')
-        with self.assertRaisesRegex(LiveError, 'IDENTITY_CONFLICT'):
+        with self.assertRaisesRegex(LiveError, 'IDEMPOTENCY_CONFLICT'):
             city.command('A-SIG-01', 'normal', command_id='sig')
         with self.assertRaises(LiveError):
             city.command('A-VALVE-01', float('inf'), command_id='bad')

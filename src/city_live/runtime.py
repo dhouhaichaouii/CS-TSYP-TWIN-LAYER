@@ -43,15 +43,19 @@ class LiveCity(OperatorControls):
         self._run_id, self._seed = run_id, seed
         self._state, self._speed, self._error = 'READY', 1.0, None
         self._thread = None
+        self._initialized = False
         self._dashboard_seq = 0
         self._operator_requests = freeze({})
+        self._actuator_requests = freeze({})
+        self._quarantined_devices = {}
         self._store = PublicStore(limit=self._history_limit)
         self.public = PublicReader(self._store)
         self._sensors = SensorBank(seed, self._epoch)
         self._reset_adapters()
+        self._initialized = True
 
     def _reset_adapters(self):
-        self._actions, self._commands, self._events = (), freeze({}), ()
+        self._actions, self._legacy_command_results, self._events = (), freeze({}), ()
         self._effect_counter, self._private_seq = 0, 0
         self._traffic = TrafficDemand(self._seed)
         self._sensor_physics = SensorPhysics()
@@ -224,6 +228,51 @@ class LiveCity(OperatorControls):
                     'timestamp': timestamp(self._epoch, context.tick), 'speed': self._speed,
                     'error': self._error, 'tick_budget': self._tick_budget,
                     'pending_actions': sum(a.status == 'PENDING' for a in self._actions)}
+
+    def health(self):
+        """Check lifecycle and city_core availability without changing city state."""
+        condition = getattr(self, '_condition', None)
+        if condition is None:
+            return {
+                'status': 'DOWN',
+                'checks': {
+                    'initialized': {'status': 'DOWN'},
+                    'lifecycle': {'status': 'DOWN'},
+                    'city_core': {'status': 'DOWN'},
+                },
+            }
+
+        with condition:
+            initialized = getattr(self, '_initialized', False) is True
+            state = getattr(self, '_state', None)
+            lifecycle_up = initialized and state in ('READY', 'RUNNING', 'PAUSED', 'STOPPED')
+            if state == 'RUNNING':
+                worker = getattr(self, '_thread', None)
+                lifecycle_up = lifecycle_up and worker is not None and worker.is_alive()
+
+            city_core_up = False
+            if initialized and state != 'CLOSED':
+                try:
+                    context = self._snapshot().context
+                    city_core_up = (
+                        context.run_id == self._run_id
+                        and type(context.tick) is int
+                        and context.tick >= 0
+                        and type(context.revision) is int
+                        and context.revision >= 0
+                    )
+                except Exception:
+                    city_core_up = False
+
+            checks = {
+                'initialized': {'status': 'UP' if initialized else 'DOWN'},
+                'lifecycle': {'status': 'UP' if lifecycle_up else 'DOWN'},
+                'city_core': {'status': 'UP' if city_core_up else 'DOWN'},
+            }
+            return {
+                'status': 'UP' if all(check['status'] == 'UP' for check in checks.values()) else 'DOWN',
+                'checks': checks,
+            }
 
     @serialized
     def capture_dashboard_frame(self):

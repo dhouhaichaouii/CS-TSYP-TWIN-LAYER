@@ -60,22 +60,36 @@ def sensor_rows(seed, overlay, proposal, zones):
         family = device["type"]
         if family not in UNIT:
             raise ValueError(f"Unsupported B sensor type: {family}")
-        source = binding["source"]
+        if base["type"] != TYPE[family] or base["unit"] != UNIT[family]:
+            raise ValueError(f"Canonical sensor definition conflict: {sensor_id}")
+        if device.get("unit") != base["unit"]:
+            raise ValueError(f"Sensor unit conflict: {sensor_id}")
+        if (list(device["normal_range"]) != base["normal_limits"]
+                or [device["hard_min"], device["hard_max"]] != base["hard_limits"]):
+            raise ValueError(f"Sensor limits conflict: {sensor_id}")
+        source = base["source"]
+        supported = source is not None
+        if binding.get("source") != source:
+            raise ValueError(f"Sensor source conflict: {sensor_id}")
+        if bool(binding.get("supported", supported)) != supported:
+            raise ValueError(f"Sensor supported conflict: {sensor_id}")
+        if bool(binding.get("scenario_only", not supported)) != (not supported):
+            raise ValueError(f"Sensor scenario_only conflict: {sensor_id}")
         rows.append({
             "sensor_id": sensor_id,
             "zone_id": device["zone_id"],
             "core_zone_id": zones[device["zone_id"]],
-            "type": TYPE[family],
-            "unit": UNIT[family],
+            "type": base["type"],
+            "unit": base["unit"],
             "description": binding.get("description", base["description"]),
-            "normal_limits": list(device["normal_range"]),
-            "hard_limits": [device["hard_min"], device["hard_max"]],
+            "normal_limits": list(base["normal_limits"]),
+            "hard_limits": list(base["hard_limits"]),
             "interval": binding.get("interval", base["interval"]),
             "linked_device_ids": list(device.get("linked_device_ids", [])),
             "backup_ids": list(device.get("backup_ids", [])),
             "source": source,
-            "supported": bool(binding["supported"]),
-            "scenario_only": bool(binding["scenario_only"]),
+            "supported": supported,
+            "scenario_only": not supported,
             "physical_id": binding.get("physical_id"),
             "aliases": list(binding.get("aliases", [])),
         })

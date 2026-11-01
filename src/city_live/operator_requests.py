@@ -14,7 +14,7 @@ ARGUMENTS = {
     'sensor_fault': (('sensor_id', 'fault_type', 'parameters'), ()),
     'sensor_clear': (('sensor_id',), ()), 'sensor_repair': (('sensor_id',), ()),
     'sensor_replace': (('sensor_id', 'new_id'), ()),
-    'device': (('device_id', 'requested'), ('effective', 'available')),
+    'device': (('device_id',), ('requested', 'effective', 'available', 'command', 'params')),
 }
 
 
@@ -28,10 +28,34 @@ def apply_request(owner, envelope):
         raise LiveError('INVALID_ARGUMENT')
     if kind not in ARGUMENTS:
         raise LiveError('UNSUPPORTED_OPERATION')
+    if kind == 'device':
+        exact_keys(args, *ARGUMENTS[kind])
+        for key in ('device_id',):
+            if key in args:
+                identifier(args[key])
+        value = dispatch(
+            owner,
+            kind,
+            args,
+            envelope['command_id'],
+            run_id=envelope['run_id'],
+            expected_revision=envelope['expected_revision'],
+        )
+        outcome = value.get('status', 'COMPLETED') if type(value) is dict else 'COMPLETED'
+        return {
+            'command_id': envelope['command_id'],
+            'request_run_id': envelope['run_id'],
+            'run_id': owner.status()['run_id'],
+            'status': outcome,
+            'result': value,
+            'state': owner.status(),
+        }
+
     try:
         identity = json.dumps(envelope, sort_keys=True, allow_nan=False, separators=(',', ':'))
     except (TypeError, ValueError, OverflowError, RecursionError):
         raise LiveError('INVALID_ARGUMENT') from None
+
     ledger = owner._operator_requests
     existing = ledger.get(envelope['command_id'])
     if existing is not None:
@@ -54,11 +78,12 @@ def apply_request(owner, envelope):
         integer(revision, 0, 200000)
         if status['revision'] != revision:
             raise LiveError('STATE_CONFLICT')
-        allowed = ('READY', 'PAUSED', 'STOPPED')
-        if kind == 'reset':
-            allowed += ('ERROR', 'BUDGET_EXHAUSTED')
-        if status['state'] not in allowed:
-            raise LiveError('INVALID_STATE')
+        if kind != 'device':
+            allowed = ('READY', 'PAUSED', 'STOPPED')
+            if kind == 'reset':
+                allowed += ('ERROR', 'BUDGET_EXHAUSTED')
+            if status['state'] not in allowed:
+                raise LiveError('INVALID_STATE')
     if len(ledger) >= 2048:
         raise LiveError('COMMAND_BUDGET_EXHAUSTED')
     result, error = None, None
@@ -79,7 +104,7 @@ def apply_request(owner, envelope):
     return plain(result)
 
 
-def dispatch(owner, kind, args, command_id):
+def dispatch(owner, kind, args, command_id, *, run_id=None, expected_revision=None):
     if kind.startswith('sensor_'):
         sensor = owner._sensors.sensor(args['sensor_id'])
         if sensor.source is None:
@@ -116,6 +141,17 @@ def dispatch(owner, kind, args, command_id):
                               args['params'], run_id=owner.status()['run_id'])
     if kind == 'cancel':
         return owner.cancel(args['action_id'], run_id=owner.status()['run_id'])
+    if 'command' in args or 'params' in args:
+        if ('command' not in args or 'params' not in args or
+                'requested' in args or 'effective' in args):
+            raise LiveError('INVALID_ARGUMENT')
+        return owner.execute_actuator_command(
+            args['device_id'], args['command'], args['params'],
+            command_id=command_id, available=args.get('available', True),
+            run_id=run_id,
+            expected_revision=expected_revision)
+    if 'requested' not in args:
+        raise LiveError('INVALID_ARGUMENT')
     return owner.command(args['device_id'], args['requested'], command_id=command_id,
         effective=args.get('effective'), available=args.get('available', True),
-        run_id=owner.status()['run_id'], expected_revision=owner.status()['revision'])
+        run_id=run_id, expected_revision=expected_revision)

@@ -11,7 +11,7 @@ devices:
   - device_id: PRT-WLV-01
     zone_id: PRT
     type: water_level
-    unit: m
+    unit: cm
     kind: sensor
     normal_range: [20, 80]
     hard_min: 0
@@ -21,7 +21,7 @@ devices:
   - device_id: PRT-WLV-02
     zone_id: PRT
     type: water_level
-    unit: m
+    unit: cm
     kind: sensor
     normal_range: [20, 80]
     hard_min: 0
@@ -31,7 +31,7 @@ devices:
   - device_id: PRT-FLW-01
     zone_id: PRT
     type: flow
-    unit: m3/h
+    unit: L/s
     kind: sensor
     normal_range: [0, 250]
     hard_min: 0
@@ -51,7 +51,7 @@ devices:
   - device_id: IND-TMP-01
     zone_id: IND
     type: temperature
-    unit: C
+    unit: °C
     kind: sensor
     normal_range: [20, 90]
     hard_min: -10
@@ -61,7 +61,7 @@ devices:
   - device_id: IND-TMP-02
     zone_id: IND
     type: temperature
-    unit: C
+    unit: °C
     kind: sensor
     normal_range: [20, 90]
     hard_min: -10
@@ -81,7 +81,7 @@ devices:
   - device_id: IND-FLW-01
     zone_id: IND
     type: flow
-    unit: m3/h
+    unit: L/s
     kind: sensor
     normal_range: [10, 120]
     hard_min: 0
@@ -91,7 +91,7 @@ devices:
   - device_id: DTN-TRF-01
     zone_id: DTN
     type: traffic
-    unit: vehicles/min
+    unit: veh/min
     kind: sensor
     normal_range: [0, 60]
     hard_min: 0
@@ -101,7 +101,7 @@ devices:
   - device_id: DTN-TRF-02
     zone_id: DTN
     type: traffic
-    unit: vehicles/min
+    unit: veh/min
     kind: sensor
     normal_range: [0, 60]
     hard_min: 0
@@ -111,7 +111,7 @@ devices:
   - device_id: DTN-WLV-01
     zone_id: DTN
     type: water_level
-    unit: m
+    unit: cm
     kind: sensor
     normal_range: [0, 60]
     hard_min: 0
@@ -121,7 +121,7 @@ devices:
   - device_id: DTN-TMP-01
     zone_id: DTN
     type: temperature
-    unit: C
+    unit: °C
     kind: sensor
     normal_range: [5, 35]
     hard_min: -10
@@ -131,7 +131,7 @@ devices:
   - device_id: RES-WLV-01
     zone_id: RES
     type: water_level
-    unit: m
+    unit: cm
     kind: sensor
     normal_range: [100, 250]
     hard_min: 0
@@ -151,7 +151,7 @@ devices:
   - device_id: RES-FLW-01
     zone_id: RES
     type: flow
-    unit: m3/h
+    unit: L/s
     kind: sensor
     normal_range: [5, 60]
     hard_min: 0
@@ -161,7 +161,7 @@ devices:
   - device_id: RES-TRF-01
     zone_id: RES
     type: traffic
-    unit: vehicles/min
+    unit: veh/min
     kind: sensor
     normal_range: [0, 40]
     hard_min: 0

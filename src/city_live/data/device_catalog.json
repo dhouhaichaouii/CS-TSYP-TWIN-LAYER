@@ -28,9 +28,9 @@
       "interval": 60,
       "linked_device_ids": [],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:ambient_temperature",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -106,7 +106,7 @@
         "DTN-VLV-01"
       ],
       "backup_ids": [],
-      "source": "surface",
+      "source": "model:drain_level",
       "supported": true,
       "scenario_only": false,
       "physical_id": null,
@@ -132,9 +132,9 @@
         "IND-VLV-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:coolant_flow",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -158,9 +158,9 @@
         "IND-VLV-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:coolant_pressure",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -186,9 +186,9 @@
       "backup_ids": [
         "IND-TMP-02"
       ],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:process_temperature",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -214,9 +214,9 @@
       "backup_ids": [
         "IND-TMP-01"
       ],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:process_temperature",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -240,9 +240,9 @@
         "PRT-PMP-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:harbour_flow",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -266,9 +266,9 @@
         "PRT-PMP-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:harbour_pressure",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -294,7 +294,7 @@
       "backup_ids": [
         "PRT-WLV-02"
       ],
-      "source": "basin",
+      "source": "model:harbour_level",
       "supported": true,
       "scenario_only": false,
       "physical_id": null,
@@ -322,7 +322,7 @@
       "backup_ids": [
         "PRT-WLV-01"
       ],
-      "source": "basin",
+      "source": "model:harbour_level",
       "supported": true,
       "scenario_only": false,
       "physical_id": null,
@@ -348,9 +348,9 @@
         "RES-VLV-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:network_flow",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -374,9 +374,9 @@
         "RES-VLV-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:network_pressure",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     },
@@ -426,9 +426,9 @@
         "RES-VLV-01"
       ],
       "backup_ids": [],
-      "source": null,
-      "supported": false,
-      "scenario_only": true,
+      "source": "model:reservoir_level",
+      "supported": true,
+      "scenario_only": false,
       "physical_id": null,
       "aliases": []
     }
