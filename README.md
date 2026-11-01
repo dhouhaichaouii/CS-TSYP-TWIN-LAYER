@@ -5,15 +5,40 @@ specification. All sixteen have physical sources; legacy S-* sensors are disable
 The dashboard, fault controls, replacement history and demonstrations use this
 inventory. Restart an already running dashboard after updating.
 
-From this repository folder, with Python 3.12 installed:
+To run Dashboard and MCP against the same LiveCity sensor state, start the
+combined owner from this repository folder (Python 3.12):
 
 ```powershell
-python -X utf8 tools/run_dashboard.py --port 0 --open
+python -X utf8 tools/run_twin.py --dev
 ```
 
-Choose a launch passphrase, keep the console open, and connect operator in the
-browser. Healthy readings appear at their full 5, 10 or 60 simulated-second interval.
-Type `quit` in the console to shut down.
+This starts the Dashboard and MCP server with one LiveCity owner. Choose a
+launch passphrase, keep the console open, and connect the Dashboard in your
+browser. Type `quit` to stop both interfaces and the owner. `--dev` enables
+local development tokens only; omit it when using configured production tokens.
+The dashboard-only `tools/run_dashboard.py` and MCP-only `tools/serve_mcp.py`
+launchers each create their own owner and do not share runtime state.
+
+Health probes are service-local: Dashboard and HTTP MCP expose
+`/health/live` and `/health/ready`; the REST router exposes `/health/live`,
+`/health/ready`, and legacy `/health` (an alias for readiness). Liveness means
+the process answered. Readiness reports LiveCity/city_core and the service's
+own required bridge; HTTP 503 means a required component is unavailable.
+`DEGRADED` is still HTTP 200 when the simulation is usable but optional audit
+sinks are not configured. If a configured sink fails, the facade is not ready.
+An unavailable independently hosted REST process does not make Dashboard or
+MCP unready.
+
+For the network-facing Person C ASGI application, see
+[Person C unified ASGI application](docs/PERSON_C_ASGI.md). It serves REST and
+MCP Streamable HTTP on one port and one shared simulation owner; unlike the
+local demo launchers, it requires explicit production role tokens and allowed
+host configuration.
+
+For Docker and remote partner deployment, see the
+[Docker guide](docs/DOCKER.md),
+[cloud deployment guide](docs/CLOUD_DEPLOYMENT.md), and
+[partner connection guide](docs/PARTNER_TESTING.md).
 
 [Sensor model and migration](docs/SENSORS.md) ·
 [Verification and remaining limits](docs/SENSOR_VERIFICATION.md)
