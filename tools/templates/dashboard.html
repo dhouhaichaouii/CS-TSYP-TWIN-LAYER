@@ -24,8 +24,6 @@
         button.success:hover { background: #047857; }
         .response { background: #0f172a; border: 1px solid #475569; padding: 15px; border-radius: 4px; margin-top: 10px; overflow-x: auto; max-height: 400px; overflow-y: auto; }
         pre { color: #a5f3fc; font-size: 0.9em; }
-        .tokens { background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .token { display: inline-block; margin: 5px; padding: 5px 10px; background: #0f172a; border-radius: 4px; font-family: monospace; font-size: 0.85em; }
     </style>
 </head>
 <body>
@@ -33,20 +31,12 @@
         <h1>🌐 Twin Interface Test Dashboard</h1>
         <p class="subtitle">Test Auth, Permissions, Facade, REST API - All C-Side Components</p>
         
-        <div class="tokens">
-            <strong>Default Tokens:</strong><br>
-            <span class="token">🧠 BRAIN: {{ tokens.brain }}</span>
-            <span class="token">🛡️ GUARDIAN: {{ tokens.guardian }}</span>
-            <span class="token">👷 OPERATOR: {{ tokens.operator }}</span>
-            <span class="token">📊 EVALUATOR: {{ tokens.evaluator }}</span>
-        </div>
-        
         <div class="grid">
             <div class="card">
                 <h2>🔐 Authentication Test</h2>
                 <div class="form-group">
                     <label>Token</label>
-                    <input type="text" id="authToken" value="{{ tokens.brain }}" placeholder="Bearer token or raw token">
+                    <input type="password" id="authToken" autocomplete="off" placeholder="Enter Bearer token">
                 </div>
                 <button onclick="testHealth()">Test Health</button>
                 <button onclick="testAuth()">Test Auth</button>
@@ -57,7 +47,7 @@
                 <h2>📡 Sensor Readings</h2>
                 <div class="form-group">
                     <label>Token</label>
-                    <input type="text" id="sensorToken" value="{{ tokens.brain }}">
+                    <input type="password" id="sensorToken" autocomplete="off" placeholder="Enter Bearer token">
                 </div>
                 <div class="form-group">
                     <label>Zone ID (optional)</label>
@@ -82,7 +72,7 @@
                 <h2>🏙️ City State</h2>
                 <div class="form-group">
                     <label>Token</label>
-                    <input type="text" id="stateToken" value="{{ tokens.brain }}">
+                    <input type="password" id="stateToken" autocomplete="off" placeholder="Enter Bearer token">
                 </div>
                 <div class="form-group">
                     <label>Zone ID (optional)</label>
@@ -103,7 +93,7 @@
                 <h2>📜 Events</h2>
                 <div class="form-group">
                     <label>Token</label>
-                    <input type="text" id="eventToken" value="{{ tokens.brain }}">
+                    <input type="password" id="eventToken" autocomplete="off" placeholder="Enter Bearer token">
                 </div>
                 <div class="form-group">
                     <label>Sequence</label>
@@ -117,7 +107,7 @@
                 <h2>🎮 Actuator Commands</h2>
                 <div class="form-group">
                     <label>Token (Brain/Operator)</label>
-                    <input type="text" id="cmdToken" value="{{ tokens.brain }}">
+                    <input type="password" id="cmdToken" autocomplete="off" placeholder="Enter Bearer token">
                 </div>
                 <div class="form-group">
                     <label>Device ID</label>
@@ -143,7 +133,7 @@
                 <h2>🔒 Quarantine (Guardian)</h2>
                 <div class="form-group">
                     <label>Token (Guardian/Operator)</label>
-                    <input type="text" id="qToken" value="{{ tokens.guardian }}">
+                    <input type="password" id="qToken" autocomplete="off" placeholder="Enter Bearer token">
                 </div>
                 <div class="form-group">
                     <label>Device ID</label>
@@ -166,6 +156,13 @@
             const data = await res.json();
             return data;
         }
+
+        function authHeaders(token, includeContentType = false) {
+            return {
+                ...(includeContentType ? {'Content-Type': 'application/json'} : {}),
+                'Authorization': `Bearer ${token}`
+            };
+        }
         
         async function testHealth() {
             const data = await apiCall('/api/health');
@@ -174,7 +171,9 @@
         
         async function testAuth() {
             const token = document.getElementById('authToken').value;
-            const data = await apiCall(`/api/sensors?token=${encodeURIComponent(token)}`);
+            const data = await apiCall('/api/sensors', {
+                headers: authHeaders(token)
+            });
             document.getElementById('authResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
         }
         
@@ -182,26 +181,31 @@
             const token = document.getElementById('sensorToken').value;
             const zone = document.getElementById('sensorZone').value;
             const sid = document.getElementById('sensorId').value;
-            let url = `/api/sensors?token=${encodeURIComponent(token)}`;
-            if (zone) url += `&zone_id=${zone}`;
-            if (sid) url += `&sensor_id=${sid}`;
-            const data = await apiCall(url);
+            const query = new URLSearchParams();
+            if (zone) query.set('zone_id', zone);
+            if (sid) query.set('sensor_id', sid);
+            const suffix = query.toString();
+            const url = `/api/sensors${suffix ? `?${suffix}` : ''}`;
+            const data = await apiCall(url, {headers: authHeaders(token)});
             document.getElementById('sensorResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
         }
         
         async function getState() {
             const token = document.getElementById('stateToken').value;
             const zone = document.getElementById('stateZone').value;
-            let url = `/api/state?token=${encodeURIComponent(token)}`;
-            if (zone) url += `&zone_id=${zone}`;
-            const data = await apiCall(url);
+            const query = zone ? `?zone_id=${encodeURIComponent(zone)}` : '';
+            const data = await apiCall(`/api/state${query}`, {
+                headers: authHeaders(token)
+            });
             document.getElementById('stateResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
         }
         
         async function getEvents() {
             const token = document.getElementById('eventToken').value;
             const seq = document.getElementById('eventSeq').value;
-            const data = await apiCall(`/api/events?token=${encodeURIComponent(token)}&seq=${seq}`);
+            const data = await apiCall(`/api/events?seq=${encodeURIComponent(seq)}`, {
+                headers: authHeaders(token)
+            });
             document.getElementById('eventResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
         }
         
@@ -213,10 +217,7 @@
             const reqId = document.getElementById('cmdReqId').value;
             const data = await apiCall('/api/commands', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: authHeaders(token, true),
                 body: JSON.stringify({device_id: device, command: command, params: params, request_id: reqId})
             });
             document.getElementById('cmdResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
@@ -228,10 +229,7 @@
             const reason = document.getElementById('qReason').value;
             const data = await apiCall('/api/isolate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: authHeaders(token, true),
                 body: JSON.stringify({device_id: device, reason: reason})
             });
             document.getElementById('qResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
@@ -242,10 +240,7 @@
             const device = document.getElementById('qDevice').value;
             const data = await apiCall('/api/restore', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: authHeaders(token, true),
                 body: JSON.stringify({device_id: device})
             });
             document.getElementById('qResp').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';

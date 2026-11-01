@@ -12,8 +12,11 @@ Run with:
     python tools/manual_test.py
 """
 import json
+import os
 from pathlib import Path
 import sys
+
+os.environ.setdefault("TWIN_ALLOW_INSECURE_DEV_TOKENS", "1")
 
 # Ensure UTF-8 output on Windows consoles
 if hasattr(sys.stdout, "reconfigure"):
@@ -52,8 +55,10 @@ def main() -> None:
     store = EventStore(capacity=1000)
     logger = ScenarioLogger(scenario="manual_demo", run_id="live_001", log_dir=log_dir)
     facade = TwinFacade(event_store=store, scenario_logger=logger)
+    for _ in range(5):
+        facade.city.step()
 
-    logger.log_start(sim_tick=0, config={"scenario": "manual_demo", "mode": "interactive"})
+    logger.log_start(sim_tick=facade.city.status()["sim_tick"], config={"scenario": "manual_demo", "mode": "interactive"})
     print(f"[+] Audit log initialized at: logs/manual_demo_live_001.jsonl")
 
     # --------------------------------------------------------------------------
@@ -162,7 +167,7 @@ def main() -> None:
     # Step 6: Live Timeline & Audit Log Inspection
     # --------------------------------------------------------------------------
     print_step(6, "Live Event Timeline & JSONL Audit Log (Requirements R2 & R3)")
-    logger.log_end(sim_tick=10, summary={"status": "DEMO_COMPLETED", "actions_applied": 2})
+    logger.log_end(sim_tick=facade.city.status()["sim_tick"], summary={"status": "DEMO_COMPLETED", "actions_applied": 2})
     logger.close()
 
     # Query timeline from REST /api/v1/timeline

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """FastAPI dashboard to test Twin Interface (Facade + REST + Auth + MCP style)"""
+import os
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+os.environ.setdefault("TWIN_ALLOW_INSECURE_DEV_TOKENS", "1")
 
 from fastapi import FastAPI, Request, Header
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -12,7 +14,6 @@ import uvicorn
 
 from city_live.runtime import LiveCity
 from twin_interface.facade import TwinFacade
-from twin_interface.auth import DEFAULT_TOKENS
 from twin_interface.rest.router import handle_rest_request
 
 app = FastAPI(title="Twin Interface Test Dashboard", version="1.0.0")
@@ -33,34 +34,34 @@ templates = Jinja2Templates(directory=str(templates_dir))
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "tokens": DEFAULT_TOKENS
-    })
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 
 @app.get("/api/health")
+@app.get("/api/health/ready")
 async def health():
-    status, resp = handle_rest_request(facade, "GET", "/health")
+    status, resp = handle_rest_request(facade, "GET", "/health/ready")
+    return JSONResponse(content=resp, status_code=status)
+
+
+@app.get("/api/health/live")
+async def liveness():
+    status, resp = handle_rest_request(facade, "GET", "/health/live")
     return JSONResponse(content=resp, status_code=status)
 
 
 @app.get("/api/sensors")
 async def get_sensors(
-    request: Request,
     zone_id: Optional[str] = None,
     sensor_id: Optional[str] = None,
     sensor_type: Optional[str] = None,
-    token: Optional[str] = None,
     authorization: Optional[str] = Header(None)
 ):
-    auth_header = authorization or (f"Bearer {token}" if token else None)
-    headers = {"Authorization": auth_header} if auth_header else {}
+    headers = {"Authorization": authorization} if authorization else {}
     query = []
     if zone_id: query.append(f"zone_id={zone_id}")
     if sensor_id: query.append(f"sensor_id={sensor_id}")
     if sensor_type: query.append(f"sensor_type={sensor_type}")
-    if token and not authorization: query.append(f"token={token}")
     path = "/api/v1/sensors" + ("?" + "&".join(query) if query else "")
     status, resp = handle_rest_request(facade, "GET", path, headers=headers)
     return JSONResponse(content=resp, status_code=status)
@@ -69,19 +70,10 @@ async def get_sensors(
 @app.get("/api/state")
 async def get_state(
     zone_id: Optional[str] = None,
-    token: Optional[str] = None,
     authorization: Optional[str] = Header(None)
 ):
-    auth_header = authorization or (f"Bearer {token}" if token else None)
-    headers = {"Authorization": auth_header} if auth_header else {}
-    if zone_id and token:
-        path = f"/api/v1/state?zone_id={zone_id}&token={token}"
-    elif zone_id:
-        path = f"/api/v1/state?zone_id={zone_id}"
-    elif token:
-        path = f"/api/v1/state?token={token}"
-    else:
-        path = "/api/v1/state"
+    headers = {"Authorization": authorization} if authorization else {}
+    path = f"/api/v1/state?zone_id={zone_id}" if zone_id else "/api/v1/state"
     status, resp = handle_rest_request(facade, "GET", path, headers=headers)
     return JSONResponse(content=resp, status_code=status)
 
@@ -89,12 +81,10 @@ async def get_state(
 @app.get("/api/events")
 async def get_events(
     seq: int = 0,
-    token: Optional[str] = None,
     authorization: Optional[str] = Header(None)
 ):
-    auth_header = authorization or (f"Bearer {token}" if token else None)
-    headers = {"Authorization": auth_header} if auth_header else {}
-    path = f"/api/v1/events?seq={seq}&token={token}" if token else f"/api/v1/events?seq={seq}"
+    headers = {"Authorization": authorization} if authorization else {}
+    path = f"/api/v1/events?seq={seq}"
     status, resp = handle_rest_request(facade, "GET", path, headers=headers)
     return JSONResponse(content=resp, status_code=status)
 
