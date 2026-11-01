@@ -10,9 +10,11 @@ def format_timeline_item(event: dict[str, Any]) -> dict[str, Any]:
 
     Assigns human-readable titles, UI badges, and alert levels (INFO, WARNING, CRITICAL, ACTION).
     """
-    event_type = event.get("event_type", "UNKNOWN")
+    event_type = event.get("event_type") or event.get("type") or "UNKNOWN"
     source = event.get("source", "system")
-    payload = event.get("payload", {})
+    payload = event.get("payload") or event.get("details") or {}
+    if not isinstance(payload, dict):
+        payload = {"value": payload}
     sim_tick = event.get("sim_tick", 0)
     seq = event.get("seq", 0)
     timestamp = event.get("timestamp", "")

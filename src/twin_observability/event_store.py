@@ -137,3 +137,19 @@ class EventStore:
                 "oldest_retained_seq": self._events[0].get("seq") if self._events else None,
                 "newest_retained_seq": self._events[-1].get("seq") if self._events else None,
             }
+
+    def health(self) -> dict[str, str]:
+        """Check that the in-memory ring buffer is structurally usable."""
+        try:
+            with self._lock:
+                current_seq = self._sequencer.current_seq()
+                available = (
+                    isinstance(self._events, deque)
+                    and self._capacity > 0
+                    and self._events.maxlen == self._capacity
+                    and type(current_seq) is int
+                    and current_seq >= 1
+                )
+        except Exception:
+            available = False
+        return {"status": "UP" if available else "DOWN"}

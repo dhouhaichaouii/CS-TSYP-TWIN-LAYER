@@ -175,6 +175,15 @@ class ScenarioLogger:
                 self._file.close()
                 self._closed = True
 
+    def health(self) -> dict[str, str]:
+        """Check that the configured audit file remains open for writes."""
+        try:
+            with self._lock:
+                available = not self._closed and not self._file.closed
+        except Exception:
+            available = False
+        return {"status": "UP" if available else "DOWN"}
+
     def __enter__(self) -> "ScenarioLogger":
         return self
 
