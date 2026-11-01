@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Smoke test for Twin Interface: Auth, Permissions, Facade, MCP"""
+import os
 import sys
 
 sys.path.insert(0, 'src')
+os.environ.setdefault("TWIN_ALLOW_INSECURE_DEV_TOKENS", "1")
 
 from city_live.runtime import LiveCity
 from twin_interface.auth import DEFAULT_TOKENS, Role, resolve_token
@@ -45,7 +47,7 @@ def test_middleware():
     headers = {"Authorization": f"Bearer {DEFAULT_TOKENS[Role.BRAIN]}"}
     assert extract_bearer_token(headers) == DEFAULT_TOKENS[Role.BRAIN]
     assert resolve_header_role(headers) == Role.BRAIN
-    headers2 = {"authorization": DEFAULT_TOKENS[Role.GUARDIAN]}
+    headers2 = {"authorization": f"Bearer {DEFAULT_TOKENS[Role.GUARDIAN]}"}
     assert extract_bearer_token(headers2) == DEFAULT_TOKENS[Role.GUARDIAN]
     assert resolve_header_role(headers2) == Role.GUARDIAN
     print("✓ Middleware all passed")
@@ -55,6 +57,8 @@ def test_facade():
     print("\n=== FACADE TESTS ===")
     city = LiveCity("test-smoke-01")
     facade = TwinFacade(city)
+    for _ in range(5):
+        city.step()
     brain = DEFAULT_TOKENS[Role.BRAIN]
     guardian = DEFAULT_TOKENS[Role.GUARDIAN]
     

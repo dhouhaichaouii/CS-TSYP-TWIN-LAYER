@@ -12,21 +12,33 @@ import threading
 from typing import Any
 
 from city_live.runtime import LiveCity
+from city_live.commands import preview_command_effect
+from city_live.records import LiveError
 from twin_interface.auth import Role, resolve_token
 from twin_interface.envelope import ErrorCode, error_envelope, success_envelope, utc_now_iso
+from twin_interface.health import readiness_report
 from twin_interface.permissions import check_tool_permission
-from twin_interface.projections import project_event, project_reading, project_readings
+from twin_interface.projections import project_event, project_readings
+from twin_observability.event_store import EventStore
+from twin_observability.scenario_log import ScenarioLogger
+from twin_observability.timeline import format_timeline_item
 
 
 class TwinFacade:
     """The central unified API gateway for both FastMCP and REST transports."""
 
-    def __init__(self, city: LiveCity | None = None):
-        """Initialize the Façade with a LiveCity instance and internal tracking ledgers."""
+    def __init__(
+        self,
+        city: LiveCity | None = None,
+        event_store: EventStore | None = None,
+        scenario_logger: ScenarioLogger | None = None,
+    ):
+        """Initialize the Façade with a LiveCity instance and audit sinks."""
         self._city = city if city is not None else LiveCity()
+        self._event_store = event_store
+        self._scenario_logger = scenario_logger
         self._lock = threading.RLock()
-        self._quarantined_devices: dict[str, dict[str, Any]] = {}
-        self._idempotency_cache: dict[str, dict[str, Any]] = {}
+        self._command_responses: dict[str, dict[str, Any]] = {}
 
     @property
     def city(self) -> LiveCity:
@@ -37,6 +49,80 @@ class TwinFacade:
     def run_id(self) -> str:
         """Current simulation run ID."""
         return self._city.status()["run_id"]
+
+    def health_report(self, service="twin_facade", *, service_checks=None):
+        """Report facade and required LiveCity readiness without mutating state."""
+        city = getattr(self, "_city", None)
+        optional_components = {
+            "event_store": getattr(self, "_event_store", None),
+            "scenario_logger": getattr(self, "_scenario_logger", None),
+        }
+        optional_checks = {}
+        configured_checks = {}
+        for name, component in optional_components.items():
+            if component is None:
+                optional_checks[name] = "DEGRADED"
+                continue
+            try:
+                component_health = component.health() if component is not None else None
+                configured_checks[name] = (
+                    type(component_health) is dict
+                    and component_health.get("status") == "UP"
+                )
+            except Exception:
+                configured_checks[name] = False
+        return readiness_report(
+            service,
+            city,
+            required_checks={
+                "facade": city is not None,
+                **(service_checks or {}),
+                **configured_checks,
+            },
+            optional_checks=optional_checks,
+        )
+
+    @property
+    def event_store(self) -> EventStore | None:
+        """Observability ring buffer attached to this gateway, if any."""
+        return self._event_store
+
+    @property
+    def scenario_logger(self) -> ScenarioLogger | None:
+        """Append-only JSONL audit logger attached to this gateway, if any."""
+        return self._scenario_logger
+
+    def _record_event(self, event_type: str, payload: dict[str, Any], source: str) -> None:
+        """Append one public event to the configured audit sinks."""
+        sim_tick = self._city.status()["sim_tick"]
+        if self._event_store is not None:
+            self._event_store.append(sim_tick, event_type, source, payload)
+        if self._scenario_logger is not None:
+            if event_type == "ACTUATOR_COMMAND":
+                self._scenario_logger.log_command(
+                    sim_tick=sim_tick,
+                    device_id=payload["device_id"],
+                    command=payload["command"],
+                    params=payload["params"],
+                    outcome=payload["outcome"],
+                    request_id=payload["request_id"],
+                    source=source,
+                )
+            elif event_type == "QUARANTINE_ACTION":
+                self._scenario_logger.log_quarantine(
+                    sim_tick=sim_tick,
+                    device_id=payload["device_id"],
+                    action=payload["action"],
+                    reason=payload.get("reason", ""),
+                    source=source,
+                )
+            else:
+                self._scenario_logger.log_event(
+                    sim_tick=sim_tick,
+                    event_type=event_type,
+                    source=source,
+                    payload=payload,
+                )
 
     # --------------------------------------------------------------------------
     # 1. OBSERVATION METHODS (Read Telemetry & State)
@@ -72,8 +158,20 @@ class TwinFacade:
             # Pull observations from PublicReader (live simulation data)
             raw_readings = self._city.public.observations()
 
+        # PublicReader retains a bounded history for the dashboard. The tool
+        # contract is a current snapshot, so keep only the newest record per
+        # sensor instead of returning every retained sample.
+        latest_by_sensor: dict[str, dict[str, Any]] = {}
+        for reading in raw_readings:
+            reading_sensor_id = reading.get("sensor_id")
+            if reading_sensor_id is None:
+                continue
+            current = latest_by_sensor.get(reading_sensor_id)
+            if current is None or reading.get("seq", 0) >= current.get("seq", 0):
+                latest_by_sensor[reading_sensor_id] = reading
+
         # Apply filtering
-        filtered = list(raw_readings)
+        filtered = [latest_by_sensor[key] for key in sorted(latest_by_sensor)]
 
         if sensor_id:
             filtered = [r for r in filtered if r.get("sensor_id") == sensor_id]
@@ -92,12 +190,11 @@ class TwinFacade:
             filtered = [r for r in filtered if r.get("type") == sensor_type]
 
         # Apply quarantine status overrides: quarantined sensors report as OFFLINE
-        with self._lock:
-            for item in filtered:
-                s_id = item.get("sensor_id")
-                if s_id in self._quarantined_devices:
-                    item["status"] = "OFFLINE"
-                    item["available"] = False
+        for item in filtered:
+            s_id = item.get("sensor_id")
+            if self._city.is_device_isolated(s_id):
+                item["status"] = "OFFLINE"
+                item["available"] = False
 
         # Apply allow-list projection (censor ground truth for public roles)
         sanitized = project_readings(filtered, role)
@@ -157,7 +254,7 @@ class TwinFacade:
                 "sim_tick": sim_tick,
                 "speed": status.get("speed", 1.0),
                 "active_incidents": incidents,
-                "quarantined_devices_count": len(self._quarantined_devices),
+                "quarantined_devices_count": self._city.quarantine_count(),
                 "zones": zones_summary,
             },
         )
@@ -180,22 +277,52 @@ class TwinFacade:
         ok, err_msg = check_tool_permission("get_events_since", role)
         if not ok:
             return error_envelope(self.run_id, ErrorCode.NOT_AUTHORIZED, err_msg or "Unauthorized")
+        if not isinstance(seq, int) or isinstance(seq, bool) or seq < 0:
+            return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, "seq must be a non-negative integer.")
 
-        with self._city._condition:
-            all_events = self._city.events().get("events", [])
+        if self._event_store is not None:
+            events = self._event_store.get_events_since(seq, limit=100, role=role)
+        else:
+            with self._city._condition:
+                all_events = self._city.events().get("events", [])
 
-        # Filter events after seq
-        new_events = [e for e in all_events if e.get("event_seq", 0) > seq or e.get("seq", 0) > seq]
-
-        # Sanitize each event (strip forbidden keys from details)
-        sanitized_events = [project_event(e, role) for e in new_events]
+            # Filter events after seq and apply the same recursive anti-leak
+            # projection used by the observability EventStore.
+            new_events = [
+                event for event in all_events
+                if event.get("event_seq", 0) > seq or event.get("seq", 0) > seq
+            ]
+            events = [project_event(event, role) for event in new_events]
 
         return success_envelope(
             self.run_id,
             {
                 "from_seq": seq,
-                "count": len(sanitized_events),
-                "events": sanitized_events,
+                "count": len(events),
+                "events": events,
+            },
+        )
+
+    def get_timeline(
+        self,
+        token: str | None,
+        seq: int = 0,
+    ) -> dict[str, Any]:
+        """Retrieve sanitized timeline cards for the live dashboard [Requirement R3].
+
+        Uses the same authentication and event projection as ``get_events_since``.
+        """
+        events_response = self.get_events_since(token=token, seq=seq)
+        if not events_response["ok"]:
+            return events_response
+
+        cards = [format_timeline_item(event) for event in events_response["data"]["events"]]
+        return success_envelope(
+            events_response["run_id"],
+            {
+                "from_seq": seq,
+                "count": len(cards),
+                "timeline": cards,
             },
         )
 
@@ -233,65 +360,70 @@ class TwinFacade:
         if not request_id or not isinstance(request_id, str):
             return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, "request_id must be a non-empty string.")
 
-        # Check idempotency cache
-        with self._lock:
-            cached = self._idempotency_cache.get(request_id)
-            if cached is not None:
-                # If cached request matches, return the identical previous outcome
-                if cached.get("device_id") == device_id and cached.get("command") == command:
-                    return success_envelope(self.run_id, cached["data"])
-                # If same request_id reused with different parameters, reject conflict
-                return error_envelope(
-                    self.run_id,
-                    ErrorCode.DUPLICATE_CONFLICT,
-                    f"request_id '{request_id}' already used with different parameters.",
-                )
-
-        # Check quarantine status (GUARDIAN_RESTRICTED)
-        if self.is_device_isolated(device_id):
-            quarantine_info = self._quarantined_devices.get(device_id, {})
-            return error_envelope(
-                self.run_id,
-                ErrorCode.GUARDIAN_RESTRICTED,
-                f"Cannot execute command: device '{device_id}' is isolated by the Guardian.",
-                details={
-                    "device_id": device_id,
-                    "reason": quarantine_info.get("reason", "Quarantined"),
-                    "isolated_by": quarantine_info.get("isolated_by", "guardian"),
-                },
-            )
-
-        # Translate command to physical effect request for city_core
-        effect, err = self._translate_command_to_effect(device_id, command, params)
-        if err is not None:
-            return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, err)
-
-        # Apply effect atomically to the simulation
         try:
-            with self._city._condition:
-                receipt = self._city._effect(effect)
-                revision = receipt.context.revision if hasattr(receipt, "context") else None
+            execution_context = context if type(context) is dict else {}
+            result = self._city.execute_actuator_command(
+                device_id,
+                command,
+                params,
+                command_id=request_id,
+                run_id=execution_context.get("run_id", self.run_id),
+                expected_revision=execution_context.get("expected_revision"),
+            )
 
             result_data = {
                 "request_id": request_id,
                 "device_id": device_id,
                 "command": command,
-                "status": "APPLIED",
-                "effective_revision": revision,
+                "status": result["status"],
+                "effective_revision": result["effective_revision"],
+                "effect_id": result["effect_id"],
                 "context": context or {},
                 "timestamp": utc_now_iso(),
             }
 
-            # Cache outcome for idempotency
+            # The LiveCity receipt is authoritative; this cache only preserves
+            # the facade's response projection and avoids duplicate audit events.
             with self._lock:
-                self._idempotency_cache[request_id] = {
+                cached = self._command_responses.get(request_id)
+                if cached is not None:
+                    return success_envelope(self.run_id, cached)
+                self._command_responses[request_id] = result_data
+
+            self._record_event(
+                "ACTUATOR_COMMAND",
+                {
+                    "request_id": request_id,
                     "device_id": device_id,
                     "command": command,
-                    "data": result_data,
-                }
+                    "params": dict(params),
+                    "outcome": "APPLIED",
+                },
+                source=role or "unknown",
+            )
 
             return success_envelope(self.run_id, result_data)
 
+        except LiveError as exc:
+            code = {
+                "UNSUPPORTED_DEVICE": ErrorCode.DEVICE_NOT_FOUND,
+                "INVALID_ARGUMENT": ErrorCode.INVALID_PARAM,
+                "UNSUPPORTED_COMMAND": ErrorCode.INVALID_PARAM,
+                "INVALID_STATE": ErrorCode.INVALID_STATE,
+                "STATE_CONFLICT": ErrorCode.STATE_CONFLICT,
+                "DEVICE_UNAVAILABLE": ErrorCode.DEVICE_UNAVAILABLE,
+                "GUARDIAN_RESTRICTED": ErrorCode.GUARDIAN_RESTRICTED,
+                "IDEMPOTENCY_CONFLICT": ErrorCode.IDEMPOTENCY_CONFLICT,
+                "COMMAND_BUDGET_EXHAUSTED": ErrorCode.COMMAND_BUDGET_EXHAUSTED,
+            }.get(exc.code, ErrorCode.INTERNAL_ERROR)
+            return error_envelope(
+                self.run_id,
+                code,
+                ("Device is isolated by the Guardian."
+                 if exc.code == "GUARDIAN_RESTRICTED"
+                 else f"Simulation rejected command: {exc.code}."),
+                details={"device_id": device_id, "command": command},
+            )
         except Exception as exc:
             return error_envelope(
                 self.run_id,
@@ -327,17 +459,19 @@ class TwinFacade:
         if not device_id or not isinstance(device_id, str):
             return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, "device_id must be a valid string.")
 
-        with self._lock:
-            self._quarantined_devices[device_id] = {
-                "device_id": device_id,
-                "reason": reason or "Unspecified Guardian quarantine",
-                "isolated_by": role,
-                "timestamp": utc_now_iso(),
-            }
+        try:
+            quarantine = self._city.quarantine_device(device_id, reason, role)
+        except LiveError as exc:
+            return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, exc.code)
 
-        # Log an event in the simulation event ledger
+        # Log an event in the simulation event ledger and observability sinks
         with self._city._condition:
             self._city._event("DEVICE_ISOLATED", {"device_id": device_id, "reason": reason, "role": role})
+        self._record_event(
+            "QUARANTINE_ACTION",
+            {"device_id": device_id, "action": "ISOLATED", "reason": reason},
+            source=role or "unknown",
+        )
 
         return success_envelope(
             self.run_id,
@@ -345,7 +479,7 @@ class TwinFacade:
                 "device_id": device_id,
                 "status": "ISOLATED",
                 "isolated_by": role,
-                "reason": reason,
+                "reason": quarantine["reason"],
             },
         )
 
@@ -368,18 +502,23 @@ class TwinFacade:
         if not ok:
             return error_envelope(self.run_id, ErrorCode.NOT_AUTHORIZED, err_msg or "Unauthorized")
 
-        with self._lock:
-            if device_id not in self._quarantined_devices:
-                return error_envelope(
-                    self.run_id,
-                    ErrorCode.DEVICE_NOT_FOUND,
-                    f"Device '{device_id}' is not currently isolated.",
-                )
-            del self._quarantined_devices[device_id]
+        try:
+            self._city.restore_quarantined_device(device_id)
+        except LiveError:
+            return error_envelope(
+                self.run_id,
+                ErrorCode.DEVICE_NOT_FOUND,
+                f"Device '{device_id}' is not currently isolated.",
+            )
 
-        # Log an event in the simulation event ledger
+        # Log an event in the simulation event ledger and observability sinks
         with self._city._condition:
             self._city._event("DEVICE_RESTORED", {"device_id": device_id, "role": role})
+        self._record_event(
+            "QUARANTINE_ACTION",
+            {"device_id": device_id, "action": "RESTORED", "reason": ""},
+            source=role or "unknown",
+        )
 
         return success_envelope(
             self.run_id,
@@ -392,8 +531,7 @@ class TwinFacade:
 
     def is_device_isolated(self, device_id: str) -> bool:
         """Check whether a device is currently quarantined."""
-        with self._lock:
-            return device_id in self._quarantined_devices
+        return self._city.is_device_isolated(device_id)
 
     # --------------------------------------------------------------------------
     # 4. INTERNAL TRANSLATION & SYNTHESIS HELPERS
@@ -402,127 +540,14 @@ class TwinFacade:
     def _translate_command_to_effect(
         self, device_id: str, command: str, params: dict[str, Any]
     ) -> tuple[dict[str, Any] | None, str | None]:
-        """Translate public actuator command into a typed city_core physical effect tag."""
-        cmd = command.lower()
-
-        # Water Pump translation (PRT-PMP-01, PRT-PMP-02, P-01)
-        if "PMP" in device_id or device_id.startswith("P-"):
-            if cmd == "start":
-                speed = float(params.get("speed_pct", 100)) / 100.0
-                return {"tag": "pump_state", "target_id": "P-01", "running": True, "speed_fraction": speed}, None
-            if cmd == "stop":
-                return {"tag": "pump_state", "target_id": "P-01", "running": False, "speed_fraction": 0.0}, None
-            if cmd == "set_speed":
-                speed = float(params.get("speed_pct", 100)) / 100.0
-                return {"tag": "pump_state", "target_id": "P-01", "running": speed > 0, "speed_fraction": speed}, None
-            return None, f"Unknown pump command: '{command}'. Supported: 'start', 'stop', 'set_speed'."
-
-        # Water Valve translation (V-12, IND-VLV-01, DTN-VLV-01, RES-VLV-01)
-        if "VLV" in device_id or device_id.startswith("V-"):
-            if cmd == "set_opening":
-                pct = float(params.get("open_pct", 0.0))
-                if not (0.0 <= pct <= 100.0):
-                    return None, "open_pct must be between 0.0 and 100.0."
-                return {"tag": "valve_position", "target_id": "V-12", "opening_fraction": pct / 100.0}, None
-            return None, f"Unknown valve command: '{command}'. Supported: 'set_opening'."
-
-        # Traffic Light translation (DTN-TLT-01, TLT, signal)
-        if "TLT" in device_id or "SIG" in device_id:
-            if cmd == "set_phase":
-                phase = str(params.get("phase", "green_ns")).lower()
-                allowed_phases = ("green_ns", "green_ew", "all_red", "flashing")
-                if phase not in allowed_phases:
-                    return None, f"Invalid phase '{phase}'. Supported: {allowed_phases}."
-                return {"tag": "signal_phase", "target_id": "J-01", "phase": phase}, None
-            return None, f"Unknown traffic signal command: '{command}'. Supported: 'set_phase'."
-
-        # Electrical Feeder translation (F-ESS, F-URBAN, F-IND, GRD)
-        if device_id.startswith("F-") or "GRD" in device_id:
-            target = "F-ESS" if device_id.startswith("F-") else "F-URBAN"
-            if cmd in ("close", "connect"):
-                return {"tag": "feeder_switch", "target_id": target, "closed": True}, None
-            if cmd in ("open", "disconnect"):
-                return {"tag": "feeder_switch", "target_id": target, "closed": False}, None
-            return None, f"Unknown grid switch command: '{command}'. Supported: 'open', 'close'."
-
-        # Emergency Dispatch translation (AMB-01, POL-01, DSP)
-        if "AMB" in device_id or "POL" in device_id or "DSP" in device_id:
-            unit_id = "AMB-01" if "AMB" in device_id else "POL-01"
-            if cmd == "dispatch":
-                zone = params.get("zone_id", "DTN")
-                return {"tag": "responder_reserve", "unit_id": unit_id, "mission_ref": f"m-{zone.lower()}-01"}, None
-            if cmd == "release":
-                return {"tag": "responder_release", "unit_id": unit_id}, None
-            return None, f"Unknown dispatch command: '{command}'. Supported: 'dispatch', 'release'."
-
-        return None, f"Unrecognized actuator device_id: '{device_id}'."
-
-    def _build_baseline_readings(self, sim_tick: int) -> list[dict[str, Any]]:
-        """Synthesize default baseline sensor readings when public store is empty."""
-        timestamp = utc_now_iso()
-        return [
-            {
-                "sensor_id": "PRT-WLV-01",
-                "zone_id": "PRT",
-                "type": "water_level",
-                "unit": "cm",
-                "sim_tick": sim_tick,
-                "seq": 1,
-                "timestamp": timestamp,
-                "reported_value": 45.0,
-                "status": "OK",
-                "available": True,
-                "backup_ids": ["PRT-WLV-02"],
-                "linked_device_ids": ["PRT-PMP-01"],
-            },
-            {
-                "sensor_id": "PRT-WLV-02",
-                "zone_id": "PRT",
-                "type": "water_level",
-                "unit": "cm",
-                "sim_tick": sim_tick,
-                "seq": 2,
-                "timestamp": timestamp,
-                "reported_value": 44.8,
-                "status": "OK",
-                "available": True,
-                "backup_ids": ["PRT-WLV-01"],
-                "linked_device_ids": ["PRT-PMP-02"],
-            },
-            {
-                "sensor_id": "DTN-TRF-01",
-                "zone_id": "DTN",
-                "type": "traffic_counter",
-                "unit": "veh/min",
-                "sim_tick": sim_tick,
-                "seq": 3,
-                "timestamp": timestamp,
-                "reported_value": 28.0,
-                "status": "OK",
-                "available": True,
-                "backup_ids": [],
-                "linked_device_ids": ["DTN-TLT-01"],
-            },
-            {
-                "sensor_id": "IND-AIR-01",
-                "zone_id": "IND",
-                "type": "air_quality",
-                "unit": "ug/m3",
-                "sim_tick": sim_tick,
-                "seq": 4,
-                "timestamp": timestamp,
-                "reported_value": 35.0,
-                "status": "OK",
-                "available": True,
-                "backup_ids": [],
-                "linked_device_ids": [],
-            },
-        ]
+        """Compatibility projection of the LiveCity-owned command translator."""
+        effect, error = preview_command_effect(device_id, command, params)
+        return effect, error
 
     def _build_zones_summary(self, diag: dict[str, Any]) -> dict[str, Any]:
         """Summarize operational equipment state per zone."""
-        water_state = diag.get("physical_state", {}).get("water", {})
-        valve_fraction = water_state.get("valve", {}).get("effective_opening_fraction", 0.5)
+        valve_state = diag.get("physical_state", {}).get("valve", {})
+        valve_fraction = valve_state.get("effective_opening_fraction", 0.5)
 
         return {
             "PRT": {

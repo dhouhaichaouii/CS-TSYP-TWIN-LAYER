@@ -4,7 +4,14 @@ Verifies that external LLM agents and HTTP REST clients can discover tools,
 authenticate, query telemetry, and dispatch actuator commands through the TwinFacade.
 """
 import asyncio
+import os
 import unittest
+
+os.environ.setdefault("TWIN_ALLOW_INSECURE_DEV_TOKENS", "1")
+
+from mcp.shared.context import RequestContext
+from mcp.server.lowlevel.server import request_ctx
+from starlette.requests import Request
 
 from city_live.runtime import LiveCity
 from twin_interface.auth import DEFAULT_TOKENS, Role
@@ -23,6 +30,33 @@ class MCPServerTests(unittest.IsolatedAsyncioTestCase):
 
         self.brain_token = DEFAULT_TOKENS[Role.BRAIN]
         self.guardian_token = DEFAULT_TOKENS[Role.GUARDIAN]
+
+    async def call_tool_as(self, token: str | None, name: str, arguments: dict):
+        request = None
+        if token is not None:
+            request = Request({
+                "type": "http",
+                "method": "POST",
+                "scheme": "http",
+                "path": "/mcp/",
+                "raw_path": b"/mcp/",
+                "query_string": b"",
+                "headers": [(b"authorization", f"Bearer {token}".encode())],
+                "server": ("localhost", 8000),
+                "client": ("127.0.0.1", 12345),
+            })
+        context = RequestContext(
+            request_id="test-request",
+            meta=None,
+            session=None,
+            lifespan_context=None,
+            request=request,
+        )
+        context_token = request_ctx.set(context)
+        try:
+            return await self.mcp.call_tool(name, arguments)
+        finally:
+            request_ctx.reset(context_token)
 
     async def asyncTearDown(self):
         self.city.close()
@@ -47,25 +81,55 @@ class MCPServerTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(tool.description and len(tool.description) > 20, f"Tool {tool.name} lacks rich docstring")
 
     async def test_mcp_get_sensor_readings(self):
-        """Verify invoking get_sensor_readings via MCP call_tool."""
-        content, meta = await self.mcp.call_tool("get_sensor_readings", {"zone_id": "PRT"})
+        """Verify invoking get_sensor_readings via MCP call_tool with a valid token."""
+        content, meta = await self.call_tool_as(
+            self.brain_token,
+            "get_sensor_readings",
+            {"zone_id": "PRT"},
+        )
         resp = meta.get("result", meta)
         self.assertTrue(resp["ok"])
         self.assertIn("readings", resp["data"])
+
+    async def test_mcp_health_tool_reports_local_readiness(self):
+        _, metadata = await self.mcp.call_tool("get_service_health", {})
+        response = metadata.get("result", metadata)
+
+        self.assertEqual(response["liveness"]["status"], "UP")
+        self.assertEqual(response["readiness"]["status"], "DEGRADED")
+        self.assertNotIn("rest", response["readiness"]["checks"])
+
+    async def test_mcp_requires_authenticated_request_context(self):
+        """Verify calls without an authenticated HTTP request are rejected."""
+        _, meta = await self.call_tool_as(None, "get_sensor_readings", {"zone_id": "PRT"})
+        response = meta.get("result", meta)
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["code"], ErrorCode.NOT_AUTHORIZED)
+
+    async def test_mcp_rejects_invalid_token(self):
+        """Verify an unknown token is rejected by the façade, not silently trusted."""
+        _, meta = await self.call_tool_as(
+            "not-a-real-token",
+            "get_sensor_readings",
+            {"zone_id": "PRT"},
+        )
+        resp = meta.get("result", meta)
+        self.assertFalse(resp["ok"])
+        self.assertEqual(resp["error"]["code"], ErrorCode.NOT_AUTHORIZED)
 
     async def test_mcp_actuator_and_quarantine_lifecycle(self):
         """Verify end-to-end command dispatch, isolation, and quarantine blocking over MCP."""
         device = "V-12"
 
         # 1. Brain sends command to valve V-12
-        _, meta1 = await self.mcp.call_tool(
+        _, meta1 = await self.call_tool_as(
+            self.brain_token,
             "send_actuator_command",
             {
                 "device_id": device,
                 "command": "set_opening",
                 "params": {"open_pct": 75.0},
                 "request_id": "req-mcp-01",
-                "token": self.brain_token,
             },
         )
         resp1 = meta1.get("result", meta1)
@@ -73,12 +137,12 @@ class MCPServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp1["data"]["status"], "APPLIED")
 
         # 2. Guardian isolates valve V-12
-        _, meta2 = await self.mcp.call_tool(
+        _, meta2 = await self.call_tool_as(
+            self.guardian_token,
             "isolate_device",
             {
                 "device_id": device,
                 "reason": "Suspected cyber manipulation",
-                "token": self.guardian_token,
             },
         )
         resp2 = meta2.get("result", meta2)
@@ -86,14 +150,14 @@ class MCPServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp2["data"]["status"], "ISOLATED")
 
         # 3. Brain attempts command on quarantined valve -> Rejected with GUARDIAN_RESTRICTED
-        _, meta3 = await self.mcp.call_tool(
+        _, meta3 = await self.call_tool_as(
+            self.brain_token,
             "send_actuator_command",
             {
                 "device_id": device,
                 "command": "set_opening",
                 "params": {"open_pct": 20.0},
                 "request_id": "req-mcp-02",
-                "token": self.brain_token,
             },
         )
         resp3 = meta3.get("result", meta3)
@@ -101,11 +165,11 @@ class MCPServerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp3["error"]["code"], ErrorCode.GUARDIAN_RESTRICTED)
 
         # 4. Guardian restores valve V-12
-        _, meta4 = await self.mcp.call_tool(
+        _, meta4 = await self.call_tool_as(
+            self.guardian_token,
             "restore_device",
             {
                 "device_id": device,
-                "token": self.guardian_token,
             },
         )
         resp4 = meta4.get("result", meta4)
@@ -124,9 +188,13 @@ class MiddlewareAndRESTTests(unittest.TestCase):
         self.city.close()
 
     def test_middleware_token_extraction(self):
-        """Verify token extraction from various HTTP header formats."""
-        self.assertEqual(extract_bearer_token({"Authorization": "Bearer secret-123"}), "secret-123")
-        self.assertEqual(extract_bearer_token({"authorization": "secret-456"}), "secret-456")
+        """Only one explicit Bearer header is accepted as REST authentication."""
+        self.assertEqual(
+            extract_bearer_token({"Authorization": "Bearer secret-123"}),
+            "secret-123",
+        )
+        self.assertIsNone(extract_bearer_token({"Authorization": "secret-456"}))
+        self.assertIsNone(extract_bearer_token({"Authorization": "Basic secret-456"}))
         self.assertIsNone(extract_bearer_token({}))
         self.assertIsNone(extract_bearer_token({"Other": "val"}))
 
@@ -135,11 +203,11 @@ class MiddlewareAndRESTTests(unittest.TestCase):
         self.assertEqual(resolve_header_role(headers), Role.BRAIN)
 
     def test_rest_health_endpoint(self):
-        """Verify unauthenticated GET /health returns 200 UP."""
+        """Verify unauthenticated GET /health reports runtime readiness."""
         status_code, resp = handle_rest_request(self.facade, "GET", "/health")
         self.assertEqual(status_code, 200)
         self.assertTrue(resp["ok"])
-        self.assertEqual(resp["data"]["status"], "UP")
+        self.assertEqual(resp["data"]["status"], "DEGRADED")
 
     def test_rest_sensors_with_auth(self):
         """Verify GET /api/v1/sensors with Bearer header."""
@@ -206,7 +274,7 @@ class MiddlewareAndRESTTests(unittest.TestCase):
         self.assertTrue(resp_ev["ok"])
 
     def test_rest_validation_and_error_branches(self):
-        """Verify error branches, missing fields, 404s, and token fallbacks."""
+        """Verify error branches, missing fields, and rejected credentials."""
         headers = {"Authorization": f"Bearer {self.brain_token}"}
 
         # 404 Not Found
@@ -226,11 +294,19 @@ class MiddlewareAndRESTTests(unittest.TestCase):
         status_rst, resp_rst = handle_rest_request(self.facade, "POST", "/api/v1/restore", headers=headers, body={})
         self.assertEqual(status_rst, 400)
 
-        # Token via query param
+        # Credentials in URLs are rejected, even when valid.
         status_q, resp_q = handle_rest_request(self.facade, "GET", f"/api/v1/sensors?token={self.brain_token}")
-        self.assertEqual(status_q, 200)
+        self.assertEqual(status_q, 400)
+        self.assertEqual(resp_q["error"]["code"], ErrorCode.INVALID_PARAM)
+        status_q, resp_q = handle_rest_request(
+            self.facade,
+            "GET",
+            f"/api/v1/sensors?Access_Token={self.brain_token}",
+        )
+        self.assertEqual(status_q, 400)
+        self.assertEqual(resp_q["error"]["code"], ErrorCode.INVALID_PARAM)
 
-        # Token via body
+        # Credentials in JSON bodies are rejected, even when valid.
         body_with_token = {
             "token": self.brain_token,
             "device_id": "V-12",
@@ -239,7 +315,45 @@ class MiddlewareAndRESTTests(unittest.TestCase):
             "request_id": "req-token-body-01",
         }
         status_b, resp_b = handle_rest_request(self.facade, "POST", "/api/v1/commands", body=body_with_token)
-        self.assertEqual(status_b, 200)
+        self.assertEqual(status_b, 400)
+        self.assertEqual(resp_b["error"]["code"], ErrorCode.INVALID_PARAM)
+
+        status_h, resp_h = handle_rest_request(
+            self.facade,
+            "GET",
+            "/api/v1/sensors",
+            headers={"Authorization": self.brain_token},
+        )
+        self.assertEqual(status_h, 401)
+        self.assertEqual(resp_h["error"]["code"], ErrorCode.NOT_AUTHORIZED)
+
+    def test_rest_role_denials_return_forbidden(self):
+        brain_headers = {"Authorization": f"Bearer {self.brain_token}"}
+        guardian_headers = {"Authorization": f"Bearer {self.guardian_token}"}
+        status, response = handle_rest_request(
+            self.facade,
+            "POST",
+            "/api/v1/isolate",
+            headers=brain_headers,
+            body={"device_id": "V-12"},
+        )
+        self.assertEqual(status, 403)
+        self.assertEqual(response["error"]["code"], ErrorCode.NOT_AUTHORIZED)
+
+        status, response = handle_rest_request(
+            self.facade,
+            "POST",
+            "/api/v1/commands",
+            headers=guardian_headers,
+            body={
+                "device_id": "V-12",
+                "command": "set_opening",
+                "params": {"open_pct": 20},
+                "request_id": "guardian-command-denied",
+            },
+        )
+        self.assertEqual(status, 403)
+        self.assertEqual(response["error"]["code"], ErrorCode.NOT_AUTHORIZED)
 
 
 if __name__ == "__main__":

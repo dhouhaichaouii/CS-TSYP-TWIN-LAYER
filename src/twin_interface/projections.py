@@ -4,6 +4,7 @@ Enforces strict information boundaries: the Brain and Guardian receive only
 observed values and public statuses. Secret simulation variables (actual_value,
 delta, fault) are stripped unless the caller is the Evaluator (Jury).
 """
+import copy
 from typing import Any
 from twin_interface.auth import Role
 
@@ -26,6 +27,9 @@ PUBLIC_READING_ALLOWLIST = frozenset({
 # Forbidden ground-truth fields that must NEVER appear in Brain or Guardian responses
 FORBIDDEN_TRUTH_FIELDS = frozenset({
     "actual_value",
+    "true_value",
+    "true_level",
+    "sensor_value",
     "delta",
     "fault",
     "noise",
@@ -34,6 +38,21 @@ FORBIDDEN_TRUTH_FIELDS = frozenset({
     "bias",
     "ground_truth",
 })
+
+
+def _strip_forbidden(value: Any) -> Any:
+    """Recursively copy a value while removing every forbidden ground-truth key."""
+    if isinstance(value, dict):
+        return {
+            key: _strip_forbidden(item)
+            for key, item in value.items()
+            if key not in FORBIDDEN_TRUTH_FIELDS
+        }
+    if isinstance(value, list):
+        return [_strip_forbidden(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_strip_forbidden(item) for item in value)
+    return copy.deepcopy(value)
 
 
 def project_reading(reading: dict[str, Any], role: str) -> dict[str, Any]:
@@ -48,16 +67,15 @@ def project_reading(reading: dict[str, Any], role: str) -> dict[str, Any]:
     """
     if role == Role.EVALUATOR:
         # The Evaluator/Jury role is explicitly granted full access to verify truth
-        return dict(reading)
+        return copy.deepcopy(reading)
 
-    # Brain, Guardian, and Operator receive ONLY allow-listed fields
-    projected = {k: v for k, v in reading.items() if k in PUBLIC_READING_ALLOWLIST}
-
-    # Defensive guarantee: Ensure none of the forbidden fields exist in output
-    for forbidden in FORBIDDEN_TRUTH_FIELDS:
-        projected.pop(forbidden, None)
-
-    return projected
+    # Brain, Guardian, and Operator receive ONLY allow-listed fields, and every
+    # retained value is recursively scrubbed so nested dictionaries cannot leak.
+    return {
+        key: _strip_forbidden(value)
+        for key, value in reading.items()
+        if key in PUBLIC_READING_ALLOWLIST
+    }
 
 
 def project_readings(readings: list[dict[str, Any]], role: str) -> list[dict[str, Any]]:
@@ -66,13 +84,12 @@ def project_readings(readings: list[dict[str, Any]], role: str) -> list[dict[str
 
 
 def project_event(event: dict[str, Any], role: str) -> dict[str, Any]:
-    """Sanitize an event dictionary before it is published to the public event log."""
+    """Sanitize an event dictionary before it is published to the public event log.
+
+    Both the legacy ``details`` shape and the observability ``payload`` shape are
+    scrubbed recursively, along with any other top-level or nested keys.
+    """
     if role == Role.EVALUATOR:
-        return dict(event)
+        return copy.deepcopy(event)
 
-    sanitized = dict(event)
-    details = sanitized.get("details")
-    if isinstance(details, dict):
-        sanitized["details"] = {k: v for k, v in details.items() if k not in FORBIDDEN_TRUTH_FIELDS}
-
-    return sanitized
+    return _strip_forbidden(event)

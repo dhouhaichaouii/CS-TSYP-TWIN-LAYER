@@ -4,15 +4,42 @@ Exposes semantic tools for external LLM agents (Brain, Guardian, Evaluator)
 over the standard Model Context Protocol (MCP).
 All tools pass through the TwinFacade to ensure strict security, permissions,
 quarantine checks, and anti-leak projections.
+Streamable HTTP callers authenticate with an Authorization: Bearer header;
+tool credentials are read from the MCP request context and are not tool inputs.
 """
 from typing import Any
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
-from twin_interface.auth import DEFAULT_TOKENS, Role
 from twin_interface.facade import TwinFacade
+from twin_interface.health import liveness_report, readiness_http_status
 
 
-def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
+def _request_bearer_token(ctx: Context) -> str | None:
+    """Read the caller credential from the current MCP HTTP request."""
+    try:
+        request = ctx.request_context.request
+    except ValueError:
+        return None
+    if request is None:
+        return None
+    authorization = request.headers.get("authorization", "")
+    scheme, separator, token = authorization.partition(" ")
+    if not separator or scheme.lower() != "bearer":
+        return None
+    return token.strip() or None
+
+
+def create_mcp_server(
+    facade: TwinFacade | None = None,
+    *,
+    host: str = "127.0.0.1",
+    port: int = 8000,
+    streamable_http_path: str = "/mcp",
+    transport_security: TransportSecuritySettings | None = None,
+) -> FastMCP:
     """Create and configure the FastMCP tool server instance bound to the TwinFacade.
 
     Args:
@@ -20,9 +47,39 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
 
     Returns:
         Configured FastMCP application instance with all tools registered.
+
+    The host, port, HTTP path, and optional transport-security policy are
+    explicit configuration points for ASGI mounting and standalone serving.
     """
     fac = facade if facade is not None else TwinFacade()
-    mcp = FastMCP("City-Brain-Twin")
+    mcp = FastMCP(
+        "City-Brain-Twin",
+        host=host,
+        port=port,
+        streamable_http_path=streamable_http_path,
+        transport_security=transport_security,
+    )
+
+    @mcp.custom_route("/health/live", methods=["GET"], include_in_schema=False)
+    async def liveness(_request: Request):
+        return JSONResponse(liveness_report("mcp"))
+
+    @mcp.custom_route("/health/ready", methods=["GET"], include_in_schema=False)
+    async def readiness(_request: Request):
+        report = fac.health_report("mcp", service_checks={"mcp_service": True})
+        return JSONResponse(
+            report,
+            status_code=readiness_http_status(report),
+        )
+
+    @mcp.tool()
+    def get_service_health() -> dict[str, Any]:
+        """Report MCP liveness and readiness without changing simulation state."""
+        report = fac.health_report("mcp", service_checks={"mcp_service": True})
+        return {
+            "liveness": liveness_report("mcp"),
+            "readiness": report,
+        }
 
     # --------------------------------------------------------------------------
     # 1. OBSERVATION TOOLS (Read Telemetry & State)
@@ -30,10 +87,10 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
 
     @mcp.tool()
     def get_sensor_readings(
+        ctx: Context,
         zone_id: str | None = None,
         sensor_id: str | None = None,
         sensor_type: str | None = None,
-        token: str = DEFAULT_TOKENS[Role.BRAIN],
     ) -> dict[str, Any]:
         """Retrieve public sensor telemetry and operational status across the city.
 
@@ -49,7 +106,6 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
                          - 'traffic_counter' (veh/min)
                          - 'air_quality' (ug/m3 PM2.5)
                          - 'power_load' (kW)
-            token: Bearer authentication token. Defaults to authorized Brain token.
 
         Returns:
             Envelope containing sim_tick, count, and array of public sensor readings:
@@ -75,7 +131,7 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
             }
         """
         return fac.get_sensor_readings(
-            token=token,
+            token=_request_bearer_token(ctx),
             zone_id=zone_id,
             sensor_id=sensor_id,
             sensor_type=sensor_type,
@@ -83,8 +139,8 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
 
     @mcp.tool()
     def get_city_state(
+        ctx: Context,
         zone_id: str | None = None,
-        token: str = DEFAULT_TOKENS[Role.BRAIN],
     ) -> dict[str, Any]:
         """Retrieve high-level macro situational awareness of urban infrastructure and alerts.
 
@@ -95,17 +151,16 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
         Args:
             zone_id: Optional zone filter ('PRT', 'DTN', 'IND', 'RES', 'HSP').
                      Omit to receive high-level status for all zones.
-            token: Bearer authentication token. Defaults to authorized Brain token.
 
         Returns:
             Envelope containing active alerts, simulation speed, and zone equipment breakdowns.
         """
-        return fac.get_city_state(token=token, zone_id=zone_id)
+        return fac.get_city_state(token=_request_bearer_token(ctx), zone_id=zone_id)
 
     @mcp.tool()
     def get_events_since(
+        ctx: Context,
         seq: int = 0,
-        token: str = DEFAULT_TOKENS[Role.BRAIN],
     ) -> dict[str, Any]:
         """Retrieve timeline events that occurred after a given sequence number.
 
@@ -114,15 +169,14 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
 
         Args:
             seq: Sequence number cursor. Only events with event_seq > seq will be returned.
-            token: Bearer authentication token. Defaults to authorized Brain token.
 
         Returns:
             Envelope containing from_seq, count, and array of chronological event objects.
         """
-        return fac.get_events_since(token=token, seq=seq)
+        return fac.get_events_since(token=_request_bearer_token(ctx), seq=seq)
 
     # --------------------------------------------------------------------------
-    # 2. CONTROL TOOLS (Actuator Commands — Brain & Operator Only)
+    # 2. CONTROL TOOLS (Actuator Commands - Brain & Operator Only)
     # --------------------------------------------------------------------------
 
     @mcp.tool()
@@ -131,31 +185,40 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
         command: str,
         params: dict[str, Any],
         request_id: str,
+        ctx: Context,
         context: dict[str, Any] | None = None,
-        token: str = DEFAULT_TOKENS[Role.BRAIN],
     ) -> dict[str, Any]:
-        """Dispatch a physical action to an urban actuator (pump, valve, signal, grid, dispatch).
+        """Apply a simulated actuator command to the virtual city state.
 
         Permission: Restricted to Role 'brain' and 'operator'. Guardian calls are rejected.
-        Idempotency: Re-transmitting the same request_id returns the cached outcome safely.
+        Idempotency: Re-transmitting the same request_id and request returns the original
+        outcome; reusing it with different command data or execution context is rejected
+        with IDEMPOTENCY_CONFLICT.
         Quarantine: If the device is isolated by the Guardian, the command will be rejected
                     with error code GUARDIAN_RESTRICTED.
 
         Supported equipment & commands:
-        - Water Pumps ('PRT-PMP-01', 'PRT-PMP-02', 'P-01'):
+        - Water Pumps ('PRT-PMP-01', 'PRT-PMP-02', 'P-03'):
             * command='start', params={'speed_pct': 0-100}
             * command='stop', params={}
             * command='set_speed', params={'speed_pct': 0-100}
         - Water Valves ('V-12', 'IND-VLV-01', 'DTN-VLV-01'):
             * command='set_opening', params={'open_pct': 0.0-100.0}
-        - Traffic Signals ('DTN-TLT-01', 'TLT'):
-            * command='set_phase', params={'phase': 'green_ns'|'green_ew'|'all_red'|'flashing'}
+        - Traffic Signals ('DTN-TLT-01', 'DTN-TLT-02'):
+            * command='set_mode', params={'mode': 'normal'|'priority'|'stop'}
+            * command='set_priority_corridor', params={}
+            * command='set_phase', params={'phase': 'all_red'}
+              Directional green_ns/green_ew and flashing phases are unsupported:
+              city_core models aggregate normal/priority/stop capacity modes only.
         - Electrical Feeder Switches ('F-ESS', 'F-URBAN', 'F-IND', 'GRD'):
             * command='open' (disconnect power), params={}
             * command='close' (energize power), params={}
-        - Emergency Dispatch ('AMB-01', 'POL-01', 'DSP'):
-            * command='dispatch', params={'zone_id': 'DTN'|'PRT'|'IND'|'RES'}
-            * command='release', params={}
+        - Emergency Dispatch ('AMB-01', 'AMB-02', 'POL-01'):
+            * command='dispatch', params={'destination_node_id': 'J-D1', 'route_road_ids': ['R-LOW'], 'mission_ref': 'optional-id'}
+            * command='release', params={'mission_ref': 'required-id'}
+
+        Pump speed is simulated as a fraction of rated flow and motor demand.
+        There is no physical actuator communication.
 
         Args:
             device_id: Target equipment ID.
@@ -163,7 +226,6 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
             params: Dictionary of parameters required by the command.
             request_id: Unique client UUID for idempotent execution.
             context: Optional metadata dictionary (e.g. Guardian verdict ID).
-            token: Bearer authentication token.
 
         Returns:
             Envelope with command outcome:
@@ -179,7 +241,7 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
             }
         """
         return fac.send_actuator_command(
-            token=token,
+            token=_request_bearer_token(ctx),
             device_id=device_id,
             command=command,
             params=params,
@@ -194,8 +256,8 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
     @mcp.tool()
     def isolate_device(
         device_id: str,
+        ctx: Context,
         reason: str = "",
-        token: str = DEFAULT_TOKENS[Role.GUARDIAN],
     ) -> dict[str, Any]:
         """Place a suspected compromised, drifting, or attacked device into quarantine.
 
@@ -206,7 +268,6 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
         Args:
             device_id: Equipment ID to quarantine (e.g. 'PRT-WLV-01', 'V-12').
             reason: Diagnostic explanation (e.g. 'Sensor drift > 50cm compared to backup').
-            token: Bearer authentication token. Defaults to authorized Guardian token.
 
         Returns:
             Envelope confirming isolation:
@@ -221,7 +282,7 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
             }
         """
         return fac.isolate_device(
-            token=token,
+            token=_request_bearer_token(ctx),
             device_id=device_id,
             reason=reason,
         )
@@ -229,7 +290,7 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
     @mcp.tool()
     def restore_device(
         device_id: str,
-        token: str = DEFAULT_TOKENS[Role.GUARDIAN],
+        ctx: Context,
     ) -> dict[str, Any]:
         """Restore a quarantined device back to active operational status.
 
@@ -237,7 +298,6 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
 
         Args:
             device_id: Equipment ID to remove from quarantine.
-            token: Bearer authentication token. Defaults to authorized Guardian token.
 
         Returns:
             Envelope confirming restoration:
@@ -250,7 +310,7 @@ def create_mcp_server(facade: TwinFacade | None = None) -> FastMCP:
             }
         """
         return fac.restore_device(
-            token=token,
+            token=_request_bearer_token(ctx),
             device_id=device_id,
         )
 

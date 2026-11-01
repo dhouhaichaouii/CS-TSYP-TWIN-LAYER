@@ -3,7 +3,10 @@
 Mathematically verifies that private Ground Truth variables (actual_value, delta,
 fault models) can NEVER escape through public projections to the Brain or Guardian.
 """
+import os
 import unittest
+
+os.environ.setdefault("TWIN_ALLOW_INSECURE_DEV_TOKENS", "1")
 
 from twin_interface.auth import Role, resolve_token, DEFAULT_TOKENS
 from twin_interface.envelope import ErrorCode, error_envelope, success_envelope
@@ -116,10 +119,18 @@ class SecurityLeakageTests(unittest.TestCase):
                 "drift_rate": 0.5,
             },
         }
+        event["payload"] = {
+            "reading": {"sensor_id": "PRT-WLV-01", "actual_value": 140.0},
+            "nested": [{"fault": "DRIFT", "safe": True}],
+        }
         sanitized = project_event(event, Role.BRAIN)
         self.assertNotIn("fault", sanitized["details"])
         self.assertNotIn("drift_rate", sanitized["details"])
         self.assertEqual(sanitized["details"]["sensor_id"], "PRT-WLV-01")
+        serialized = str(sanitized)
+        for forbidden in FORBIDDEN_TRUTH_FIELDS:
+            self.assertNotIn(f'"{forbidden}"', serialized)
+        self.assertTrue(sanitized["payload"]["nested"][0]["safe"])
 
 
 class AuthAndPermissionsTests(unittest.TestCase):

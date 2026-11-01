@@ -7,7 +7,7 @@ from twin_interface.auth import resolve_token
 
 
 def extract_bearer_token(headers: dict[str, str] | Any) -> str | None:
-    """Extract Bearer token string from an HTTP headers mapping or dictionary.
+    """Extract one Bearer token from an HTTP headers mapping or dictionary.
 
     Args:
         headers: A dictionary or mapping of HTTP headers (case-insensitive search).
@@ -18,19 +18,29 @@ def extract_bearer_token(headers: dict[str, str] | Any) -> str | None:
     if not headers:
         return None
 
-    # Handle Starlette / case-insensitive header mappings
-    auth_header = None
-    if hasattr(headers, "get"):
+    if hasattr(headers, "getlist"):
+        authorization_values = headers.getlist("authorization")
+    elif hasattr(headers, "get"):
         auth_header = headers.get("authorization") or headers.get("Authorization")
-
-    if not auth_header or not isinstance(auth_header, str):
+        authorization_values = [auth_header] if auth_header is not None else []
+    else:
         return None
 
-    cleaned = auth_header.strip()
-    if cleaned.lower().startswith("bearer "):
-        return cleaned[7:].strip()
+    if len(authorization_values) != 1:
+        return None
 
-    return cleaned
+    authorization = authorization_values[0]
+    if not isinstance(authorization, str):
+        return None
+    scheme, separator, token = authorization.strip().partition(" ")
+    if (
+        not separator
+        or scheme.casefold() != "bearer"
+        or not token
+        or token != token.strip()
+    ):
+        return None
+    return token
 
 
 def resolve_header_role(headers: dict[str, str] | Any) -> str | None:

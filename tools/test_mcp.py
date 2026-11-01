@@ -12,8 +12,11 @@ Run with:
 """
 import asyncio
 import json
+import os
 from pathlib import Path
 import sys
+
+os.environ.setdefault("TWIN_ALLOW_INSECURE_DEV_TOKENS", "1")
 
 # Ensure UTF-8 output on Windows consoles
 if hasattr(sys.stdout, "reconfigure"):
@@ -47,6 +50,8 @@ async def main() -> None:
 
     city = LiveCity("mcp-verification-run")
     facade = TwinFacade(city)
+    for _ in range(5):
+        city.step()
     mcp = create_mcp_server(facade)
 
     brain_token = DEFAULT_TOKENS[Role.BRAIN]
