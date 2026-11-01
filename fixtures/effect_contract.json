@@ -1,6 +1,6 @@
 {
   "profile": "pa-effects-phase04-0.1-provisional",
-  "contract_version": "pa-internal-0.1-draft",
+  "contract_version": "pa-internal-0.2-draft",
   "agreement": "Supervisor-approved provisional; actual B/C compatibility unverified",
   "timing": "Immediate at current tick; B owns delays. APPLIED is a physical commit, not command success.",
   "identity": "Retry the entire original request unchanged; cmd-17 movement ordinal 1 maps to eff-17-1. Retained until reset, not durable across restart.",
@@ -8,7 +8,7 @@
   "examples": [
     {
       "request": {
-        "contract_version": "pa-internal-0.1-draft",
+        "contract_version": "pa-internal-0.2-draft",
         "run_id": "r-test",
         "effect_id": "eff-17-1",
         "expected_revision": 0,
@@ -19,7 +19,7 @@
     },
     {
       "request": {
-        "contract_version": "pa-internal-0.1-draft",
+        "contract_version": "pa-internal-0.2-draft",
         "run_id": "r-test",
         "effect_id": "driver-1",
         "expected_revision": 1,

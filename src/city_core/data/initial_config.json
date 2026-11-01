@@ -1,7 +1,7 @@
 {
-  "model_version": "pa-model-0.1-draft",
+  "model_version": "pa-model-0.2-draft",
   "catalog_version": "pa-catalog-0.1-draft",
-  "contract_version": "pa-internal-0.1-draft",
+  "contract_version": "pa-internal-0.2-draft",
   "parameters": {
     "step_ms": 1000,
     "basin_area_m2": 2000.0,

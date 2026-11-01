@@ -10,14 +10,14 @@
       "tick": 0,
       "sim_time_ms": 0,
       "revision": 0,
-      "model_version": "pa-model-0.1-draft",
+      "model_version": "pa-model-0.2-draft",
       "catalog_version": "pa-catalog-0.1-draft",
-      "contract_version": "pa-internal-0.1-draft"
+      "contract_version": "pa-internal-0.2-draft"
     },
     "initial_config": {
-      "model_version": "pa-model-0.1-draft",
+      "model_version": "pa-model-0.2-draft",
       "catalog_version": "pa-catalog-0.1-draft",
-      "contract_version": "pa-internal-0.1-draft",
+      "contract_version": "pa-internal-0.2-draft",
       "parameters": {
         "step_ms": 1000,
         "basin_area_m2": 2000.0,
@@ -205,7 +205,7 @@
         }
       }
     },
-    "config_digest": "d73395be7b8172edc682c97bd7b33a5b065e41681fe41024eac008a0bf995c56",
+    "config_digest": "a935bd3930c6bc2939b8c4cd7f3ef0b31256e5deeadfe704fcc43d9c58548f25",
     "catalog_digest": "7965b9e7b95c86b1bfdab3e3378be0de7c6cf9a57b63d3d0f83b97d354e44f66"
   },
   "records": [
@@ -216,14 +216,14 @@
         "tick": 0,
         "sim_time_ms": 0,
         "revision": 1,
-        "model_version": "pa-model-0.1-draft",
+        "model_version": "pa-model-0.2-draft",
         "catalog_version": "pa-catalog-0.1-draft",
-        "contract_version": "pa-internal-0.1-draft"
+        "contract_version": "pa-internal-0.2-draft"
       },
       "transition_id": "tr-0000000001",
       "cause": "EFFECT",
       "input": {
-        "contract_version": "pa-internal-0.1-draft",
+        "contract_version": "pa-internal-0.2-draft",
         "run_id": "r-normal",
         "effect_id": "e-0",
         "expected_revision": 0,
@@ -235,8 +235,8 @@
           "opening_fraction": 0.0
         }
       },
-      "before_digest": "1b16c52131793c9e20e0ec5da775916c5c6bd779eae6b47a9775d2136ebddd6b",
-      "after_digest": "d762f19fb426692a907eaae59e50dda15488587c00aad6dc9f6a904a6909aa06",
+      "before_digest": "c1da75fc68f178f5a12d0e792d60d187bc0a2df3eba0c5e28bbcad9b8b00255e",
+      "after_digest": "af77a44483348d388a1eeb400ad4fb0ca6a69d284b2106902aba0b374536a369",
       "effect_id": "e-0",
       "sequence": 0
     },
@@ -247,9 +247,9 @@
         "tick": 1,
         "sim_time_ms": 1000,
         "revision": 2,
-        "model_version": "pa-model-0.1-draft",
+        "model_version": "pa-model-0.2-draft",
         "catalog_version": "pa-catalog-0.1-draft",
-        "contract_version": "pa-internal-0.1-draft"
+        "contract_version": "pa-internal-0.2-draft"
       },
       "transition_id": "tr-0000000002",
       "cause": "STEP",
@@ -258,8 +258,8 @@
         "expected_revision": 1,
         "duration_ms": 1000
       },
-      "before_digest": "d762f19fb426692a907eaae59e50dda15488587c00aad6dc9f6a904a6909aa06",
-      "after_digest": "d228a2bd1a65a88fee40e8d4a297af3c109d83c7fef085187326e3d242bcfc65",
+      "before_digest": "af77a44483348d388a1eeb400ad4fb0ca6a69d284b2106902aba0b374536a369",
+      "after_digest": "916902b8dec3dc46c0243d2883ab5f5fa2f0e4161f2d8c655e6b7c1c304e0474",
       "effect_id": null,
       "sequence": null
     },
@@ -270,9 +270,9 @@
         "tick": 2,
         "sim_time_ms": 2000,
         "revision": 3,
-        "model_version": "pa-model-0.1-draft",
+        "model_version": "pa-model-0.2-draft",
         "catalog_version": "pa-catalog-0.1-draft",
-        "contract_version": "pa-internal-0.1-draft"
+        "contract_version": "pa-internal-0.2-draft"
       },
       "transition_id": "tr-0000000003",
       "cause": "STEP",
@@ -281,8 +281,8 @@
         "expected_revision": 2,
         "duration_ms": 1000
       },
-      "before_digest": "d228a2bd1a65a88fee40e8d4a297af3c109d83c7fef085187326e3d242bcfc65",
-      "after_digest": "69fbe65be0d388303509359545705e939a6334237f28408b3d6011a1ee33dc76",
+      "before_digest": "916902b8dec3dc46c0243d2883ab5f5fa2f0e4161f2d8c655e6b7c1c304e0474",
+      "after_digest": "e5d79cca2a93677ea7425deda0d87c050d5e656d02365dc4cf388781c8292537",
       "effect_id": null,
       "sequence": null
     },
@@ -293,9 +293,9 @@
         "tick": 3,
         "sim_time_ms": 3000,
         "revision": 4,
-        "model_version": "pa-model-0.1-draft",
+        "model_version": "pa-model-0.2-draft",
         "catalog_version": "pa-catalog-0.1-draft",
-        "contract_version": "pa-internal-0.1-draft"
+        "contract_version": "pa-internal-0.2-draft"
       },
       "transition_id": "tr-0000000004",
       "cause": "STEP",
@@ -304,8 +304,8 @@
         "expected_revision": 3,
         "duration_ms": 1000
       },
-      "before_digest": "69fbe65be0d388303509359545705e939a6334237f28408b3d6011a1ee33dc76",
-      "after_digest": "96d2592db86a65b70c6b3e946a49395b688b37e4f6aee53a6f08a65510253691",
+      "before_digest": "e5d79cca2a93677ea7425deda0d87c050d5e656d02365dc4cf388781c8292537",
+      "after_digest": "5ed435f964ba841d1e618da966b16ae5fa9c31e494a1603fd9db03a19863f8ac",
       "effect_id": null,
       "sequence": null
     }
@@ -315,9 +315,9 @@
     "tick": 3,
     "sim_time_ms": 3000,
     "revision": 4,
-    "model_version": "pa-model-0.1-draft",
+    "model_version": "pa-model-0.2-draft",
     "catalog_version": "pa-catalog-0.1-draft",
-    "contract_version": "pa-internal-0.1-draft"
+    "contract_version": "pa-internal-0.2-draft"
   },
-  "final_digest": "96d2592db86a65b70c6b3e946a49395b688b37e4f6aee53a6f08a65510253691"
+  "final_digest": "5ed435f964ba841d1e618da966b16ae5fa9c31e494a1603fd9db03a19863f8ac"
 }

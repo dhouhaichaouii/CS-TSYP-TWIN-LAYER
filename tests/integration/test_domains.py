@@ -99,7 +99,7 @@ class DomainIntegrationTests(unittest.TestCase):
 
     def test_five_domain_fixture_real_core_conformance_and_family_handoffs(self):
         fixture=json.loads((Path(__file__).parents[2]/'fixtures/five_domain_contract.json').read_text())
-        self.assertEqual(fixture['contract_version'],'pa-internal-0.1-draft')
+        self.assertEqual(fixture['contract_version'],'pa-internal-0.2-draft')
         self.assertEqual(fixture['visibility'],'PRIVATE_A_B_EVALUATOR_ONLY')
         self.assertEqual(set(fixture['sensor_families']),{'traffic_camera','water_level','power_load','air_quality','emergency_call'})
         self.assertEqual(set(fixture['actuator_families']),{'dispatch','traffic_signal','water_valve','grid_switch','device_isolation_quarantine'})

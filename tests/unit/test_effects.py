@@ -35,7 +35,9 @@ class EffectTests(unittest.TestCase):
             ("valve_position", {"target_id": "V-12", "opening_fraction": 0.75},
              "valve", {"effective_opening_fraction": 0.75}),
             ("pump_enable", {"target_id": "P-03", "enabled": True},
-             "pump", {"effective_enabled": True}),
+             "pump", {"effective_enabled": True, "effective_speed_fraction": 1.0}),
+            ("pump_speed", {"target_id": "P-03", "speed_fraction": 0.3},
+             "pump", {"effective_enabled": True, "effective_speed_fraction": 0.3}),
             ("feeder_position", {"target_id": "F-IND", "closed": False},
              "feeders", {"F-IND": {"effective_closed": False}}),
             ("signal_mode", {"target_id": "J-D1", "mode": "priority"},
@@ -97,6 +99,8 @@ class EffectTests(unittest.TestCase):
             for value in (0, 1, "true", None, [], {}):
                 self.reject(request(tag, source="B_SCENARIO", **{**fields, key: value}),
                             handle=self.core.scenarios)
+        for speed in (-0.1, 1.1, True, "0.5", None, float("nan"), float("inf")):
+            self.reject(request("pump_speed", target_id="P-03", speed_fraction=speed))
         for mode in ([], {}, True, 1, None, "unpowered", "unsafe"):
             self.reject(request("signal_mode", target_id="J-D1", mode=mode))
         for tag in ("requested_setting", "reported_setting", "command_complete", "quarantine", "set_field"):

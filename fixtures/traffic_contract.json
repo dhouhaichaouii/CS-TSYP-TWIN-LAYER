@@ -1,6 +1,6 @@
 {
-  "contract_version": "pa-internal-0.1-draft",
-  "model_version": "pa-model-0.1-draft",
+  "contract_version": "pa-internal-0.2-draft",
+  "model_version": "pa-model-0.2-draft",
   "visibility": "PRIVATE_A_B_EVALUATOR_ONLY",
   "cases": [
     {"setup": {}, "expected_low_queue": 9.7, "expected_access": true},

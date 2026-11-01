@@ -1,6 +1,6 @@
 {
-  "contract_version": "pa-internal-0.1-draft",
-  "model_version": "pa-model-0.1-draft",
+  "contract_version": "pa-internal-0.2-draft",
+  "model_version": "pa-model-0.2-draft",
   "visibility": "PRIVATE_A_B_EVALUATOR_ONLY",
   "agreement": "Supervisor-approved provisional; actual B/C compatibility UNVERIFIED",
   "sensor_families": {
@@ -21,7 +21,7 @@
     {
       "name": "normal_with_reserved_ambulance",
       "initial": {},
-      "effects": [{"contract_version":"pa-internal-0.1-draft","run_id":"r-test","effect_id":"dispatch-1","expected_revision":0,"source":"B_ACTUATOR","correlation_id":"flow-1","effect":{"tag":"reserve_responder","target_id":"AMB-01","mission_ref":"m-1","destination_node_id":"J-D1","route_road_ids":["R-LOW"]}}],
+      "effects": [{"contract_version":"pa-internal-0.2-draft","run_id":"r-test","effect_id":"dispatch-1","expected_revision":0,"source":"B_ACTUATOR","correlation_id":"flow-1","effect":{"tag":"reserve_responder","target_id":"AMB-01","mission_ref":"m-1","destination_node_id":"J-D1","route_road_ids":["R-LOW"]}}],
       "expected": {"traffic_low_queue":9.7,"water_surface_m3":0,"power_delivered_kw":230.2,"air_industrial_ug_m3":10.2,"emergency_access":true,"available_units":2}
     },
     {
@@ -33,7 +33,7 @@
     {
       "name": "upstream_supply_absent",
       "initial": {},
-      "effects": [{"contract_version":"pa-internal-0.1-draft","run_id":"r-test","effect_id":"supply-1","expected_revision":0,"source":"B_SCENARIO","correlation_id":"flow-2","effect":{"tag":"source_driver","available":false}}],
+      "effects": [{"contract_version":"pa-internal-0.2-draft","run_id":"r-test","effect_id":"supply-1","expected_revision":0,"source":"B_SCENARIO","correlation_id":"flow-2","effect":{"tag":"source_driver","available":false}}],
       "expected": {"traffic_low_queue":10.2,"water_surface_m3":0,"power_delivered_kw":0,"air_industrial_ug_m3":10,"emergency_access":false,"available_units":3}
     },
     {

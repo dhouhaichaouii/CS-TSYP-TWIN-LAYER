@@ -91,8 +91,8 @@ def derive_power(physical):
     """One deterministic evaluation of immutable committed primary inputs."""
     assets = {}
     for target_id, feeder_id in ASSET_FEEDER.items():
-        demand = (0.0 if target_id == "P-03" and not physical.pump.effective_enabled
-                  else DEMAND_KW[target_id])
+        demand = (DEMAND_KW[target_id] * physical.pump.effective_speed_fraction
+                  if target_id == "P-03" else DEMAND_KW[target_id])
         powered = asset_powered(physical, target_id)
         assets[target_id] = AssetPower(feeder_id, powered, demand, demand if powered else 0.0)
     feeders = {name: account_feeder(physical.source.source_available,

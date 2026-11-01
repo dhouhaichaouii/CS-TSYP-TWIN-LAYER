@@ -38,7 +38,8 @@ def derive_water(physical, parameters=WATER_PROFILE):
     available = not water.outfall_blocked and water.river_level_m < parameters["river_allow_below_m"]
     rain = water.rain_mm_h / 1000.0 / 3600.0 * parameters["catchment_area_m2"] * parameters["runoff_fraction"]
     inlet = parameters["inlet_max_m3_s"] * physical.valve.effective_opening_fraction
-    pump = parameters["pump_max_m3_s"] if available and derive_power(physical).pump_running else 0.0
+    pump = (parameters["pump_max_m3_s"] * physical.pump.effective_speed_fraction
+            if available and derive_power(physical).pump_running else 0.0)
     return WaterInputs(rain, inlet, available,
                        parameters["gravity_max_m3_s"] if available else 0.0, pump)
 

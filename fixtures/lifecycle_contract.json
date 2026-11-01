@@ -1,5 +1,5 @@
 {
-  "contract_version": "pa-internal-0.1-draft",
+  "contract_version": "pa-internal-0.2-draft",
   "status": "supervisor-approved provisional; B/C agreement unverified",
   "step_ms": 1000,
   "admin_capabilities": ["initialize", "advance_one", "reset", "read_private_transitions"],

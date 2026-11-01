@@ -13,13 +13,13 @@ JSON is an illustrative serialization of these semantic records, not MCP/HTTP me
 Normal physical valve closure after B finishes actual motion:
 
 ```json
-{"contract_version":"pa-internal-0.1-draft","run_id":"r-a1","effect_id":"eff-17-1","expected_revision":0,"source":"B_ACTUATOR","correlation_id":"flow-17","effect":{"tag":"valve_position","target_id":"V-12","opening_fraction":0.0}}
+{"contract_version":"pa-internal-0.2-draft","run_id":"r-a1","effect_id":"eff-17-1","expected_revision":0,"source":"B_ACTUATOR","correlation_id":"flow-17","effect":{"tag":"valve_position","target_id":"V-12","opening_fraction":0.0}}
 ```
 
 Success value (inside Result success tag):
 
 ```json
-{"context":{"run_id":"r-a1","tick":0,"sim_time_ms":0,"revision":1,"model_version":"pa-model-0.1-draft","catalog_version":"pa-catalog-0.1-draft","contract_version":"pa-internal-0.1-draft"},"effect_id":"eff-17-1","sequence":0,"outcome":"APPLIED","duplicate":false,"correlation_id":"flow-17"}
+{"context":{"run_id":"r-a1","tick":0,"sim_time_ms":0,"revision":1,"model_version":"pa-model-0.2-draft","catalog_version":"pa-catalog-0.1-draft","contract_version":"pa-internal-0.2-draft"},"effect_id":"eff-17-1","sequence":0,"outcome":"APPLIED","duplicate":false,"correlation_id":"flow-17"}
 ```
 
 Retry identical request after receipt loss: same receipt context/revision1/sequence0, duplicate=true, no second effect even if current physical revision later advanced. Same effect_id with opening_fraction1 produces IDENTITY_CONFLICT. New effect_id with expected_revision0 after the successful closure produces STATE_CONFLICT. Negative opening or unknown target returns INVALID_ARGUMENT or UNKNOWN_TARGET without changing state. Source B_SCENARIO on an actuator-only handle returns FORBIDDEN_CAPABILITY even for an otherwise duplicate request.
@@ -31,7 +31,7 @@ False reading: B reads read_private("r-a1"), generates an observation with its o
 Private reservation example, at independently initialized revision0, home J-H1 to J-D1:
 
 ```json
-{"contract_version":"pa-internal-0.1-draft","run_id":"r-a1","effect_id":"eff-18-1","expected_revision":0,"source":"B_ACTUATOR","correlation_id":"flow-18","effect":{"tag":"reserve_responder","target_id":"AMB-01","mission_ref":"mission-18","destination_node_id":"J-D1","route_road_ids":["R-LOW"]}}
+{"contract_version":"pa-internal-0.2-draft","run_id":"r-a1","effect_id":"eff-18-1","expected_revision":0,"source":"B_ACTUATOR","correlation_id":"flow-18","effect":{"tag":"reserve_responder","target_id":"AMB-01","mission_ref":"mission-18","destination_node_id":"J-D1","route_road_ids":["R-LOW"]}}
 ```
 
 If LOW is flooded the request is ROUTE_UNAVAILABLE, no allocation. A connected alternate is R-HIGH → R-LINK → R-DOWN if all usable. A second different effect for occupied AMB-01 returns RESOURCE_UNAVAILABLE. On arrival, release requires mission-18 and status arrived; no automatic hospital-home teleport. One dispatcher does not authorize unlimited resources.
@@ -39,7 +39,7 @@ If LOW is flooded the request is ROUTE_UNAVAILABLE, no allocation. A connected a
 A complete tagged failure example for an otherwise well-formed effect request with an unsupported contract revision:
 
 ```json
-{"ok":false,"error":{"code":"UNSUPPORTED_VERSION","safe_message":"Unsupported contract revision","retryable":false,"context":{"run_id":"r-a1","tick":0,"sim_time_ms":0,"revision":0,"model_version":"pa-model-0.1-draft","catalog_version":"pa-catalog-0.1-draft","contract_version":"pa-internal-0.1-draft"}}}
+{"ok":false,"error":{"code":"UNSUPPORTED_VERSION","safe_message":"Unsupported contract revision","retryable":false,"context":{"run_id":"r-a1","tick":0,"sim_time_ms":0,"revision":0,"model_version":"pa-model-0.2-draft","catalog_version":"pa-catalog-0.1-draft","contract_version":"pa-internal-0.2-draft"}}}
 ```
 
 No world/revision/sequence/run-ID change occurs. Malformed numeric version fields instead return INVALID_ARGUMENT. For pre-initialization errors context is null; no raw configuration/driver values appear in either failure.
@@ -51,7 +51,7 @@ One step: `advance_one("r-a1", expected_revision=0)` on untouched fixture return
 Permitted C metadata/example token:
 
 ```json
-{"context":{"run_id":"r-a1","tick":1,"sim_time_ms":1000,"revision":1,"model_version":"pa-model-0.1-draft","catalog_version":"pa-catalog-0.1-draft","contract_version":"pa-internal-0.1-draft"},"correlation_id":"flow-17","token_id":"ev-001"}
+{"context":{"run_id":"r-a1","tick":1,"sim_time_ms":1000,"revision":1,"model_version":"pa-model-0.2-draft","catalog_version":"pa-catalog-0.1-draft","contract_version":"pa-internal-0.2-draft"},"correlation_id":"flow-17","token_id":"ev-001"}
 ```
 
 The token says when C bound a report to the core context, not that the reading is true, that a command executed, or that Guardian approved it. C owns observation/verdict/decision/command ID binding; string copies cannot establish authority.

@@ -51,6 +51,7 @@ class ValveState:
 @dataclass(frozen=True, slots=True)
 class PumpState:
     effective_enabled: bool
+    effective_speed_fraction: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,7 +154,9 @@ def parse_config(value, topology):
         "river_level_m": lambda n: number(n, 0, 10), "outfall_blocked": boolean})
     valve = _record(actual["valve"], ValveState,
                     {"effective_opening_fraction": lambda n: number(n, 0, 1)})
-    pump = _record(actual["pump"], PumpState, {"effective_enabled": boolean})
+    pump_data = shape(actual["pump"], ("effective_enabled",))
+    pump_enabled = boolean(pump_data["effective_enabled"])
+    pump = PumpState(pump_enabled, 1.0 if pump_enabled else 0.0)
     source = _record(actual["source"], SupplyState, {"source_available": boolean})
     ids = lambda kind: {e.id for e in topology.entities if e.kind == kind}
     feeders = _map(actual["feeders"], ids("feeder"), lambda v: _record(

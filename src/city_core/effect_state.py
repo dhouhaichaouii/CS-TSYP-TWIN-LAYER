@@ -26,7 +26,14 @@ def apply_state(current, effect):
                        effective_opening_fraction=number(effect["opening_fraction"], 0, 1)))
     if tag == "pump_enable":
         _target(target, ("P-03",))
-        return replace(state, pump=replace(state.pump, effective_enabled=effect["enabled"]))
+        speed = 1.0 if effect["enabled"] else 0.0
+        return replace(state, pump=replace(state.pump, effective_enabled=effect["enabled"],
+                                           effective_speed_fraction=speed))
+    if tag == "pump_speed":
+        _target(target, ("P-03",))
+        speed = number(effect["speed_fraction"], 0, 1)
+        return replace(state, pump=replace(state.pump, effective_enabled=speed > 0,
+                                           effective_speed_fraction=speed))
     if tag == "feeder_position":
         _target(target, state.feeders)
         return replace(state, feeders=_updated(state.feeders, target,

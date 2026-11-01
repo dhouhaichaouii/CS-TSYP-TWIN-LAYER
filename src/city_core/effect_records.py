@@ -14,6 +14,7 @@ from .validation import InvalidInput, boolean, identity, shape, version
 SCHEMAS = MappingProxyType({
     "valve_position": ("target_id", "opening_fraction"),
     "pump_enable": ("target_id", "enabled"),
+    "pump_speed": ("target_id", "speed_fraction"),
     "feeder_position": ("target_id", "closed"),
     "signal_mode": ("target_id", "mode"),
     "reserve_responder": ("target_id", "mission_ref", "destination_node_id", "route_road_ids"),

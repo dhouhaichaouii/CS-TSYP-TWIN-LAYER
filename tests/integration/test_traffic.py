@@ -119,7 +119,7 @@ class TrafficIntegrationTests(unittest.TestCase):
     def test_internal_versioned_traffic_checkpoint(self):
         path = Path(__file__).resolve().parents[2]/'fixtures/traffic_contract.json'
         fixture = json.loads(path.read_text())
-        self.assertEqual(fixture['contract_version'],'pa-internal-0.1-draft')
+        self.assertEqual(fixture['contract_version'],'pa-internal-0.2-draft')
         self.assertEqual(fixture['visibility'],'PRIVATE_A_B_EVALUATOR_ONLY')
         for case in fixture['cases']:
             core = traffic_city(**case['setup'])

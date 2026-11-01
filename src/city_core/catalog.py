@@ -6,8 +6,8 @@ from pathlib import Path
 from .validation import InvalidInput, identity, shape, version
 
 CATALOG_VERSION = "pa-catalog-0.1-draft"
-MODEL_VERSION = "pa-model-0.1-draft"
-CONTRACT_VERSION = "pa-internal-0.1-draft"
+MODEL_VERSION = "pa-model-0.2-draft"
+CONTRACT_VERSION = "pa-internal-0.2-draft"
 DATA = Path(__file__).with_name("data")
 
 
