@@ -22,14 +22,26 @@ def run(evidence):
         "city_core_tests"]["minimum_module_line_coverage"]
     output = io.StringIO()
     tracer = trace.Trace(count=True, trace=False, ignoredirs=[
-        sys.base_prefix, str(PACKAGE / "tests"), str(PACKAGE / "tools"), str(PACKAGE / "src/city_live")])
+        sys.base_prefix, str(PACKAGE / "tests"), str(PACKAGE / "dashboard_tests"),
+        str(PACKAGE / "live_tests"), str(PACKAGE / "tools"), str(PACKAGE / "src/city_live")])
 
     def exercise():
         suite = unittest.defaultTestLoader.discover(str(PACKAGE / "tests"),
                                                    top_level_dir=str(PACKAGE))
+        suite.addTests(unittest.TestLoader().discover(str(PACKAGE / "dashboard_tests")))
+        suite.addTests(unittest.TestLoader().discover(
+            str(PACKAGE / "live_tests"), pattern="test_*requests.py"))
         return unittest.TextTestRunner(stream=output, verbosity=2).run(suite)
 
-    result = tracer.runfunc(exercise)
+    # Dashboard HTTP handlers execute in worker threads. Propagate the trace
+    # callback so the official CI gate measures those lines as well.
+    import threading
+    previous_trace = threading.gettrace()
+    threading.settrace(tracer.globaltrace)
+    try:
+        result = tracer.runfunc(exercise)
+    finally:
+        threading.settrace(previous_trace)
     coverage_output = io.StringIO()
     with redirect_stdout(coverage_output):
         tracer.results().write_results(show_missing=True, summary=True,
