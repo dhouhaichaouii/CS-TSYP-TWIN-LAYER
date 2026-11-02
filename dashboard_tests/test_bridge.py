@@ -48,6 +48,61 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.request('POST', '/api/logout', {}, {'Cookie': cookie})[0], 200)
         self.assertEqual(self.request('GET', '/api/operator/frame', headers={'Cookie': cookie})[0], 401)
 
+    def test_operator_scenario_route_uses_the_shared_city_and_exact_schema(self):
+        cookie = self.login()
+        headers = {'Cookie': cookie}
+
+        self.assertEqual(
+            self.request(
+                'POST',
+                '/api/operator/scenario',
+                {'scenario_id': 'scn-02', 'role': 'operator'},
+                headers,
+            )[0],
+            400,
+        )
+        self.assertEqual(
+            self.request(
+                'POST',
+                '/api/operator/scenario',
+                {'scenario_id': 'unknown'},
+                headers,
+            )[0],
+            400,
+        )
+        status, _, body = self.request(
+            'POST',
+            '/api/operator/scenario',
+            {'scenario_id': 'scn-02'},
+            headers,
+        )
+        self.assertEqual(status, 200)
+        scenario = json.loads(body)['data']
+        self.assertEqual(scenario['scenario_id'], 'SCN-02')
+        self.assertTrue(scenario['correlation_id'])
+        self.assertEqual(self.city.capture_dashboard_frame()['scenario'], scenario)
+        self.assertEqual(
+            self.request(
+                'POST',
+                '/api/operator/scenario',
+                {'scenario_id': 'scn-03'},
+                headers,
+            )[0],
+            409,
+        )
+        self.city.reset('bridge-scn06')
+        status, _, body = self.request(
+            'POST',
+            '/api/operator/scenario',
+            {'scenario_id': 'scn-06'},
+            headers,
+        )
+        self.assertEqual(status, 200)
+        scenario = json.loads(body)['data']
+        self.assertEqual(scenario['scenario_id'], 'SCN-06')
+        self.assertTrue(scenario['correlation_id'])
+        self.assertEqual(self.city.capture_dashboard_frame()['scenario'], scenario)
+
     def test_exact_origin_host_and_fetch_site(self):
         for headers in ({'Origin': 'https://evil.test'}, {'Host': 'evil.test'},
                         {'Host': 'localhost:' + str(self.bridge.port)},

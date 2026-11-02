@@ -1,0 +1,241 @@
+    1: from datetime import datetime, timezone
+    1: import hashlib
+    1: import json
+       
+    1: from .connection import SQLiteConnectionManager
+    1: from .migrations import MIGRATIONS
+       
+       
+    1: def _now():
+    3:     return datetime.now(timezone.utc).isoformat(timespec="microseconds")
+       
+       
+    1: def _json(value):
+    3:     return json.dumps(value, sort_keys=True, allow_nan=False, separators=(",", ":"))
+       
+       
+    2: class SQLiteTwinPersistence:
+    1:     def __init__(self, path):
+    1:         self.manager = SQLiteConnectionManager(path)
+    1:         try:
+    1:             self._migrate()
+>>>>>>         except BaseException:
+>>>>>>             self.manager.close()
+>>>>>>             raise
+       
+    2:     @property
+    2:     def path(self):
+>>>>>>         return self.manager.path
+       
+    1:     def _migrate(self):
+    1:         connection = self.manager.connection
+    2:         connection.execute(
+    1:             "CREATE TABLE IF NOT EXISTS schema_migrations "
+                   "(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)"
+               )
+    3:         current = connection.execute(
+    1:             "SELECT COALESCE(MAX(version), 0) FROM schema_migrations"
+    1:         ).fetchone()[0]
+    2:         for index, migration in enumerate(MIGRATIONS, 1):
+    1:             if index <= current:
+>>>>>>                 continue
+    2:             with self.manager.transaction() as transaction:
+    8:                 for statement in migration.split(";"):
+    7:                     if statement.strip():
+    6:                         transaction.execute(statement)
+    2:                 transaction.execute(
+    1:                     "INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)",
+    1:                     (index, _now()),
+                       )
+       
+    1:     def active_run_id(self):
+    3:         row = self.manager.connection.execute(
+    1:             "SELECT value FROM recovery_metadata WHERE key='active_run_id'"
+    1:         ).fetchone()
+    1:         return row["value"] if row else None
+       
+    1:     def initialize_run(self, replay):
+    1:         header = replay["header"]
+    1:         run_id = header["initial_context"]["run_id"]
+    2:         with self.manager.transaction() as connection:
+    3:             exists = connection.execute(
+    1:                 "SELECT 1 FROM core_runs WHERE run_id=?", (run_id,)
+    1:             ).fetchone()
+    1:             if exists is None:
+    1:                 initial = replay["final_context"]
+    2:                 connection.execute(
+    1:                     "INSERT INTO core_runs(run_id, metadata_json, header_json, "
+                           "initial_digest, final_context_json, final_digest, updated_at) "
+                           "VALUES (?, ?, ?, ?, ?, ?, ?)",
+    1:                     (
+    1:                         run_id,
+    6:                         _json({key: replay[key] for key in (
+                                   "format_version", "model_profile", "python_version",
+                                   "numeric_profile", "randomness",
+                               )}),
+    1:                         _json(header),
+    1:                         replay["final_digest"],
+    1:                         _json(initial),
+    1:                         replay["final_digest"],
+    1:                         _now(),
+                           ),
+                       )
+    2:             connection.execute(
+    1:                 "INSERT INTO recovery_metadata(key, value, updated_at) "
+                       "VALUES ('active_run_id', ?, ?) ON CONFLICT(key) DO UPDATE SET "
+                       "value=excluded.value, updated_at=excluded.updated_at",
+    1:                 (run_id, _now()),
+                   )
+    1:             connection.execute("DELETE FROM quarantined_devices")
+       
+    1:     def load_active_replay(self):
+    1:         run_id = self.active_run_id()
+    1:         if run_id is None:
+>>>>>>             return None
+    3:         run = self.manager.connection.execute(
+    1:             "SELECT * FROM core_runs WHERE run_id=?", (run_id,)
+    1:         ).fetchone()
+    1:         if run is None:
+>>>>>>             raise RuntimeError("PERSISTENCE_CORRUPT")
+    3:         records = self.manager.connection.execute(
+    1:             "SELECT record_json FROM core_transitions WHERE run_id=? "
+    1:             "ORDER BY record_index", (run_id,),
+    1:         ).fetchall()
+    1:         replay = json.loads(run["metadata_json"])
+    2:         replay.update({
+    1:             "header": json.loads(run["header_json"]),
+    1:             "records": [json.loads(row["record_json"]) for row in records],
+    1:             "final_context": json.loads(run["final_context_json"]),
+    1:             "final_digest": run["final_digest"],
+               })
+    1:         if len(replay["records"]) != replay["final_context"]["revision"]:
+>>>>>>             raise RuntimeError("PERSISTENCE_CORRUPT")
+    1:         return run_id, replay
+       
+    1:     def recover_incomplete_requests(self):
+>>>>>>         with self.manager.transaction() as connection:
+>>>>>>             now = _now()
+>>>>>>             connection.execute(
+>>>>>>                 "UPDATE processed_requests SET status='RECOVERY_REQUIRED' "
+                       "WHERE status='EXECUTING'"
+                   )
+>>>>>>             connection.execute(
+>>>>>>                 "UPDATE operations SET status='RECOVERY_REQUIRED', completed_at=?, "
+                       "error_code='PROCESS_INTERRUPTED' WHERE status IN ('PENDING','DOING')",
+>>>>>>                 (now,),
+                   )
+       
+    1:     def request(self, request_id):
+>>>>>>         row = self.manager.connection.execute(
+>>>>>>             "SELECT * FROM processed_requests WHERE request_id=?", (request_id,)
+>>>>>>         ).fetchone()
+>>>>>>         return dict(row) if row else None
+       
+    1:     def request_count(self, run_id):
+    3:         return self.manager.connection.execute(
+    1:             "SELECT COUNT(*) FROM processed_requests WHERE run_id=?", (run_id,)
+    1:         ).fetchone()[0]
+       
+    1:     def claim_request(self, *, request_id, command_hash, run_id, correlation_id,
+                             scenario_id, device_id, command_type, payload):
+>>>>>>         now = _now()
+>>>>>>         with self.manager.transaction() as connection:
+>>>>>>             existing = connection.execute(
+>>>>>>                 "SELECT * FROM processed_requests WHERE request_id=?", (request_id,)
+>>>>>>             ).fetchone()
+>>>>>>             if existing is not None:
+>>>>>>                 return dict(existing)
+>>>>>>             connection.execute(
+>>>>>>                 "INSERT INTO processed_requests(request_id, command_hash, run_id, "
+                       "correlation_id, scenario_id, device_id, command_type, payload_json, "
+                       "status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'EXECUTING', ?)",
+>>>>>>                 (request_id, command_hash, run_id, correlation_id, scenario_id,
+>>>>>>                  device_id, command_type, _json(payload), now),
+                   )
+>>>>>>             connection.execute(
+>>>>>>                 "INSERT INTO operations(operation_id, request_id, operation_type, "
+                       "payload_json, status, created_at) VALUES (?, ?, 'ACTUATOR_COMMAND', ?, "
+                       "'DOING', ?)",
+>>>>>>                 (f"command:{request_id}", request_id, _json(payload), now),
+                   )
+>>>>>>         return None
+       
+    1:     def persist_transitions(self, run_id, records, final_context, final_digest,
+    1:                             *, request_id=None, result=None):
+>>>>>>         now = _now()
+>>>>>>         with self.manager.transaction() as connection:
+>>>>>>             current = connection.execute(
+>>>>>>                 "SELECT final_context_json FROM core_runs WHERE run_id=?", (run_id,)
+>>>>>>             ).fetchone()
+>>>>>>             if current is None:
+>>>>>>                 raise RuntimeError("PERSISTENCE_RUN_NOT_FOUND")
+>>>>>>             expected_index = json.loads(current["final_context_json"])["revision"]
+>>>>>>             for record in records:
+>>>>>>                 if record["record_index"] != expected_index:
+>>>>>>                     raise RuntimeError("PERSISTENCE_REVISION_CONFLICT")
+>>>>>>                 connection.execute(
+>>>>>>                     "INSERT INTO core_transitions(run_id, record_index, record_json) "
+                           "VALUES (?, ?, ?)",
+>>>>>>                     (run_id, expected_index, _json(record)),
+                       )
+>>>>>>                 expected_index += 1
+>>>>>>             if final_context["revision"] != expected_index:
+>>>>>>                 raise RuntimeError("PERSISTENCE_REVISION_CONFLICT")
+>>>>>>             connection.execute(
+>>>>>>                 "UPDATE core_runs SET final_context_json=?, final_digest=?, updated_at=? "
+                       "WHERE run_id=?",
+>>>>>>                 (_json(final_context), final_digest, now, run_id),
+                   )
+>>>>>>             if request_id is not None:
+>>>>>>                 if result is None:
+>>>>>>                     raise RuntimeError("PERSISTENCE_RESULT_REQUIRED")
+>>>>>>                 connection.execute(
+>>>>>>                     "UPDATE processed_requests SET status='COMMITTED', result_json=?, "
+                           "resulting_revision=?, completed_at=? WHERE request_id=? "
+                           "AND status='EXECUTING'",
+>>>>>>                     (_json(result), final_context["revision"], now, request_id),
+                       )
+>>>>>>                 if connection.execute("SELECT changes()").fetchone()[0] != 1:
+>>>>>>                     raise RuntimeError("PERSISTENCE_REQUEST_STATE")
+>>>>>>                 connection.execute(
+>>>>>>                     "UPDATE operations SET status='DONE', completed_at=? "
+                           "WHERE request_id=? AND status='DOING'",
+>>>>>>                     (now, request_id),
+                       )
+>>>>>>                 if connection.execute("SELECT changes()").fetchone()[0] != 1:
+>>>>>>                     raise RuntimeError("PERSISTENCE_REQUEST_STATE")
+       
+    1:     def duplicate_result(self, request, command_hash):
+>>>>>>         if request["command_hash"] != command_hash:
+>>>>>>             raise ValueError("IDEMPOTENCY_CONFLICT")
+>>>>>>         if request["status"] == "COMMITTED":
+>>>>>>             return json.loads(request["result_json"])
+>>>>>>         raise ValueError("RECOVERY_REQUIRED")
+       
+    1:     def quarantines(self):
+>>>>>>         rows = self.manager.connection.execute(
+>>>>>>             "SELECT device_key, quarantine_json FROM quarantined_devices"
+>>>>>>         ).fetchall()
+>>>>>>         return {row["device_key"]: json.loads(row["quarantine_json"]) for row in rows}
+       
+    1:     def save_quarantine(self, device_key, quarantine):
+>>>>>>         with self.manager.transaction() as connection:
+>>>>>>             connection.execute(
+>>>>>>                 "INSERT INTO quarantined_devices(device_key, quarantine_json, updated_at) "
+                       "VALUES (?, ?, ?) ON CONFLICT(device_key) DO UPDATE SET "
+                       "quarantine_json=excluded.quarantine_json, updated_at=excluded.updated_at",
+>>>>>>                 (device_key, _json(quarantine), _now()),
+                   )
+       
+    1:     def delete_quarantine(self, device_key):
+>>>>>>         with self.manager.transaction() as connection:
+>>>>>>             connection.execute(
+>>>>>>                 "DELETE FROM quarantined_devices WHERE device_key=?", (device_key,)
+                   )
+       
+    1:     def close(self):
+    1:         self.manager.close()
+       
+       
+    1: def command_fingerprint(payload):
+>>>>>>     return hashlib.sha256(_json(payload).encode("utf-8")).hexdigest()

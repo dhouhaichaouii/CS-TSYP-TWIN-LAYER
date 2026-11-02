@@ -118,6 +118,20 @@ class SensorTests(unittest.TestCase):
         self.assertEqual(self.city.sensor_compare('S-WATER-01')['status'], 'FAILED')
         self.assertEqual(self.city.sensor_compare('S-WATER-02')['status'], 'OK')
 
+    def test_scenario_input_cleanup_removes_only_its_forced_sample(self):
+        bank = self.city._sensors
+        bank.set_scenario_input('scenario-a', 'PRT-WLV-01', 40)
+        bank.force_sample('PRT-WLV-01', 4)
+        bank.set_scenario_input('scenario-b', 'DTN-TRF-01', 30)
+        bank.force_sample('DTN-TRF-01', 5)
+
+        bank.clear_scenario_inputs('scenario-a')
+
+        self.assertNotIn('PRT-WLV-01', bank.scenario_inputs)
+        self.assertNotIn('PRT-WLV-01', bank.forced_samples)
+        self.assertIn('DTN-TRF-01', bank.scenario_inputs)
+        self.assertEqual(bank.forced_samples['DTN-TRF-01'], 5)
+
     def test_invalid_faults_duplicate_faults_and_replacement_ids(self):
         for kind, params in [('BOGUS', {}), ('NOISE', {'amplitude': -1}),
                              ('DELAYED', {'lag_ticks': True}), ('FALSE_READING', {}),

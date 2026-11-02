@@ -1,0 +1,77 @@
+    1: from contextlib import contextmanager
+    1: import os
+    1: from pathlib import Path
+    1: import sqlite3
+    1: from threading import RLock
+       
+       
+    2: class SQLiteConnectionManager:
+    1:     def __init__(self, path):
+    1:         self.path = Path(path).resolve()
+    1:         self.path.parent.mkdir(parents=True, exist_ok=True)
+    1:         self._lock_file = None
+    1:         self._lock = RLock()
+    1:         self._acquire_owner_lock()
+    1:         try:
+    2:             self.connection = sqlite3.connect(
+    1:                 self.path, timeout=30, isolation_level=None, check_same_thread=False,
+                   )
+    1:             self.connection.row_factory = sqlite3.Row
+    1:             self.connection.execute("PRAGMA journal_mode=WAL")
+    1:             self.connection.execute("PRAGMA synchronous=FULL")
+    1:             self.connection.execute("PRAGMA foreign_keys=ON")
+    1:             self.connection.execute("PRAGMA busy_timeout=30000")
+>>>>>>         except BaseException:
+>>>>>>             self.close()
+>>>>>>             raise
+       
+    1:     def _acquire_owner_lock(self):
+    1:         lock_path = self.path.with_suffix(self.path.suffix + ".owner")
+    1:         self._lock_file = open(lock_path, "a+b")
+    1:         self._lock_file.seek(0, os.SEEK_END)
+    1:         if self._lock_file.tell() == 0:
+    1:             self._lock_file.write(b"\0")
+    1:             self._lock_file.flush()
+    1:         self._lock_file.seek(0)
+    1:         try:
+    1:             if os.name == "nt":
+    1:                 import msvcrt
+    1:                 msvcrt.locking(self._lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+                   else:
+>>>>>>                 import fcntl
+>>>>>>                 fcntl.flock(self._lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+>>>>>>         except OSError as error:
+>>>>>>             self._lock_file.close()
+>>>>>>             self._lock_file = None
+>>>>>>             raise RuntimeError("PERSISTENCE_IN_USE") from error
+       
+    2:     @contextmanager
+    2:     def transaction(self):
+    4:         with self._lock:
+    2:             self.connection.execute("BEGIN IMMEDIATE")
+    2:             try:
+    2:                 yield self.connection
+    2:                 self.connection.execute("COMMIT")
+>>>>>>             except BaseException:
+>>>>>>                 if self.connection.in_transaction:
+>>>>>>                     self.connection.execute("ROLLBACK")
+>>>>>>                 raise
+       
+    1:     def close(self):
+    1:         connection = getattr(self, "connection", None)
+    1:         if connection is not None:
+    1:             connection.close()
+    1:             self.connection = None
+    1:         lock_file = self._lock_file
+    1:         if lock_file is not None:
+    1:             try:
+    1:                 lock_file.seek(0)
+    1:                 if os.name == "nt":
+    1:                     import msvcrt
+    1:                     msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+                       else:
+>>>>>>                     import fcntl
+>>>>>>                     fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+                   finally:
+    1:                 lock_file.close()
+    1:                 self._lock_file = None

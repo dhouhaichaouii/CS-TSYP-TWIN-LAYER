@@ -1,8 +1,13 @@
 """Privileged local diagnostics and provisional device adapter, never public."""
 from functools import wraps
+import json
+import sqlite3
 
 from city_core.transitions import freeze, plain
-from .records import LiveError, identifier, integer, numeric
+from .commands import build_command_effect, build_legacy_command_effect
+from .device_catalog import load_catalog
+from .records import LiveError, identifier, integer, timestamp
+from twin_persistence.store import command_fingerprint
 
 
 def operator_call(method):
@@ -73,8 +78,63 @@ class OperatorControls:
         self._event('DEVICE_REPLACED', {'old_id': old_id, 'new_id': new_id})
 
     @operator_call
-    def command(self, device_id, requested, *, command_id, effective=None, available=True,
-                run_id=None, expected_revision=None):
+    def execute_actuator_command(self, device_id, command, params, *, command_id,
+                                 available=True, run_id=None, expected_revision=None,
+                                 legacy_request=None, correlation_id=None,
+                                 scenario_id=None):
+        """Validate, deduplicate and apply one actuator command atomically."""
+        identifier(command_id)
+        effective_run_id = self._run_id if run_id is None else run_id
+        try:
+            fingerprint = json.dumps(
+                {
+                    'request_id': command_id,
+                    'device_id': device_id,
+                    'command': command,
+                    'params': params,
+                    'run_id': effective_run_id,
+                    'expected_revision': expected_revision,
+                    'available': available,
+                    'legacy_request': legacy_request,
+                },
+                sort_keys=True,
+                allow_nan=False,
+                separators=(',', ':'),
+            )
+        except (TypeError, ValueError, OverflowError, RecursionError):
+            raise LiveError('INVALID_ARGUMENT') from None
+
+        durable = self._persistence
+        if durable is not None:
+            try:
+                existing = durable.request(command_id)
+                if existing is not None:
+                    try:
+                        return durable.duplicate_result(
+                            existing, command_fingerprint(json.loads(fingerprint)),
+                        )
+                    except ValueError as error:
+                        raise LiveError(str(error)) from None
+            except LiveError:
+                raise
+            except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
+                raise LiveError('PERSISTENCE_FAILURE') from error
+        else:
+            existing = self._actuator_requests.get(command_id)
+            if existing is not None:
+                if existing['fingerprint'] != fingerprint:
+                    raise LiveError('IDEMPOTENCY_CONFLICT')
+                return plain(existing['result'])
+        if durable is None and len(self._actuator_requests) >= 2048:
+            raise LiveError('COMMAND_BUDGET_EXHAUSTED')
+        if durable is not None:
+            try:
+                request_count = durable.request_count(effective_run_id)
+            except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
+                raise LiveError('PERSISTENCE_FAILURE') from error
+            if request_count >= 2048:
+                raise LiveError('COMMAND_BUDGET_EXHAUSTED')
+
         if run_id is not None:
             self._run_check(run_id)
         if expected_revision is not None:
@@ -84,53 +144,163 @@ class OperatorControls:
         identifier(command_id)
         if type(available) is not bool:
             raise LiveError('INVALID_ARGUMENT')
-        kind, params, actual = command_effect(device_id, requested, effective)
-        identity = freeze({'device_id': device_id, 'requested': requested,
-                           'effective': effective, 'available': available})
-        existing = self._commands.get(command_id)
-        if existing:
-            if existing['identity'] != identity:
-                raise LiveError('IDENTITY_CONFLICT')
-            return plain(existing['result'])
-        if len(self._commands) >= 1024:
-            raise LiveError('BUDGET_EXHAUSTED')
-        self._event('ACTION_REQUESTED', {'command_id': command_id, 'device_id': device_id})
-        outcome, error = 'FAILED', 'DEVICE_UNAVAILABLE'
-        if available:
-            from .scenarios import effect_for
+        if self._state not in ('READY', 'RUNNING', 'PAUSED', 'STOPPED'):
+            raise LiveError('INVALID_STATE')
+
+        if legacy_request is None:
+            effect = build_command_effect(device_id, command, params)
+            legacy_effective = None
+        else:
+            if type(legacy_request) is not tuple or len(legacy_request) != 2:
+                raise LiveError('INVALID_ARGUMENT')
+            effect, legacy_effective = build_legacy_command_effect(
+                device_id, legacy_request[0], legacy_request[1])
+        if self.is_device_isolated(device_id):
+            raise LiveError('GUARDIAN_RESTRICTED')
+        if not available:
+            raise LiveError('DEVICE_UNAVAILABLE')
+
+        if durable is not None:
+            payload = json.loads(fingerprint)
             try:
-                self._effect(effect_for(kind, params, self._snapshot().physical_state))
-                outcome, error = ('COMPLETED' if actual == requested else 'PARTIAL'), None
-            except LiveError as failure:
-                error = failure.code
-        result = freeze({'command_id': command_id, 'device_id': device_id, 'status': outcome,
-                         'requested': requested, 'effective': actual if available and error is None else None,
-                         'error': error, 'run_id': self._run_id})
-        self._commands = freeze({**self._commands, command_id: {'identity': identity, 'result': result}})
+                existing = durable.claim_request(
+                    request_id=command_id,
+                    command_hash=command_fingerprint(payload),
+                    run_id=effective_run_id,
+                    correlation_id=correlation_id if type(correlation_id) is str else None,
+                    scenario_id=scenario_id if type(scenario_id) is str else None,
+                    device_id=device_id,
+                    command_type=command,
+                    payload=payload,
+                )
+                if existing is not None:
+                    try:
+                        return durable.duplicate_result(
+                            existing, command_fingerprint(payload),
+                        )
+                    except ValueError as error:
+                        raise LiveError(str(error)) from None
+            except LiveError:
+                raise
+            except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
+                raise LiveError('PERSISTENCE_FAILURE') from error
+
+        receipt = self._effect(effect, persist=durable is None)
+        result = {
+            'command_id': command_id,
+            'device_id': device_id,
+            'command': command,
+            'status': 'APPLIED',
+            'effective_revision': receipt.context.revision,
+            'effect_id': receipt.effect_id,
+        }
+        if legacy_request is not None:
+            result['effective'] = legacy_effective
+        if durable is not None:
+            self._persist_core(request_id=command_id, result=result)
+        self._actuator_requests = freeze({
+            **self._actuator_requests,
+            command_id: {'fingerprint': fingerprint, 'result': result},
+        })
+        return result
+
+    def _quarantine_key(self, device_id):
+        actuator = load_catalog().actuator_row(device_id)
+        if actuator is not None and actuator.target_id is not None:
+            return f'actuator:{actuator.target_id}'
+        return f'device:{device_id}'
+
+    @operator_call
+    def quarantine_device(self, device_id, reason='', isolated_by='guardian'):
+        identifier(device_id)
+        if type(reason) is not str or type(isolated_by) is not str:
+            raise LiveError('INVALID_ARGUMENT')
+        key = self._quarantine_key(device_id)
+        tick = self._snapshot().context.tick
+        quarantine = {
+            'device_id': device_id,
+            'reason': reason or 'Unspecified Guardian quarantine',
+            'isolated_by': isolated_by,
+            'timestamp': timestamp(self._epoch, tick),
+        }
+        self._quarantined_devices[key] = quarantine
+        if self._persistence is not None:
+            try:
+                self._persistence.save_quarantine(key, quarantine)
+            except (sqlite3.Error, OSError, RuntimeError) as error:
+                self._quarantined_devices.pop(key, None)
+                raise LiveError('PERSISTENCE_FAILURE') from error
+        return plain(quarantine)
+
+    @operator_call
+    def restore_quarantined_device(self, device_id):
+        identifier(device_id)
+        key = self._quarantine_key(device_id)
+        quarantine = self._quarantined_devices.pop(key, None)
+        if quarantine is None:
+            raise LiveError('DEVICE_NOT_FOUND')
+        if self._persistence is not None:
+            try:
+                self._persistence.delete_quarantine(key)
+            except (sqlite3.Error, OSError, RuntimeError) as error:
+                self._quarantined_devices[key] = quarantine
+                raise LiveError('PERSISTENCE_FAILURE') from error
+        return plain(quarantine)
+
+    @operator_call
+    def is_device_isolated(self, device_id):
+        return self._quarantine_key(device_id) in self._quarantined_devices
+
+    @operator_call
+    def quarantined_device(self, device_id):
+        quarantine = self._quarantined_devices.get(self._quarantine_key(device_id))
+        return plain(quarantine) if quarantine is not None else None
+
+    @operator_call
+    def quarantine_count(self):
+        return len(self._quarantined_devices)
+
+    @operator_call
+    def command(self, device_id, requested, *, command_id, effective=None, available=True,
+                run_id=None, expected_revision=None):
+        identifier(command_id)
+        if type(available) is not bool:
+            raise LiveError('INVALID_ARGUMENT')
+        actual = requested if effective is None else effective
+        existing = self._legacy_command_results.get(command_id)
+        outcome, error = 'FAILED', 'DEVICE_UNAVAILABLE'
+        execution = None
+        try:
+            execution = self.execute_actuator_command(
+                device_id, 'legacy', {},
+                command_id=command_id, available=available, run_id=run_id,
+                expected_revision=expected_revision,
+                legacy_request=(requested, effective),
+            )
+            actual = execution['effective']
+            outcome, error = ('COMPLETED' if actual == requested else 'PARTIAL'), None
+        except LiveError as failure:
+            if failure.code in ('INVALID_ARGUMENT', 'UNSUPPORTED_COMMAND', 'UNSUPPORTED_DEVICE',
+                                'IDEMPOTENCY_CONFLICT', 'OLD_RUN', 'STATE_CONFLICT'):
+                raise
+            error = failure.code
+        if existing is not None:
+            return plain(existing)
+        self._event('ACTION_REQUESTED', {'command_id': command_id, 'device_id': device_id})
+        result_data = {'command_id': command_id, 'device_id': device_id, 'status': outcome,
+                       'requested': requested,
+                       'effective': actual if available and error is None else None,
+                       'error': error, 'run_id': self._run_id}
+        if execution is not None:
+            result_data['effect_id'] = execution['effect_id']
+        result = freeze(result_data)
         self._event('ACTION_FAILED' if outcome == 'FAILED' else 'ACTION_COMPLETED', plain(result))
+        if execution is not None and len(self._legacy_command_results) < 1024:
+            self._legacy_command_results = freeze({
+                **self._legacy_command_results,
+                command_id: result,
+            })
         return plain(result)
-
-
-def command_effect(device_id, requested, effective):
-    actual = requested if effective is None else effective
-    if device_id == 'A-VALVE-01':
-        numeric(requested, 0, 1)
-        numeric(actual, 0, 1)
-        return 'valve', {'opening': actual}, actual
-    if device_id == 'A-PUMP-01':
-        if type(requested) is not bool or type(actual) is not bool:
-            raise LiveError('INVALID_ARGUMENT')
-        return ('pump_on' if actual else 'pump_off'), {}, actual
-    if device_id in ('A-SIG-01', 'A-SIG-02'):
-        if requested not in ('normal', 'priority', 'stop') or actual not in ('normal', 'priority', 'stop'):
-            raise LiveError('UNSUPPORTED_COMMAND')
-        return 'signal_' + actual, {
-            'target': 'J-D1' if device_id == 'A-SIG-01' else 'J-D2'}, actual
-    if device_id in ('A-SW-ESS', 'A-SW-URBAN', 'A-SW-IND'):
-        if type(requested) is not bool or type(actual) is not bool:
-            raise LiveError('INVALID_ARGUMENT')
-        return 'feeder', {'target': 'F-' + device_id[5:], 'closed': actual}, actual
-    raise LiveError('UNSUPPORTED_DEVICE')
 
 
 def disturbances(physical):

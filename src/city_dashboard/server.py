@@ -7,6 +7,7 @@ from threading import BoundedSemaphore, Thread
 from city_live.records import LiveError, exact_keys, integer
 from .frames import capture_operator_frame, read_reported_frame
 from .security import RateLimit, Sessions
+from twin_interface.health import liveness_report, readiness_http_status, readiness_report
 
 WEB = Path(__file__).with_name('web')
 ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
@@ -18,7 +19,21 @@ ASSETS.update({'/map-layout.json': ('map-layout.json', 'application/json'),
 ERROR_STATUS = {'NOT_AUTHORIZED': 401, 'OLD_RUN': 409, 'HISTORY_GAP': 409,
                 'CURSOR_INVALID': 400, 'CLOSED': 503, 'RATE_LIMITED': 429,
                 'SESSION_LIMIT': 429, 'STATE_CONFLICT': 409, 'IDENTITY_CONFLICT': 409,
-                'COMMAND_BUDGET_EXHAUSTED': 429}
+                'INVALID_STATE': 409, 'DEVICE_UNAVAILABLE': 409,
+                'SCENARIO_ACTIVE': 409,
+                'IDEMPOTENCY_CONFLICT': 409,
+                'RECOVERY_REQUIRED': 409, 'PERSISTENCE_FAILURE': 503,
+                'DEVICE_NOT_FOUND': 404, 'GUARDIAN_RESTRICTED': 403,
+                'INVALID_ARGUMENT': 400, 'UNSUPPORTED_COMMAND': 400,
+                'UNSUPPORTED_DEVICE': 404, 'COMMAND_BUDGET_EXHAUSTED': 429}
+
+
+def command_error_code(code):
+    return {
+        'UNSUPPORTED_DEVICE': 'DEVICE_NOT_FOUND',
+        'INVALID_ARGUMENT': 'INVALID_PARAM',
+        'UNSUPPORTED_COMMAND': 'INVALID_PARAM',
+    }.get(code, code)
 
 
 def strict_object(pairs):
@@ -176,7 +191,8 @@ class DashboardBridge:
                         return
                     self._route(body)
                 except LiveError as error:
-                    self._error(ERROR_STATUS.get(error.code, 400), error.code)
+                    code = command_error_code(error.code)
+                    self._error(ERROR_STATUS.get(code, 400), code)
                 except (ValueError, UnicodeError, RecursionError):
                     self._error(400, 'INVALID_ARGUMENT')
                 except (OSError, TimeoutError):
@@ -188,6 +204,16 @@ class DashboardBridge:
                 if self.command == 'GET' and self.path in ASSETS:
                     name, mime = ASSETS[self.path]
                     self._reply(200, (WEB / name).read_bytes(), mime=mime)
+                elif self.command == 'GET' and self.path in (
+                    '/health', '/health/live', '/health/ready'
+                ):
+                    if self.path == '/health/live':
+                        report = liveness_report('dashboard')
+                        status = 200
+                    else:
+                        report = bridge.health_report()
+                        status = readiness_http_status(report)
+                    self._reply(status, report)
                 elif self.command == 'GET' and self.path == '/api/report/frame':
                     self._reply(200, {'ok': True, 'data': bridge._reports.frame()})
                 elif self.command == 'GET' and self.path == '/api/operator/frame':
@@ -195,7 +221,19 @@ class DashboardBridge:
                     self._reply(200, {'ok': True, 'data': capture_operator_frame(bridge._owner)})
                 elif self.command == 'POST' and self.path == '/api/operator/command':
                     bridge._sessions.require(self.headers.get('Cookie'))
-                    self._reply(200, {'ok': True, 'data': bridge._owner.operator_request(body)})
+                    result = bridge._owner.operator_request(body)
+                    command_result = result.get('result')
+                    if (type(command_result) is dict and
+                            command_result.get('status') == 'FAILED'):
+                        code = command_error_code(command_result['error'])
+                        self._error(ERROR_STATUS.get(code, 400), code)
+                    else:
+                        self._reply(200, {'ok': True, 'data': result})
+                elif self.command == 'POST' and self.path == '/api/operator/scenario':
+                    bridge._sessions.require(self.headers.get('Cookie'))
+                    exact_keys(body, ('scenario_id',))
+                    result = bridge._owner.start_b_scenario(body['scenario_id'])
+                    self._reply(200, {'ok': True, 'data': result})
                 elif self.command == 'POST' and self.path in ('/api/session', '/api/logout'):
                     self._session(body)
                 else:
@@ -218,6 +256,15 @@ class DashboardBridge:
     def is_alive(self):
         return self._thread is not None and self._thread.is_alive()
 
+    def health_report(self):
+        return readiness_report(
+            'dashboard',
+            self._owner,
+            required_checks={
+                'dashboard_bridge': not self._closed and self.is_alive,
+            },
+        )
+
     def start(self):
         if self._closed or self._thread is not None:
             raise LiveError('INVALID_STATE')
@@ -228,8 +275,12 @@ class DashboardBridge:
         if self._closed:
             return
         self._closed = True
-        if self._thread is not None:
-            self._http.shutdown()
-            self._thread.join(timeout=5)
-        self._http.server_close()
-        self._owner.close()
+        try:
+            if self._thread is not None:
+                self._http.shutdown()
+                self._thread.join(timeout=5)
+        finally:
+            try:
+                self._http.server_close()
+            finally:
+                self._owner.close()
