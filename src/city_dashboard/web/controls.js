@@ -15,6 +15,7 @@ export class OperatorControls {
    this.send('incident',{operation,params});
   });
   el('preset-go').addEventListener('click',()=>this.send('preset',{name:el('preset').value,delay:0}));
+  el('scenario-start').addEventListener('click',()=>this.startScenario());
   el('advanced-command').addEventListener('submit',event=>{event.preventDefault();try{this.send(el('command-kind').value,JSON.parse(el('command-args').value));}catch{el('command-result').textContent='Invalid JSON arguments. No command sent.';}});
   el('retry-command').addEventListener('click',()=>{if(this.retry)this.deliver(this.retry);});
  }
@@ -29,7 +30,23 @@ export class OperatorControls {
   for(const id of ['step','reset-city','set-traffic','apply-incident','preset-go','advanced-submit','device-apply']){
    const reset=id==='reset-city';el(id).disabled=!usable||!(reset?['READY','PAUSED','STOPPED','ERROR','BUDGET_EXHAUSTED']:['READY','PAUSED','STOPPED']).includes(state);
   }
+  const activeScenario=f?.scenario?.status==='RUNNING';
+  el('scenario-start').disabled=!usable||activeScenario||!['READY','RUNNING','PAUSED','STOPPED'].includes(state);
+  el('scenario-status').textContent=f?.scenario
+   ? `${f.scenario.scenario_id} · ${f.scenario.status} · correlation ${f.scenario.correlation_id} · Guardian policy ${f.scenario.guardian_policy}`
+   : 'No scenario started.';
   el('retry-command').disabled=!usable||!this.retry;el('retry-command').hidden=!this.retry;
+ }
+ async startScenario(){
+  if(!this.allowed()||this.store.stale||this.busy||this.store.frame?.visibility!=='PRIVATE_OPERATOR_ONLY')return;
+  this.busy=true;this.render();el('scenario-status').textContent='Scenario start pending.';
+  try{
+   const result=await requestJSON('/api/operator/scenario',{scenario_id:el('scenario-select').value});
+   if(this.store.frame)this.store.frame={...this.store.frame,scenario:result};
+   el('scenario-status').textContent=`${result.scenario_id} · ${result.status} · correlation ${result.correlation_id}. Brain/Guardian must use the existing inbound contracts; no positive Guardian approval is available.`;
+  }catch(failure){
+   el('scenario-status').textContent=`Scenario start failed: ${failure.message}. No retry was sent.`;
+  }finally{this.busy=false;this.render();}
  }
  send(kind,args){
   if(!this.allowed()||this.store.stale||this.busy||this.store.frame?.visibility!=='PRIVATE_OPERATOR_ONLY')return;

@@ -1,22 +1,24 @@
 """One serialized real-core owner, with wall pacing outside fixed-step physics."""
 from dataclasses import replace
 from functools import wraps
+import sqlite3
 from threading import Condition, RLock, Thread, current_thread
 import time
 
 from city_core import build_city
 from city_core.catalog import CONTRACT_VERSION
 from city_core.effect_records import DRIVERS
-from city_core.replay import export_replay
+from city_core.lifecycle import MAX_RUNS
+from city_core.replay import export_replay, replay_recording
 from city_core.transitions import freeze, plain
 from .history import PublicReader, PublicStore
 from .records import (Action, EPOCH, Event, LiveError, VERSION, identifier, integer,
                       numeric, require, timestamp, utc_epoch)
 from .scenarios import PRESETS, effect_for, validate
 from .sensors import SensorBank
+from .b_scenarios import ScenarioRunner
 from .demand import TrafficDemand
 from .operator import OperatorControls
-from .sensor_physics import SensorPhysics, advance as advance_sensor_physics, measurements
 
 
 def serialized(method):
@@ -31,7 +33,7 @@ def serialized(method):
 
 class LiveCity(OperatorControls):
     def __init__(self, run_id='live-001', *, seed=1, epoch=EPOCH, history_limit=512,
-                 action_limit=2048, tick_budget=10000):
+                 action_limit=2048, tick_budget=10000, persistence_path=None):
         identifier(run_id)
         integer(seed, 0, 2**63 - 1)
         self._epoch = utc_epoch(epoch)
@@ -41,26 +43,66 @@ class LiveCity(OperatorControls):
         self._condition = Condition(RLock())
         self._core = require(build_city(run_id))
         self._run_id, self._seed = run_id, seed
+        self._persistence = None
+        self._durable_revision = 0
+        if persistence_path is not None:
+            from twin_persistence import SQLiteTwinPersistence
+            try:
+                self._persistence = SQLiteTwinPersistence(persistence_path)
+                self._persistence.recover_incomplete_requests()
+                restored = self._persistence.load_active_replay()
+                if restored is not None:
+                    self._run_id, replay = restored
+                    self._core = require(replay_recording(replay, self._run_id))
+                    self._durable_revision = replay["final_context"]["revision"]
+            except (sqlite3.Error, OSError, RuntimeError, ValueError, LiveError):
+                if self._persistence is not None:
+                    self._persistence.close()
+                    self._persistence = None
+                raise
         self._state, self._speed, self._error = 'READY', 1.0, None
         self._thread = None
         self._initialized = False
         self._dashboard_seq = 0
         self._operator_requests = freeze({})
         self._actuator_requests = freeze({})
-        self._quarantined_devices = {}
         self._store = PublicStore(limit=self._history_limit)
         self.public = PublicReader(self._store)
         self._sensors = SensorBank(seed, self._epoch)
         self._reset_adapters()
+        if self._persistence is not None:
+            try:
+                if self._persistence.active_run_id() is None:
+                    replay = plain(require(export_replay(self._core.lifecycle, self._run_id)))
+                    self._persistence.initialize_run(replay)
+                    self._durable_revision = 0
+                else:
+                    self._quarantined_devices = self._persistence.quarantines()
+                    self._effect_counter = self._effect_count()
+            except (sqlite3.Error, OSError, RuntimeError, ValueError, LiveError):
+                self._persistence.close()
+                self._persistence = None
+                raise
+        self._scenario_runner = ScenarioRunner(self)
         self._initialized = True
 
     def _reset_adapters(self):
-        self._actions, self._legacy_command_results, self._events = (), freeze({}), ()
+        self._actions, self._commands, self._events = (), freeze({}), ()
+        self._legacy_command_results = freeze({})
+        self._actuator_requests = freeze({})
         self._effect_counter, self._private_seq = 0, 0
+        self._quarantined_devices = {}
         self._traffic = TrafficDemand(self._seed)
-        self._sensor_physics = SensorPhysics()
         self._sensors.reset()
         self._store.reset(self._run_id)
+        if hasattr(self, '_scenario_runner'):
+            self._scenario_runner.reset()
+
+    def _scenario_event(self, details):
+        self._event('SCENARIO_LIFECYCLE', details)
+        sink = getattr(self, '_scenario_event_sink', None)
+        if sink is not None:
+            sink(details)
 
     def _snapshot(self):
         return require(self._core.observations.read_private(self._run_id))
@@ -74,7 +116,7 @@ class LiveCity(OperatorControls):
                       details.get('action_id'))
         self._events = (*self._events, event)[-self._history_limit:]
 
-    def _effect(self, effect):
+    def _effect(self, effect, *, persist=True):
         context = self._snapshot().context
         source = 'B_SCENARIO' if effect['tag'] in DRIVERS else 'B_ACTUATOR'
         effect_id = f'live-{self._effect_counter + 1:010d}'
@@ -84,7 +126,63 @@ class LiveCity(OperatorControls):
         handle = self._core.scenarios if source == 'B_SCENARIO' else self._core.actuators
         receipt = require(handle.apply_effect(request))
         self._effect_counter += 1
+        if persist and self._persistence is not None:
+            self._persist_core()
         return receipt
+
+    def _effect_count(self):
+        replay = plain(require(export_replay(self._core.lifecycle, self._run_id)))
+        return sum(record['cause'] == 'EFFECT' for record in replay['records'])
+
+    def _persist_core(self, *, request_id=None, result=None):
+        if self._persistence is None:
+            return
+        context = self._snapshot().context
+        records = []
+        cursor = self._durable_revision - 1
+        while cursor + 1 < context.revision:
+            page = require(self._core.lifecycle.read_private_transitions(
+                self._run_id, cursor, min(1000, context.revision - cursor - 1),
+            ))
+            batch = [plain(record) for record in page.records]
+            if not batch:
+                raise LiveError('PERSISTENCE_REVISION_CONFLICT')
+            records.extend(batch)
+            cursor = page.next_after_index
+        final_digest = records[-1]['after_digest'] if records else None
+        if final_digest is None:
+            loaded = self._persistence.load_active_replay()
+            if loaded is None:
+                raise LiveError('PERSISTENCE_RUN_NOT_FOUND')
+            final_digest = loaded[1]['final_digest']
+        try:
+            self._persistence.persist_transitions(
+                self._run_id,
+                records,
+                plain(context),
+                final_digest,
+                request_id=request_id,
+                result=result,
+            )
+        except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
+            self._restore_durable_core()
+            raise LiveError('PERSISTENCE_FAILURE') from error
+        self._durable_revision = context.revision
+
+    def _restore_durable_core(self):
+        if self._persistence is None:
+            return
+        try:
+            restored = self._persistence.load_active_replay()
+            if restored is None:
+                raise RuntimeError('PERSISTENCE_RUN_NOT_FOUND')
+            self._run_id, replay = restored
+            self._core = require(replay_recording(replay, self._run_id))
+            self._durable_revision = replay['final_context']['revision']
+            self._effect_counter = self._effect_count()
+        except (sqlite3.Error, OSError, RuntimeError, ValueError, LiveError) as error:
+            self._state, self._error = 'ERROR', 'PERSISTENCE_FAILURE'
+            raise LiveError('PERSISTENCE_FAILURE') from error
 
     def _run_check(self, run_id):
         identifier(run_id)
@@ -113,6 +211,8 @@ class LiveCity(OperatorControls):
         if context.tick >= self._tick_budget:
             self._state, self._error = 'BUDGET_EXHAUSTED', 'BUDGET_EXHAUSTED'
             raise LiveError('BUDGET_EXHAUSTED')
+        next_tick = context.tick + 1
+        self._scenario_runner.advance(next_tick)
         self._actions = tuple(self._execute(action) if action.status == 'PENDING'
             and action.due_tick <= context.tick else action for action in self._actions)
         physical = self._snapshot().physical_state
@@ -122,16 +222,19 @@ class LiveCity(OperatorControls):
                 'arrival_rate_veh_s': rate, 'obstruction_fraction': physical.roads[road].obstruction_fraction})
         before = self._snapshot()
         committed = require(self._core.lifecycle.advance_one(self._run_id, before.context.revision))
+        if self._persistence is not None:
+            self._persist_core()
         departures = {road: max(0, old.queue_vehicles + old.arrival_rate_veh_s
             - committed.physical_state.roads[road].queue_vehicles)
             for road, old in before.physical_state.roads.items()}
-        self._sensor_physics = advance_sensor_physics(self._sensor_physics, committed, self._epoch)
-        expired = self._sensors.capture(committed, departures, measurements(self._sensor_physics))
+        expired = self._sensors.capture(committed, departures)
         for sensor_id in expired:
             self._event('FAULT_CLEARED', {'sensor_id': sensor_id, 'automatic': True})
         previous = self._sensors.latest
         with self._store.lock:
             readings = self._sensors.sample(committed.context.tick, self._store.append)
+        self._scenario_runner.observe(readings, committed.context.tick)
+        self._scenario_runner.finish(committed.context.tick)
         for reading in readings:
             prior = previous.get(reading['sensor_id'])
             if prior is not None and prior['status'] != reading['status']:
@@ -204,12 +307,75 @@ class LiveCity(OperatorControls):
     @serialized
     def reset(self, new_run_id):
         identifier(new_run_id)
+        if self._persistence is not None:
+            try:
+                if self._persistence.run_exists(new_run_id):
+                    raise LiveError('RUN_ID_REUSED')
+                if self._persistence.run_count() >= MAX_RUNS:
+                    raise LiveError('MODEL_LIMIT')
+            except LiveError:
+                raise
+            except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
+                raise LiveError('PERSISTENCE_FAILURE') from error
+        if hasattr(self, '_scenario_runner'):
+            self._scenario_runner.reset()
+        previous_run_id = self._run_id
         current = self._snapshot().context
         require(self._core.lifecycle.reset(self._run_id, current.revision, new_run_id))
         self._run_id = new_run_id
         self._state, self._error = 'READY', None
         self._reset_adapters()
+        if self._persistence is not None:
+            try:
+                replay = plain(require(export_replay(self._core.lifecycle, self._run_id)))
+                self._persistence.initialize_run(replay)
+                self._durable_revision = 0
+            except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
+                self._run_id = previous_run_id
+                self._restore_durable_core()
+                raise LiveError('PERSISTENCE_FAILURE') from error
         self._condition.notify_all()
+
+    @serialized
+    def start_b_scenario(self, name):
+        if self._state not in ('READY', 'RUNNING', 'PAUSED', 'STOPPED'):
+            raise LiveError('INVALID_STATE')
+        self._scenario_runner.start(name)
+        return self._scenario_runner.status()
+
+    @serialized
+    def set_scenario_event_sink(self, sink):
+        if sink is not None and not callable(sink):
+            raise LiveError('INVALID_ARGUMENT')
+        self._scenario_event_sink = sink
+
+    @serialized
+    def scenario_command_guard(self, device_id, role, context=None, request_id=None):
+        self._scenario_runner.command_guard(
+            device_id, role, context, request_id=request_id
+        )
+
+    @serialized
+    def scenario_command_started(self, device_id, command, request_id, role, context):
+        return self._scenario_runner.command_started(
+            device_id, command, request_id, role, context
+        )
+
+    @serialized
+    def scenario_command_finished(
+        self, correlation_id, device_id, command, request_id, result=None, error=None
+    ):
+        self._scenario_runner.command_finished(
+            correlation_id, device_id, command, request_id, result, error
+        )
+
+    @serialized
+    def scenario_guardian_action(self, device_id, action, reason=''):
+        return self._scenario_runner.guardian_action(device_id, action, reason)
+
+    @serialized
+    def scenario_guardian_call_guard(self, device_id, operation, role):
+        self._scenario_runner.guardian_call_guard(device_id, operation, role)
 
     def close(self):
         with self._condition:
@@ -219,6 +385,9 @@ class LiveCity(OperatorControls):
             self._thread.join(timeout=5)
             if self._thread.is_alive():
                 raise LiveError('SHUTDOWN_TIMEOUT')
+        if self._persistence is not None:
+            self._persistence.close()
+            self._persistence = None
 
     def status(self):
         with self._condition:
@@ -230,7 +399,6 @@ class LiveCity(OperatorControls):
                     'pending_actions': sum(a.status == 'PENDING' for a in self._actions)}
 
     def health(self):
-        """Check lifecycle and city_core availability without changing city state."""
         condition = getattr(self, '_condition', None)
         if condition is None:
             return {
@@ -290,7 +458,8 @@ class LiveCity(OperatorControls):
                 'status': status, 'diagnostics': self.diagnostics(),
                 'comparisons': plain(tuple(self._sensors.latest.values())),
                 'readings': self.public.observations(), 'sensors': self.sensors(),
-                'actions': self.actions(), 'events': self.events()['events']}
+                'actions': self.actions(), 'events': self.events()['events'],
+                'scenario': self._scenario_runner.status()}
 
     @serialized
     def schedule(self, action_id, due_tick, kind, params=None, *, run_id):

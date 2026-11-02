@@ -46,12 +46,16 @@ def main() -> int:
         )
         return 2
 
-    city = LiveCity(args.run_id)
-    logger = ScenarioLogger("mcp", args.run_id, log_dir=ROOT / "logs")
+    persistence_path = Path(os.environ.get(
+        "TWIN_STATE_DB_PATH", str(ROOT / "logs" / "twin-state.sqlite3"),
+    ))
+    city = LiveCity(args.run_id, persistence_path=persistence_path)
+    active_run_id = city.status()["run_id"]
+    logger = ScenarioLogger("mcp", active_run_id, log_dir=ROOT / "logs")
     facade = TwinFacade(city, event_store=EventStore(), scenario_logger=logger)
     logger.log_start(sim_tick=0, config={"transport": args.transport})
 
-    print(f"Twin MCP server starting ({args.transport}) for run '{args.run_id}'.")
+    print(f"Twin MCP server starting ({args.transport}) for run '{active_run_id}'.")
     print(f"Audit log: {logger.log_path}")
     try:
         create_mcp_server(facade).run(transport=args.transport)

@@ -20,7 +20,9 @@ ERROR_STATUS = {'NOT_AUTHORIZED': 401, 'OLD_RUN': 409, 'HISTORY_GAP': 409,
                 'CURSOR_INVALID': 400, 'CLOSED': 503, 'RATE_LIMITED': 429,
                 'SESSION_LIMIT': 429, 'STATE_CONFLICT': 409, 'IDENTITY_CONFLICT': 409,
                 'INVALID_STATE': 409, 'DEVICE_UNAVAILABLE': 409,
+                'SCENARIO_ACTIVE': 409,
                 'IDEMPOTENCY_CONFLICT': 409,
+                'RECOVERY_REQUIRED': 409, 'PERSISTENCE_FAILURE': 503,
                 'DEVICE_NOT_FOUND': 404, 'GUARDIAN_RESTRICTED': 403,
                 'INVALID_ARGUMENT': 400, 'UNSUPPORTED_COMMAND': 400,
                 'UNSUPPORTED_DEVICE': 404, 'COMMAND_BUDGET_EXHAUSTED': 429}
@@ -133,25 +135,6 @@ class DashboardBridge:
             def _error(self, code, name):
                 self._reply(code, {'ok': False, 'error': {'code': name}})
 
-            def _discard_small_body(self, length=None):
-                if length is None:
-                    lengths = self.headers.get_all('Content-Length', [])
-                    if (self.headers.get('Transfer-Encoding') or len(lengths) != 1 or
-                            not lengths[0].isascii() or not lengths[0].isdigit()):
-                        return
-                    try:
-                        length = int(lengths[0])
-                    except ValueError:
-                        return
-                if length > 65536:
-                    return
-                remaining = length
-                while remaining:
-                    chunk = self.rfile.read(min(8192, remaining))
-                    if not chunk:
-                        return
-                    remaining -= len(chunk)
-
             def _guard(self):
                 hosts = self.headers.get_all('Host', [])
                 origins = self.headers.get_all('Origin', [])
@@ -159,18 +142,12 @@ class DashboardBridge:
                     (origins and origins != [bridge.url]) or
                     self.headers.get('Sec-Fetch-Site') not in (None, 'same-origin', 'none') or
                     (self.command == 'POST' and origins != [bridge.url])):
-                    if self.command == 'POST':
-                        self._discard_small_body()
                     self._error(403, 'ORIGIN_REJECTED')
                     return False
                 if not bridge._rate.allow():
-                    if self.command == 'POST':
-                        self._discard_small_body()
                     self._error(429, 'RATE_LIMITED')
                     return False
                 if '?' in self.path or len(self.path) > 128:
-                    if self.command == 'POST':
-                        self._discard_small_body()
                     self._error(400, 'INVALID_ARGUMENT')
                     return False
                 return True
@@ -192,14 +169,9 @@ class DashboardBridge:
                     raise LiveError('INVALID_ARGUMENT')
                 length = int(lengths[0])
                 if length > 4096:
-                    # Drain small rejected bodies before closing the HTTP/1.0
-                    # socket so clients can reliably receive the 413 response.
-                    if length <= 65536:
-                        self._discard_small_body(length)
                     self._error(413, 'BODY_TOO_LARGE')
                     return None
                 if self.headers.get('Content-Type') != 'application/json':
-                    self._discard_small_body(length)
                     self._error(415, 'CONTENT_TYPE')
                     return None
                 raw = self.rfile.read(length)
@@ -257,6 +229,11 @@ class DashboardBridge:
                         self._error(ERROR_STATUS.get(code, 400), code)
                     else:
                         self._reply(200, {'ok': True, 'data': result})
+                elif self.command == 'POST' and self.path == '/api/operator/scenario':
+                    bridge._sessions.require(self.headers.get('Cookie'))
+                    exact_keys(body, ('scenario_id',))
+                    result = bridge._owner.start_b_scenario(body['scenario_id'])
+                    self._reply(200, {'ok': True, 'data': result})
                 elif self.command == 'POST' and self.path in ('/api/session', '/api/logout'):
                     self._session(body)
                 else:
@@ -299,9 +276,11 @@ class DashboardBridge:
             return
         self._closed = True
         try:
-            self._owner.close()
-        finally:
             if self._thread is not None:
                 self._http.shutdown()
                 self._thread.join(timeout=5)
-            self._http.server_close()
+        finally:
+            try:
+                self._http.server_close()
+            finally:
+                self._owner.close()

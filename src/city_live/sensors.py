@@ -4,7 +4,7 @@ from types import MappingProxyType
 
 from city_core.transitions import freeze, plain
 from .faults import MAX_LAG, create_fault, reported
-from .records import LiveError, timestamp
+from .records import LiveError, identifier, integer, numeric, timestamp
 from .registry import load_registry, replacement
 
 
@@ -40,6 +40,33 @@ class SensorBank:
         # Registration/replacement history intentionally survives run reset.
         self.faults, self.buffers, self.latest = freeze({}), freeze({}), freeze({})
         self.last_valid, self.counter, self.last_tick = freeze({}), 0, 0
+        self.scenario_inputs, self.forced_samples = freeze({}), freeze({})
+
+    def set_scenario_input(self, scenario_id, sensor_id, value):
+        sensor = self.sensor(sensor_id)
+        if sensor.source is None:
+            raise LiveError('SENSOR_UNBOUND')
+        identifier(scenario_id)
+        numeric(value, sensor.hard_limits[0], sensor.hard_limits[1])
+        self.scenario_inputs = freeze({
+            **self.scenario_inputs,
+            sensor_id: {'scenario_id': scenario_id, 'value': float(value)},
+        })
+
+    def clear_scenario_inputs(self, scenario_id):
+        self.scenario_inputs = freeze({
+            key: value for key, value in self.scenario_inputs.items()
+            if value['scenario_id'] != scenario_id
+        })
+        self.forced_samples = freeze({
+            key: tick for key, tick in self.forced_samples.items()
+            if key in self.scenario_inputs
+        })
+
+    def force_sample(self, sensor_id, tick):
+        self.sensor(sensor_id)
+        integer(tick, 0, 100000)
+        self.forced_samples = freeze({**self.forced_samples, sensor_id: tick})
 
     def sensor(self, sensor_id):
         sensor = next((r for r in self.registry if r.sensor_id == sensor_id and r.active), None)
@@ -96,17 +123,29 @@ class SensorBank:
     def sample(self, tick, publish):
         readings = []
         for sensor in sorted(self.registry, key=lambda r: r.sensor_id):
-            if sensor.active and tick % sensor.interval == 0:
-                reading = self._reading(sensor, tick)
+            forced = self.forced_samples.get(sensor.sensor_id) == tick
+            if sensor.active and (tick % sensor.interval == 0 or forced):
+                scenario_input = self.scenario_inputs.get(sensor.sensor_id)
+                reading = self._reading(
+                    sensor,
+                    tick,
+                    scenario_input['value'] if scenario_input is not None else None,
+                    scenario_input is not None,
+                )
                 public = publish(public_reading(reading))
                 private = freeze({**reading, 'seq': public['seq'], 'run_id': public['run_id']})
                 self.latest = MappingProxyType({**self.latest, sensor.sensor_id: private})
                 if private['reported_value'] is not None:
                     self.last_valid = freeze({**self.last_valid, sensor.sensor_id: private['reported_value']})
                 readings.append(private)
+                if forced:
+                    self.forced_samples = freeze({
+                        key: value for key, value in self.forced_samples.items()
+                        if key != sensor.sensor_id
+                    })
         return tuple(readings)
 
-    def _reading(self, sensor, tick):
+    def _reading(self, sensor, tick, scenario_value=None, has_scenario_value=False):
         fault = self.faults.get(sensor.sensor_id)
         sample_tick = tick - fault.params['lag_ticks'] if fault and fault.type == 'DELAYED' else tick
         history = self.buffers.get(sensor.sensor_id, ())
@@ -115,6 +154,8 @@ class SensorBank:
             actual = sum(window) / sensor.interval * 60 if len(window) == sensor.interval else None
         else:
             actual = next((value for t, value in reversed(history) if t == sample_tick), None)
+        if has_scenario_value:
+            actual = scenario_value
         value, status = reported(fault, actual, tick, sensor.sensor_id, self.seed)
         if value is not None:
             value = round(max(sensor.hard_limits[0], min(sensor.hard_limits[1], value)), 2)

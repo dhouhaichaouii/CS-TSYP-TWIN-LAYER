@@ -39,6 +39,9 @@ When Dashboard and MCP must expose the same live sensor readings, use
 `python tools/run_twin.py --dev` instead. It binds both interfaces to one
 LiveCity owner. The dashboard-only and MCP-only launchers above each create
 their own owner; running them separately does not share runtime sensor state.
+To start an existing scenario in that same live runtime, add
+`--scenario scn-02` (or `t5`, `scn-03`, `scn-04`, `scn-05`). The equivalent
+entry point is `python scenarios/run.py --scenario scn-02`.
 
 ---
 
@@ -262,3 +265,30 @@ Only the `evaluator` role may see full ground truth. The automated proof is
 
 For remote connection setup, private token handoff, and partner smoke checks,
 see the [Remote Partner Testing Guide](PARTNER_TESTING.md).
+
+---
+
+## 10. Existing scenario orchestration
+
+The five scenario JSON files are driven by one `LiveCity` scenario runner.
+Scenario start, seeded sensor inputs, Twin readings, partner calls, and command
+outcomes share a scenario correlation ID; observed sensor event IDs are included
+in associated Brain decision and command-result lifecycle records. Scenario
+events are routed to the existing event store, JSONL audit logger, and private
+operator dashboard frame.
+
+The runner does not generate Brain decisions or Guardian verdicts. Brain
+commands and Guardian isolation/restoration must arrive through their existing
+authenticated interfaces. Guardian remains veto-only because the current
+contract has no request-bound positive approval response; a pending status is
+not approval. An accepted actuator command is reported as executed only after
+the existing TwinFacade and LiveCity command path returns its CityCore effect.
+The existing command request ID remains the idempotency key.
+
+The operator dashboard also exposes a session-authenticated, loopback-only
+`POST /api/operator/scenario` route accepting exactly `{"scenario_id":"t5"}`.
+This is a local dashboard control and does not change MCP tools or the partner
+REST routes. SCN-05's `RES-AIR-TEST-01` remains fixture-only and is never added
+to the sensor registry. In SCN-04, `PRT-PMP-02` currently shares the same
+CityCore physical target as `PRT-PMP-01`, so it is not an eligible fallback
+after that target is quarantined.

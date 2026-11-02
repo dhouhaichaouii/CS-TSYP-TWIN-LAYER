@@ -20,7 +20,11 @@ def build_runtime(run_id, *, dev=False):
     from twin_observability.event_store import EventStore
     from twin_observability.scenario_log import ScenarioLogger
 
-    city = LiveCity(run_id)
+    persistence_path = Path(os.environ.get(
+        "TWIN_STATE_DB_PATH", str(ROOT / "logs" / "twin-state.sqlite3"),
+    ))
+    city = LiveCity(run_id, persistence_path=persistence_path)
+    run_id = city.status()["run_id"]
     logger = ScenarioLogger("twin", run_id, log_dir=ROOT / "logs")
     facade = TwinFacade(city, event_store=EventStore(), scenario_logger=logger)
     return city, facade, logger
@@ -33,6 +37,10 @@ def main():
     parser.add_argument("--mcp-transport", choices=("sse", "streamable-http"), default="sse")
     parser.add_argument("--run-id", default="twin-shared-001")
     parser.add_argument("--dev", action="store_true")
+    parser.add_argument(
+        "--scenario",
+        help="Start an existing live scenario in the shared Twin runtime",
+    )
     args = parser.parse_args()
 
     city = facade = logger = bridge = None
@@ -55,6 +63,13 @@ def main():
             "mcp_port": args.mcp_port,
             "mcp_transport": args.mcp_transport,
         })
+        if args.scenario:
+            scenario_status = city.start_b_scenario(args.scenario)
+            print(
+                f"Scenario started: {scenario_status['scenario_id']} "
+                f"(correlation {scenario_status['correlation_id']})",
+                flush=True,
+            )
         bridge = DashboardBridge(city, secret, port=args.dashboard_port)
         del secret
         mcp = create_mcp_server(facade)

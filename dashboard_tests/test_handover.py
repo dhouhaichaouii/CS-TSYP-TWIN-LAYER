@@ -6,6 +6,7 @@ import http.client
 import importlib.util
 import io
 import json
+import os
 import queue
 import shutil
 import socket
@@ -26,8 +27,10 @@ class HandoverTests(unittest.TestCase):
     def test_browser_open_uses_only_loopback_url_and_cleanup(self):
         spec=importlib.util.spec_from_file_location('dashboard_launch_check',PACKAGE/'tools/run_dashboard.py')
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-        with patch.object(sys,'argv',['run_dashboard.py','--port','0','--open']),patch.object(sys,'stdin',io.StringIO('test-handover-credential!\nquit\n')),contextlib.redirect_stdout(io.StringIO()) as output,patch('webbrowser.open',return_value=True) as opened:
-            self.assertEqual(module.main(),0)
+        with tempfile.TemporaryDirectory(prefix='dashboard-state-') as state_dir:
+            with patch.dict(os.environ, {'TWIN_STATE_DB_PATH': str(Path(state_dir)/'twin.sqlite3')}):
+                with patch.object(sys,'argv',['run_dashboard.py','--port','0','--open']),patch.object(sys,'stdin',io.StringIO('test-handover-credential!\nquit\n')),contextlib.redirect_stdout(io.StringIO()) as output,patch('webbrowser.open',return_value=True) as opened:
+                    self.assertEqual(module.main(),0)
         self.assertEqual(opened.call_count,1)
         self.assertRegex(opened.call_args.args[0],r'^http://127\.0\.0\.1:[0-9]+$')
         self.assertNotIn('test-handover-credential!',output.getvalue())

@@ -1,30 +1,46 @@
 # Phase 1 Test Book
 
-The commands below each launch exactly one scenario. Each run creates a new,
-append-only JSON Lines timeline under `logs/`; event records include a run ID,
-sequence number, simulated tick, layer, event type, and correlation ID.
+## Shared scenario pipeline
 
-**Integration boundary:** This repository contains the Twin registry, sensor,
-and actuator engines, but no Guardian or City Brain service implementation.
-`scenarios/run.py` therefore exercises the real Twin code and emits explicitly
-labeled deterministic scenario-adapter events for Guardian and City Brain.
-Those adapter verdicts and decisions are test fixtures, not evidence that
-external Guardian/Brain services ran. The air-quality feed in SCN-05 is also a
-scenario-local fixture because no Residential air-quality sensor is present in
-the immutable device seed. Completed actuator effects are logged as returned
-data; the runner does not apply them to `city_core`.
+All six existing JSON scenarios use `LiveCity`'s `ScenarioRunner`. The runner
+injects only explicitly seeded sensor inputs and declared sensor faults, then
+observes the normal Twin sampling path. It does not fabricate Guardian verdicts
+or Brain decisions. A Brain response is recorded only when an authenticated
+Brain caller uses the existing Twin actuator interface; an isolation or restore
+is recorded only when an authenticated Guardian caller uses the existing
+Guardian interface.
 
-| ID | Name | Layers involved | Description | Trigger | Expected: Twin | Expected: Guardian | Expected: Brain | How to verify |
-|---|---|---|---|---|---|---|---|---|
-| T5 (SCN-01) | Fake flood at the port | Twin, Guardian, City Brain | At tick 5, PRT-WLV-01 reports 180 cm while its physical input remains 40 cm. | `python scenarios/run.py --scenario t5` | The real SensorEngine emits `actual_value: 40.0`, `reported_value: 180.0`, and the sensor is marked RESTRICTED after quarantine. No actuator command is sent. | The deterministic adapter marks the reading UNTRUSTED at the same simulation tick (within the stated 10-second target) and quarantines PRT-WLV-01. | The deterministic adapter refuses the flood response because the only reading is untrusted. | Follow the `correlation_id` from Twin `reading` to Guardian `verdict`, City Brain `decision`, and Twin `actuator_action` (`NOT_DISPATCHED`) in the terminal and `logs/t5-*.log`. |
-| SCN-02 | Harbor basin surge and emergency valve dispatch | Twin, Guardian, City Brain | Authentic rain accumulation raises port basin level from 40 cm to 110 cm. | `python scenarios/run.py --scenario scn-02` | The real SensorEngine reports matching actual/reported 110 cm. The runner records a PENDING timeline marker before dispatch; the real ActuatorEngine advances PRT-PMP-01 from RUNNING to COMPLETED. Completion effects are recorded but not applied to `city_core`. | The deterministic adapter returns TRUSTED after checking dual-state equality. | The deterministic adapter recognizes the >100 cm threshold and dispatches START to PRT-PMP-01. | Follow the reading → TRUSTED → OPEN_DISCHARGE → actuator state events in `logs/scn-02-*.log`; the effect event documents that city_core integration is absent. |
-| SCN-03 | Sensor death and frozen traffic telemetry | Twin, Guardian, City Brain | DTN-TRF-01 freezes at its pre-fault value while IND-TMP-01 dies during the same test step. | `python scenarios/run.py --scenario scn-03` | The real SensorEngine returns the frozen traffic value with the current STUCK contract status (`OK`), and the dead temperature reading is `null` with status FAILED. | The deterministic adapter detects lack of variance and missing telemetry, marks both streams UNTRUSTED, and quarantines both devices. | The deterministic adapter ignores the quarantined feeds and samples compatible backup IND-TMP-02. | Inspect both reading events, Guardian isolation events, and City Brain `fallback_feed` in `logs/scn-03-*.log`. |
-| SCN-04 | Guardian containment prevents unsafe Brain dispatch | Brain, Guardian, Twin | PRT-PMP-01 is quarantined before City Brain requests an operational start. | `python scenarios/run.py --scenario scn-04` | The real ActuatorEngine rejects the primary command with FAILED / GUARDIAN_RESTRICTED, then runs the available backup PRT-PMP-02 command. | The deterministic adapter quarantines PRT-PMP-01 before dispatch. | The deterministic adapter observes rejection, queries the registry's compatible backup, and routes to PRT-PMP-02. | Verify quarantine → rejected command → compatible-device lookup → backup completion in `logs/scn-04-*.log`. |
-| SCN-05 | Concurrent real emergency and spoofing attack | Twin, Guardian, City Brain | An authentic Downtown accident and a spoofed Residential air-quality fixture occur at the same simulation tick. | `python scenarios/run.py --scenario scn-05` | The real traffic SensorEngine reports 105 vehicles/min. The air-quality spoof is an explicitly marked scenario-local fixture (`RES-AIR-TEST-01`), not a seeded device. | The deterministic adapter trusts the traffic reading and quarantines the inconsistent air fixture. | The deterministic adapter dispatches the Downtown priority signal and suppresses the response to the untrusted air fixture. | Compare the separate traffic and air `correlation_id` chains in `logs/scn-05-*.log`; confirm signal completion and no air-response dispatch. |
+Guardian integration is currently veto-only: there is no request-bound positive
+approval API. `GUARDIAN_PENDING` means that no real verdict has arrived;
+`GUARDIAN_REJECTED` records a real inbound isolation action. Twin permissions,
+device quarantine, command validation, idempotency, and CityCore checks still
+apply before any effect. Successful actuator receipts identify the committed
+CityCore effect. Partner services are not launched by this repository, so a
+scenario can remain pending until the Brain or Guardian team calls the existing
+interfaces. The local scenario selector is available after authenticating the
+operator dashboard.
 
-## Run and inspect
+The Residential `RES-AIR-TEST-01` observation in SCN-05 is a scenario-local
+fixture, not a sensor in the Twin registry. It appears as a clearly labeled
+scenario event and is never registered or sampled as hardware. SCN-04's listed
+backup pump `PRT-PMP-02` shares a CityCore physical target with `PRT-PMP-01`;
+quarantining the primary therefore also makes this alias ineligible as a
+fallback. The runner does not bypass that quarantine or invent another device.
 
-Run any one scenario from the repository root:
+| ID | Existing scenario data | Shared Twin behavior | Partner behavior and command outcome |
+|---|---|---|---|
+| T5 / SCN-01 | Port flood spoof: PRT-WLV-01 actual input 40 cm, reported value 180 cm from the declared false-reading fault. | Samples through SensorBank; exposes the actual/reported mismatch in private Twin diagnostics and lifecycle events. Unsafe Brain commands linked to the untrusted sensor are rejected unless a validated registered backup reading is supplied. | Guardian is pending until it actually isolates the sensor. Brain is pending until an actual command or response arrives. No automatic flood action is fabricated. |
+| SCN-02 | Port level seeded to 110 cm from the existing scenario definition. | Forces a real Twin sensor sample of the seeded value and publishes it through the ordinary reading path. | The dashboard and MCP/REST consumers can observe it. A Brain command is applied only after existing permission, idempotency, quarantine, and CityCore validation. |
+| SCN-03 | Existing traffic and temperature sensor faults, plus seeded IND-TMP-02 backup input. | Samples the traffic counter before and during the STUCK fault, and records the dead sensor's failed reading. Backup commands require an existing configured backup whose latest reading is valid, matches actual input, and is linked to the target device. | Guardian and Brain outcomes remain pending until real inbound calls occur. The runner neither invents backup readings nor automatically issues a command. |
+| SCN-04 | Guardian containment of PRT-PMP-01; existing scenario data lists PRT-PMP-02 as backup. | Waits for real Guardian isolation before treating the target as quarantined. Twin rejects a Brain request while isolation is pending and rejects it through the normal quarantine gate after isolation. | PRT-PMP-02 is not an eligible fallback in the current device catalog because it maps to the same physical pump target as PRT-PMP-01. |
+| SCN-05 | Seeded Downtown traffic value and scenario-local Residential air fixture at the same tick. | Publishes the traffic event through SensorBank. Emits the air fixture as a labeled fixture event only; it is not inserted into the hardware registry. | Only an actual Brain command to an existing eligible signal can change CityCore. No Guardian or Brain response is synthesized for the air fixture. |
+| SCN-06 | Controlled, deterministic availability transitions for Brain-facing and Guardian-facing inbound Twin interfaces. | Emits explicit baseline, unavailable, and recovered lifecycle records. Injected failures block Brain commands and Guardian isolate/restore calls; an unavailable Guardian also blocks Brain and operator actuator commands. Quarantine is preserved. | This is local `ScenarioRunner` failure injection, not a network outage or service probe. No Brain decision or Guardian verdict is fabricated. Outage requests are rejected, not queued; delayed requests are evaluated again against current revision and safety gates. |
+
+## Launch and inspect
+
+Start one shared Twin process with an existing scenario. This starts the
+dashboard and FastMCP server against the same `LiveCity`; scenario events are
+written to the normal observability log:
 
 ```text
 python scenarios/run.py --scenario t5
@@ -32,9 +48,62 @@ python scenarios/run.py --scenario scn-02
 python scenarios/run.py --scenario scn-03
 python scenarios/run.py --scenario scn-04
 python scenarios/run.py --scenario scn-05
+python scenarios/run.py --scenario scn-06
 ```
 
-Each invocation creates its own `logs/<scenario-id>-<UTC timestamp>.log` file.
-Files are opened with exclusive creation and are never overwritten. Every JSON
-line is flushed as it is emitted, so a failed run retains its preceding audit
-events and includes a `scenario_failed` record.
+The command prompts for a one-launch operator passphrase. The dashboard and MCP
+are loopback-only by default; the dashboard defaults to `http://127.0.0.1:8765`
+and MCP to port 8000. Optional `--dashboard-port`, `--mcp-port`,
+`--mcp-transport`, `--run-id`, and `--dev` arguments are forwarded to
+`tools/run_twin.py`. Do not enable `--dev` outside local development.
+
+Alternatively, start the shared runtime using `python tools/run_twin.py` and
+launch the scenario from the authenticated dashboard's **Existing scenario**
+selector. Brain and Guardian integrations must use their existing authenticated
+MCP/REST contracts; scenario launch alone does not claim their participation.
+
+Verify:
+
+1. Authenticate to the private operator dashboard and start the chosen
+   scenario, or start it with the command above.
+2. Observe the scenario correlation ID and lifecycle timeline. Sensor events
+   appear in the normal readings and dashboard frame; SCN-05's fixture remains
+   explicitly labeled.
+3. Use the existing Brain/Guardian credentials and interfaces to issue real
+   inbound commands or isolation actions. A pending status is not a service
+   response.
+4. Confirm a successful actuator result has `city_core_updated: true` and a
+   committed effect/revision. A rejected or pending command is not execution.
+5. Replay a successful request ID to verify the existing idempotent receipt is
+   returned without a second physical effect.
+
+Targeted orchestration tests:
+
+```text
+python -m unittest live_tests.test_b_scenario_adapter live_tests.test_scenario_orchestration
+python -m unittest dashboard_tests.test_bridge
+```
+
+Run the full integration campaign and create a unique evidence directory (the
+campaign will not overwrite an existing run):
+
+```text
+python tools/run_scenario_campaign.py
+```
+
+The campaign's overall result may be `FAIL` or `BLOCKED` when it detects
+current durability defects or requires unavailable Brain/Guardian services.
+Read `campaign.json` for per-check `PASS`, `FAIL`, `BLOCKED`, `SKIPPED`, and
+`NOT TESTED` results and the exact evidence paths.
+
+Run the dedicated communication failure/recovery campaign:
+
+```text
+python tools/run_scn06_campaign.py
+```
+
+The campaign creates a unique `test-evidence/scn06-*` directory with a JSON
+report, Twin events, EventStore export, dashboard frame, and sanitized audit
+log. A passing run validates controlled local failure injection only; no
+external Brain or Guardian service is involved. There is no durable pending
+command queue or process-restart recovery in this architecture.

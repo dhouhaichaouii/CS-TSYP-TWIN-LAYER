@@ -18,7 +18,6 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from city_dashboard.asgi import create_dashboard_router
 from city_live.runtime import LiveCity
 from twin_interface.auth import (
     CREDENTIAL_FIELD_NAMES,
@@ -149,72 +148,11 @@ def _load_runtime_settings() -> tuple[str, int, list[str], list[str], Path]:
 
     run_id = os.environ.get("TWIN_RUN_ID") or f"twin-{uuid4().hex}"
     log_dir = Path(os.environ.get("TWIN_LOG_DIR", str(DEFAULT_LOG_DIR)))
-    dashboard_secret = os.environ.get("TWIN_DASHBOARD_SECRET", "")
-    if not 16 <= len(dashboard_secret) <= 256 or dashboard_secret != dashboard_secret.strip():
-        raise RuntimeError("TWIN_DASHBOARD_SECRET must contain 16-256 non-whitespace-padded characters.")
-    if dashboard_secret in token_values.values():
-        raise RuntimeError("TWIN_DASHBOARD_SECRET must be distinct from all role tokens.")
     return run_id, port, allowed_hosts, allowed_origins, log_dir
 
 
-_REST_ENVELOPE_SCHEMA = {
-    "type": "object",
-    "required": ["ok", "run_id", "data", "error", "timestamp"],
-    "properties": {
-        "ok": {"type": "boolean"},
-        "run_id": {"type": ["string", "null"]},
-        "data": {"type": ["object", "null"], "additionalProperties": True},
-        "error": {
-            "type": ["object", "null"],
-            "properties": {
-                "code": {"type": "string"},
-                "message": {"type": "string"},
-                "details": {"type": ["object", "null"], "additionalProperties": True},
-            },
-            "additionalProperties": True,
-        },
-        "timestamp": {"type": "string", "format": "date-time"},
-    },
-}
-
-
-def _rest_responses(description: str) -> dict[str, Any]:
-    return {
-        "200": {
-            "description": description,
-            "content": {"application/json": {"schema": _REST_ENVELOPE_SCHEMA}},
-        },
-        "400": {"description": "Invalid query or request body."},
-        "401": {"description": "Missing or invalid Bearer credential."},
-        "403": {"description": "The authenticated role is not permitted to perform this operation."},
-    }
-
-
-def _query_parameter(name: str, description: str, schema: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "name": name,
-        "in": "query",
-        "required": False,
-        "description": description,
-        "schema": schema,
-    }
-
-
-def _json_request_body(properties: dict[str, Any], required: list[str], description: str) -> dict[str, Any]:
-    return {
-        "description": description,
-        "required": True,
-        "content": {
-            "application/json": {
-                "schema": {
-                    "type": "object",
-                    "required": required,
-                    "properties": properties,
-                    "additionalProperties": False,
-                },
-            },
-        },
-    }
+def _state_database_path(log_dir: Path) -> Path:
+    return Path(os.environ.get("TWIN_STATE_DB_PATH", str(log_dir / "twin-state.sqlite3")))
 
 
 def _build_rest_router() -> APIRouter:
@@ -284,68 +222,21 @@ def _build_rest_router() -> APIRouter:
             status = 403
         return JSONResponse(response, status_code=status)
 
-    routes = (
-        ("/api/v1/sensors", "GET", "get_sensor_readings",
-         "Return the latest public reading for each matching sensor.",
-         {"parameters": [
-             _query_parameter("zone_id", "Filter by city zone.", {"type": "string", "enum": ["PRT", "DTN", "IND", "RES", "HSP"]}),
-             _query_parameter("sensor_id", "Filter to one sensor ID.", {"type": "string", "example": "PRT-WLV-01"}),
-             _query_parameter("sensor_type", "Filter by sensor measurement type, such as water_level, traffic_count, flow, pressure, or temperature.", {"type": "string", "example": "water_level"}),
-         ]},
-         "Latest public sensor readings. Ground-truth and fault internals are excluded."),
-        ("/api/v1/state", "GET", "get_city_state",
-         "Return the current city and infrastructure summary.",
-         {"parameters": [
-             _query_parameter("zone_id", "Limit the summary to one city zone.", {"type": "string", "enum": ["PRT", "DTN", "IND", "RES", "HSP"]}),
-         ]},
-         "Current public city state and active incidents."),
-        ("/api/v1/events", "GET", "get_events_since",
-         "Return events with sequence numbers after the supplied cursor.",
-         {"parameters": [
-             _query_parameter("seq", "Return events after this sequence number; defaults to 0.", {"type": "integer", "minimum": 0, "default": 0}),
-         ]},
-         "Public events after the requested cursor."),
-        ("/api/v1/timeline", "GET", "get_timeline",
-         "Return timeline cards after the supplied event cursor.",
-         {"parameters": [
-             _query_parameter("seq", "Return timeline items after this sequence number; defaults to 0.", {"type": "integer", "minimum": 0, "default": 0}),
-         ]},
-         "Public timeline items after the requested cursor."),
-        ("/api/v1/commands", "POST", "send_actuator_command",
-         "Send an idempotent actuator command to the simulated city.",
-         {"requestBody": _json_request_body({
-             "device_id": {"type": "string", "description": "Actuator ID, for example V-12 or PRT-PMP-01."},
-             "command": {"type": "string", "description": "Supported action for that device, for example set_opening, start, stop, set_speed, open, or close."},
-             "params": {"type": "object", "description": "Command-specific values, such as {open_pct: 60} or {speed_pct: 80}.", "additionalProperties": True},
-             "request_id": {"type": "string", "minLength": 1, "description": "Unique idempotency key; reuse it only to retry the same command."},
-             "context": {"type": "object", "description": "Optional run/revision context or partner metadata.", "additionalProperties": True},
-         }, ["device_id", "command", "request_id"], "Brain actuator command." )},
-         "Command acknowledgement and applied simulation effect."),
-        ("/api/v1/isolate", "POST", "isolate_device",
-         "Quarantine a device using Guardian or Operator authorization.",
-         {"requestBody": _json_request_body({
-             "device_id": {"type": "string", "description": "Device ID to isolate."},
-             "reason": {"type": "string", "description": "Optional audit reason."},
-         }, ["device_id"], "Guardian quarantine request.")},
-         "Device isolation result."),
-        ("/api/v1/restore", "POST", "restore_device",
-         "Restore a quarantined device using Guardian or Operator authorization.",
-         {"requestBody": _json_request_body({
-             "device_id": {"type": "string", "description": "Device ID to restore."},
-         }, ["device_id"], "Guardian restore request.")},
-         "Device restoration result."),
-    )
-    for path, method, name, summary, extra, response_description in routes:
+    for path, methods, name in (
+        ("/api/v1/sensors", ["GET"], "get_sensor_readings"),
+        ("/api/v1/state", ["GET"], "get_city_state"),
+        ("/api/v1/events", ["GET"], "get_events_since"),
+        ("/api/v1/timeline", ["GET"], "get_timeline"),
+        ("/api/v1/commands", ["POST"], "send_actuator_command"),
+        ("/api/v1/isolate", ["POST"], "isolate_device"),
+        ("/api/v1/restore", ["POST"], "restore_device"),
+    ):
         router.add_api_route(
             path,
             dispatch,
-            methods=[method],
+            methods=methods,
             name=name,
             operation_id=name,
-            summary=summary,
-            response_model=None,
-            responses=_rest_responses(response_description),
-            openapi_extra=extra,
         )
     return router
 
@@ -377,18 +268,13 @@ def create_app(
         city = None
         logger = None
         mount: Mount | None = None
-        dashboard_routes = []
         try:
             run_id, port, allowed_hosts, allowed_origins, log_dir = _load_runtime_settings()
-            city = city_factory(run_id)
-            dashboard_router = create_dashboard_router(
-                city,
-                os.environ["TWIN_DASHBOARD_SECRET"],
-                secure_cookies=os.environ.get("TWIN_DASHBOARD_COOKIE_SECURE", "").lower()
-                in {"1", "true", "yes", "on"},
-            )
-            dashboard_routes = list(dashboard_router.routes)
-            app.router.routes.extend(dashboard_routes)
+            if city_factory is LiveCity:
+                city = city_factory(run_id, persistence_path=_state_database_path(log_dir))
+                run_id = city.status()["run_id"]
+            else:
+                city = city_factory(run_id)
             logger = ScenarioLogger("twin", run_id, log_dir=log_dir)
             event_store = EventStore()
             facade = facade_factory(city, event_store=event_store, scenario_logger=logger)
@@ -415,7 +301,6 @@ def create_app(
             app.state.scenario_logger = logger
             app.state.mcp_server = mcp
             app.state.mcp_asgi = mcp_asgi
-            app.state.dashboard_router = dashboard_router
             mount = Mount(MCP_MOUNT_PATH, app=mcp_asgi, name="mcp-streamable-http")
             app.router.routes.append(mount)
             city.start()
@@ -432,12 +317,9 @@ def create_app(
                 finally:
                     if mount is not None and mount in app.router.routes:
                         app.router.routes.remove(mount)
-                    for route in dashboard_routes:
-                        if route in app.router.routes:
-                            app.router.routes.remove(route)
                     for name in (
                         "city", "facade", "event_store", "scenario_logger",
-                        "mcp_server", "mcp_asgi", "dashboard_router",
+                        "mcp_server", "mcp_asgi",
                     ):
                         if hasattr(app.state, name):
                             delattr(app.state, name)
@@ -464,10 +346,7 @@ def create_app(
         else:
             report = facade.health_report(
                 "twin_app",
-                service_checks={
-                    "mcp_service": getattr(request.app.state, "mcp_server", None) is not None,
-                    "dashboard_service": getattr(request.app.state, "dashboard_router", None) is not None,
-                },
+                service_checks={"mcp_service": getattr(request.app.state, "mcp_server", None) is not None},
             )
         return JSONResponse(report, status_code=readiness_http_status(report))
 

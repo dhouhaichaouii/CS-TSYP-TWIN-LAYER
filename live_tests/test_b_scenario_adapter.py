@@ -1,6 +1,7 @@
 """Person B scenario data is adapted into the Person C LiveCity boundary."""
 from types import SimpleNamespace
 import unittest
+from datetime import datetime, timezone
 
 from city_live.b_scenarios import (
     Scenario,
@@ -16,23 +17,32 @@ from city_live.records import LiveError
 class FakeSensors:
     def __init__(self):
         self.present = {'PRT-WLV-01', 'DTN-TRF-01', 'IND-TMP-01', 'IND-TMP-02'}
-        self.truth = {}
+        self.inputs = {}
         self.calls = []
         self.inject_error = None
+        self.faults = {}
+        self.latest = {}
 
-    def set_truth(self, sensor, value):
-        self.calls.append(('set_truth', sensor, value))
-        self.truth[sensor] = value
+    def set_scenario_input(self, scenario, sensor, value):
+        self.calls.append(('set_scenario_input', scenario, sensor, value))
+        self.inputs[sensor] = value
 
-    def clear_truth(self, sensor):
-        self.calls.append(('clear_truth', sensor))
-        self.truth.pop(sensor, None)
+    def clear_scenario_inputs(self, scenario):
+        self.calls.append(('clear_scenario_inputs', scenario))
+        self.inputs.clear()
+        self.forced = {}
 
     def force_sample(self, sensor, tick):
         self.calls.append(('force_sample', sensor, tick))
 
-    def seed_last_valid(self, sensor, value):
-        self.calls.append(('seed_last_valid', sensor, value))
+    def sensor(self, sensor):
+        if sensor not in self.present:
+            raise LiveError('SENSOR_NOT_FOUND')
+        return SimpleNamespace(
+            unit='cm',
+            hard_limits=(0, 300),
+            linked_device_ids=('PRT-PMP-01',),
+        )
 
     def sensor_row(self, sensor):
         return sensor if sensor in self.present else None
@@ -41,13 +51,15 @@ class FakeSensors:
         self.calls.append(('add_scenario_sensor', sensor, values))
         self.present.add(sensor)
 
-    def inject(self, sensor, kind, params, tick, *, allow_unbound):
-        self.calls.append(('inject', sensor, kind, params, tick, allow_unbound))
+    def inject(self, sensor, kind, params, tick):
+        self.calls.append(('inject', sensor, kind, params, tick))
         if self.inject_error:
             raise self.inject_error
+        self.faults[sensor] = kind
 
     def clear(self, sensor, *, repair):
         self.calls.append(('clear', sensor, repair))
+        self.faults.pop(sensor, None)
 
 
 class FakeCity:
@@ -57,9 +69,18 @@ class FakeCity:
         self.quarantines = []
         self.commands = []
         self.fail_commands = False
+        self._run_id = 'fake-run'
+        self._epoch = datetime(2026, 10, 18, tzinfo=timezone.utc)
+        self.events = []
 
     def _snapshot(self):
         return SimpleNamespace(context=SimpleNamespace(tick=self.tick))
+
+    def _event(self, kind, details):
+        self.events.append((kind, details))
+
+    def _scenario_event(self, details):
+        self._event('SCENARIO_LIFECYCLE', details)
 
     def quarantine_device(self, device, reason):
         self.quarantines.append((device, reason))
@@ -108,46 +129,53 @@ class ScenarioRunnerTests(unittest.TestCase):
     def test_start_sets_scenario_specific_truth_sampling_and_fixture_data(self):
         t5 = self.runner.start('t5')
         self.assertEqual(t5.scenario_id, 'T5')
-        self.assertEqual(self.city._sensors.truth['PRT-WLV-01'], 40.0)
-        self.assertIn(('force_sample', 'PRT-WLV-01', 15), self.city._sensors.calls)
+        self.assertEqual(self.city._sensors.inputs['PRT-WLV-01'], 40.0)
+        self.assertIn(('force_sample', 'PRT-WLV-01', 11), self.city._sensors.calls)
 
+        self.runner.done = True
         scn2 = self.runner.start('scn-02')
         self.assertEqual(scn2.scenario_id, 'SCN-02')
-        self.assertEqual(self.city._sensors.truth['PRT-WLV-01'], 110.0)
+        self.runner.done = True
 
         scn3 = self.runner.start('scn-03')
         self.assertEqual(scn3.scenario_id, 'SCN-03')
-        self.assertEqual(self.city._sensors.truth['IND-TMP-01'], 71.0)
-        self.assertIn(('seed_last_valid', 'DTN-TRF-01', 48.0), self.city._sensors.calls)
+        self.assertEqual(self.city._sensors.inputs['IND-TMP-01'], 71.0)
+        self.runner.done = True
 
         self.runner.start('scn-04')
+        self.runner.done = True
         scn5 = self.runner.start('scn-05')
         self.assertEqual(scn5.scenario_id, 'SCN-05')
-        self.assertIn('RES-AIR-TEST-01', self.city._sensors.present)
+        self.assertNotIn('RES-AIR-TEST-01', self.city._sensors.present)
 
-    def test_real_scenario_triggers_translate_truth_fault_quarantine_and_commands(self):
+    def test_real_scenario_triggers_are_events_not_synthetic_partner_decisions(self):
         self.runner.start('scn-02')
         self.runner.advance(11)
-        self.assertIn(('set_truth', 'PRT-WLV-01', 110.0), self.city._sensors.calls)
-        self.assertIn(('PRT-PMP-01', True, 'b-SCN-02-11-PRT-PMP-01'), self.city.commands)
+        self.assertIn(('set_scenario_input', 'SCN-02', 'PRT-WLV-01', 110.0),
+                      self.city._sensors.calls)
+        self.assertEqual(self.city.commands, [])
+        self.assertIn('RECEIVED', [event[1]['event_type'] for event in self.city.events])
 
+        self.runner.done = True
         self.runner.start('scn-03')
         self.runner.advance(12)
         injections = [call for call in self.city._sensors.calls if call[0] == 'inject']
-        self.assertIn(('inject', 'DTN-TRF-01', 'STUCK', {}, 12, True), injections)
-        self.assertIn(('inject', 'IND-TMP-01', 'DEAD', {}, 12, True), injections)
+        self.assertIn(('inject', 'DTN-TRF-01', 'STUCK', {}, 12), injections)
+        self.assertIn(('inject', 'IND-TMP-01', 'DEAD', {}, 12), injections)
 
-        self.city.fail_commands = True
+        self.runner.done = True
         self.runner.start('scn-04')
         self.runner.advance(11)
-        self.assertIn(('PRT-PMP-01', 'integrity_check_failed'), self.city.quarantines)
-        self.assertEqual([call[0] for call in self.city.commands[-2:]], ['PRT-PMP-01', 'PRT-PMP-02'])
+        self.assertEqual(self.city.quarantines, [])
+        self.assertEqual(self.city.commands, [])
 
-        self.city.fail_commands = False
+        self.runner.done = True
         self.runner.start('scn-05')
         self.runner.advance(15)
-        self.assertIn(('DTN-TLT-01', 'priority', 'b-SCN-05-15-DTN-TLT-01'), self.city.commands)
-        self.assertIn(('RES-AIR-TEST-01', 'scenario_local_fixture'), self.city.quarantines)
+        self.assertEqual(self.city.commands, [])
+        self.assertEqual(self.city.quarantines, [])
+        self.assertTrue(any(event[1]['source'] == 'scenario_fixture'
+                            for event in self.city.events if event[0] == 'SCENARIO_LIFECYCLE'))
 
     def test_t5_after_scenario_clear_and_finish_boundary(self):
         self.runner.start('t5')
@@ -163,7 +191,7 @@ class ScenarioRunnerTests(unittest.TestCase):
         self.runner.finish(55)
         self.assertTrue(self.runner.done)
         self.assertIn(('clear', 'PRT-WLV-01', True), self.city._sensors.calls)
-        self.assertIn(('clear_truth', 'PRT-WLV-01'), self.city._sensors.calls)
+        self.assertIn(('clear_scenario_inputs', 'T5'), self.city._sensors.calls)
         count = len(self.city._sensors.calls)
         self.runner.finish(100)
         self.assertEqual(len(self.city._sensors.calls), count)
@@ -177,13 +205,18 @@ class ScenarioRunnerTests(unittest.TestCase):
         ), {})
         self.runner.start_tick = 10
         self.runner.advance(11)
-        self.assertIn(('set_truth', 'PRT-WLV-01', 88.0), self.city._sensors.calls)
+        self.assertIn(('set_scenario_input', 'CUSTOM', 'PRT-WLV-01', 88),
+                      self.city._sensors.calls)
         self.runner.advance(12)
-        self.assertIn('LOCAL-01', self.city._sensors.present)
+        self.assertNotIn('LOCAL-01', self.city._sensors.present)
         self.runner.advance(13)
         self.assertIn(('clear', 'PRT-WLV-01', True), self.city._sensors.calls)
         self.runner.advance(14)
-        self.assertIn(('PRT-PMP-01', 'bad sensor'), self.city.quarantines)
+        self.assertTrue(any(
+            event[1]['event_type'] == 'GUARDIAN_PENDING'
+            and event[1]['device_id'] == 'PRT-PMP-01'
+            for event in self.city.events
+        ))
 
         self.runner.scenario = Scenario('BAD', 'bad action', 1, (
             Trigger(1, 'INVENTED_ACTION', 'PRT-WLV-01', None, {}, '', False, False),

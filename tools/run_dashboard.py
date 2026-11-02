@@ -1,6 +1,7 @@
 """Convergence City local dashboard launcher. EOF, quit and Ctrl+C stop HTTP and the city owner."""
 import argparse
 import getpass
+import os
 from pathlib import Path
 import sys
 import uuid
@@ -27,7 +28,14 @@ def main():
             # Automation can pipe one secret line; never echo it or accept it in argv/URL.
             secret = sys.stdin.readline(258).rstrip('\r\n')
         Sessions(secret)
-        city = LiveCity('dashboard-' + uuid.uuid4().hex[:16])
+        persistence_path = Path(os.environ.get(
+            'TWIN_STATE_DB_PATH', str(Path(__file__).resolve().parents[1]
+                                      / 'logs' / 'twin-state.sqlite3'),
+        ))
+        city = LiveCity(
+            'dashboard-' + uuid.uuid4().hex[:16],
+            persistence_path=persistence_path,
+        )
         bridge = DashboardBridge(city, secret, port=args.port)
         del secret
         bridge.start()

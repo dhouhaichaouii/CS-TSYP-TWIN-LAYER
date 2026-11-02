@@ -39,6 +39,7 @@ class TwinFacade:
         self._scenario_logger = scenario_logger
         self._lock = threading.RLock()
         self._command_responses: dict[str, dict[str, Any]] = {}
+        self._city.set_scenario_event_sink(self._record_scenario_event)
 
     @property
     def city(self) -> LiveCity:
@@ -123,6 +124,13 @@ class TwinFacade:
                     source=source,
                     payload=payload,
                 )
+
+    def _record_scenario_event(self, details: dict[str, Any]) -> None:
+        self._record_event(
+            details['event_type'],
+            details,
+            source=details['source'],
+        )
 
     # --------------------------------------------------------------------------
     # 1. OBSERVATION METHODS (Read Telemetry & State)
@@ -360,16 +368,33 @@ class TwinFacade:
         if not request_id or not isinstance(request_id, str):
             return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, "request_id must be a non-empty string.")
 
+        scenario_correlation = None
         try:
             execution_context = context if type(context) is dict else {}
-            result = self._city.execute_actuator_command(
-                device_id,
-                command,
-                params,
-                command_id=request_id,
-                run_id=execution_context.get("run_id", self.run_id),
-                expected_revision=execution_context.get("expected_revision"),
-            )
+            with self._city._condition:
+                scenario_correlation = self._city.scenario_command_started(
+                    device_id, command, request_id, role, execution_context
+                )
+                self._city.scenario_command_guard(
+                    device_id, role, execution_context, request_id=request_id
+                )
+                result = self._city.execute_actuator_command(
+                    device_id,
+                    command,
+                    params,
+                    command_id=request_id,
+                    run_id=execution_context.get("run_id", self.run_id),
+                    expected_revision=execution_context.get("expected_revision"),
+                    correlation_id=scenario_correlation,
+                    scenario_id=execution_context.get("scenario_id"),
+                )
+                self._city.scenario_command_finished(
+                    scenario_correlation,
+                    device_id,
+                    command,
+                    request_id,
+                    result=result,
+                )
 
             result_data = {
                 "request_id": request_id,
@@ -405,6 +430,13 @@ class TwinFacade:
             return success_envelope(self.run_id, result_data)
 
         except LiveError as exc:
+            self._city.scenario_command_finished(
+                scenario_correlation,
+                device_id,
+                command,
+                request_id,
+                error=exc.code,
+            )
             code = {
                 "UNSUPPORTED_DEVICE": ErrorCode.DEVICE_NOT_FOUND,
                 "INVALID_ARGUMENT": ErrorCode.INVALID_PARAM,
@@ -415,13 +447,31 @@ class TwinFacade:
                 "GUARDIAN_RESTRICTED": ErrorCode.GUARDIAN_RESTRICTED,
                 "IDEMPOTENCY_CONFLICT": ErrorCode.IDEMPOTENCY_CONFLICT,
                 "COMMAND_BUDGET_EXHAUSTED": ErrorCode.COMMAND_BUDGET_EXHAUSTED,
+                "RECOVERY_REQUIRED": ErrorCode.RECOVERY_REQUIRED,
+                "PERSISTENCE_FAILURE": ErrorCode.PERSISTENCE_FAILURE,
+                "SCENARIO_GUARDIAN_PENDING": ErrorCode.INVALID_STATE,
+                "SCENARIO_BRAIN_UNAVAILABLE": ErrorCode.INVALID_STATE,
+                "SCENARIO_GUARDIAN_UNAVAILABLE": ErrorCode.INVALID_STATE,
+                "SCENARIO_CONTEXT_STALE": ErrorCode.INVALID_STATE,
             }.get(exc.code, ErrorCode.INTERNAL_ERROR)
             return error_envelope(
                 self.run_id,
                 code,
-                ("Device is isolated by the Guardian."
-                 if exc.code == "GUARDIAN_RESTRICTED"
-                 else f"Simulation rejected command: {exc.code}."),
+                (
+                    "Device is isolated by the Guardian."
+                    if exc.code == "GUARDIAN_RESTRICTED"
+                    else "The prior request has an uncertain outcome and requires operator recovery."
+                    if exc.code == "RECOVERY_REQUIRED"
+                    else "The command was not committed because durable storage is unavailable."
+                    if exc.code == "PERSISTENCE_FAILURE"
+                    else "Scenario safety is waiting for the Guardian veto check."
+                    if exc.code == "SCENARIO_GUARDIAN_PENDING"
+                    else "Brain communication is unavailable in this controlled scenario."
+                    if exc.code == "SCENARIO_BRAIN_UNAVAILABLE"
+                    else "Guardian communication is unavailable in this controlled scenario."
+                    if exc.code == "SCENARIO_GUARDIAN_UNAVAILABLE"
+                    else f"Simulation rejected command: {exc.code}."
+                ),
                 details={"device_id": device_id, "command": command},
             )
         except Exception as exc:
@@ -460,8 +510,20 @@ class TwinFacade:
             return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, "device_id must be a valid string.")
 
         try:
-            quarantine = self._city.quarantine_device(device_id, reason, role)
+            with self._city._condition:
+                self._city.scenario_guardian_call_guard(
+                    device_id, 'isolate_device', role
+                )
+                quarantine = self._city.quarantine_device(device_id, reason, role)
+                self._city.scenario_guardian_action(device_id, 'ISOLATED', reason)
         except LiveError as exc:
+            if exc.code == 'SCENARIO_GUARDIAN_UNAVAILABLE':
+                return error_envelope(
+                    self.run_id,
+                    ErrorCode.INVALID_STATE,
+                    "Guardian communication is unavailable in this controlled scenario.",
+                    details={"device_id": device_id, "operation": "isolate_device"},
+                )
             return error_envelope(self.run_id, ErrorCode.INVALID_PARAM, exc.code)
 
         # Log an event in the simulation event ledger and observability sinks
@@ -503,8 +565,20 @@ class TwinFacade:
             return error_envelope(self.run_id, ErrorCode.NOT_AUTHORIZED, err_msg or "Unauthorized")
 
         try:
-            self._city.restore_quarantined_device(device_id)
-        except LiveError:
+            with self._city._condition:
+                self._city.scenario_guardian_call_guard(
+                    device_id, 'restore_device', role
+                )
+                self._city.restore_quarantined_device(device_id)
+                self._city.scenario_guardian_action(device_id, 'RESTORED')
+        except LiveError as exc:
+            if exc.code == 'SCENARIO_GUARDIAN_UNAVAILABLE':
+                return error_envelope(
+                    self.run_id,
+                    ErrorCode.INVALID_STATE,
+                    "Guardian communication is unavailable in this controlled scenario.",
+                    details={"device_id": device_id, "operation": "restore_device"},
+                )
             return error_envelope(
                 self.run_id,
                 ErrorCode.DEVICE_NOT_FOUND,

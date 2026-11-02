@@ -26,6 +26,8 @@ def _command_status_code(response: dict[str, Any]) -> int:
         ErrorCode.DEVICE_UNAVAILABLE: 409,
         ErrorCode.IDEMPOTENCY_CONFLICT: 409,
         ErrorCode.COMMAND_BUDGET_EXHAUSTED: 429,
+        ErrorCode.RECOVERY_REQUIRED: 409,
+        ErrorCode.PERSISTENCE_FAILURE: 503,
     }.get(response["error"]["code"], 400)
 
 
