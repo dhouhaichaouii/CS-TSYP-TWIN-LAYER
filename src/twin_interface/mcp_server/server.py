@@ -74,7 +74,12 @@ def create_mcp_server(
 
     @mcp.tool()
     def get_service_health() -> dict[str, Any]:
-        """Report MCP liveness and readiness without changing simulation state."""
+        """Report MCP liveness and readiness without changing simulation state.
+
+        Layer guidance: Any layer can call this before starting a workflow or
+        after a connection error. Continue only when readiness reports healthy;
+        this is service health, not a city-state or sensor query.
+        """
         report = fac.health_report("mcp", service_checks={"mcp_service": True})
         return {
             "liveness": liveness_report("mcp"),
@@ -129,6 +134,11 @@ def create_mcp_server(
                     ]
                 }
             }
+
+        Layer guidance: Brain and Evaluator should use these readings as the
+        measured inputs to decisions and assessments. Guardian can compare a
+        sensor with its backup readings to identify suspicious drift. Use
+        get_city_state for a concise equipment overview instead.
         """
         return fac.get_sensor_readings(
             token=_request_bearer_token(ctx),
@@ -154,6 +164,11 @@ def create_mcp_server(
 
         Returns:
             Envelope containing active alerts, simulation speed, and zone equipment breakdowns.
+
+        Layer guidance: Brain should call this before choosing an intervention
+        to understand current infrastructure and active alerts. Evaluator can
+        use it to assess the resulting city state; Guardian can use it to locate
+        affected equipment before isolating a device.
         """
         return fac.get_city_state(token=_request_bearer_token(ctx), zone_id=zone_id)
 
@@ -172,6 +187,11 @@ def create_mcp_server(
 
         Returns:
             Envelope containing from_seq, count, and array of chronological event objects.
+
+        Layer guidance: Evaluator and monitoring layers should retain the
+        greatest event_seq returned and pass it as seq on the next poll. Brain
+        and Guardian can poll for new alerts or command/security outcomes without
+        fetching the full state again.
         """
         return fac.get_events_since(token=_request_bearer_token(ctx), seq=seq)
 
@@ -239,6 +259,12 @@ def create_mcp_server(
                     "effective_revision": 16
                 }
             }
+
+        Layer guidance: Brain should call this after reviewing state and
+        selecting an intervention. Operator may use it for an authorized manual
+        action. Use a new request_id for a new action and reuse the same ID only
+        when retrying the identical request. Check the returned status and
+        effective_revision before assuming the simulated state changed.
         """
         return fac.send_actuator_command(
             token=_request_bearer_token(ctx),
@@ -280,6 +306,11 @@ def create_mcp_server(
                     "reason": "..."
                 }
             }
+
+        Layer guidance: Guardian should call this when its security analysis
+        finds a device compromised or untrustworthy, and include the evidence in
+        reason. Operator may also quarantine a device. Brain should treat an
+        isolated device as unavailable and select another safe response.
         """
         return fac.isolate_device(
             token=_request_bearer_token(ctx),
@@ -308,6 +339,10 @@ def create_mcp_server(
                     "status": "RESTORED"
                 }
             }
+
+        Layer guidance: Guardian or Operator should call this only after the
+        device is considered safe to return to service. Brain should then
+        refresh city state or sensor readings before relying on the device.
         """
         return fac.restore_device(
             token=_request_bearer_token(ctx),

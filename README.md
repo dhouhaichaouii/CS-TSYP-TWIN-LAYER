@@ -39,6 +39,8 @@ For Docker and remote partner deployment, see the
 [Docker guide](docs/DOCKER.md),
 [cloud deployment guide](docs/CLOUD_DEPLOYMENT.md), and
 [partner connection guide](docs/PARTNER_TESTING.md).
+For the role-by-role REST and MCP handoff with localhost and cloud endpoints,
+see the [Twin Layer connection guide](docs/LAYER_HANDOFF.md).
 
 [Sensor model and migration](docs/SENSORS.md) ·
 [Verification and remaining limits](docs/SENSOR_VERIFICATION.md)
