@@ -34,6 +34,7 @@ class Scenario:
     duration_ticks: int
     triggers: tuple
     fixture: dict
+    description: str = ''
 
 
 def _aliases(scenario_id, path):
@@ -65,10 +66,24 @@ def load_scenarios():
         )
         scenario = Scenario(data["ID"], data["Name"],
                             int(data.get("duration_ticks", 1)), triggers,
-                            dict(data.get("fixture", {})))
+                            dict(data.get("fixture", {})), data.get("Description", ""))
         for alias in _aliases(scenario.scenario_id, path):
             result[alias] = scenario
     return result
+
+
+def scenario_catalog():
+    unique = {item.scenario_id: item for item in load_scenarios().values()}
+    return [
+        {
+            'scenario_id': item.scenario_id,
+            'name': item.name,
+            'description': item.description,
+            'duration_ticks': item.duration_ticks,
+            'trigger_count': len(item.triggers),
+        }
+        for item in sorted(unique.values(), key=lambda row: row.scenario_id)
+    ]
 
 
 def scenario(name):

@@ -18,7 +18,7 @@ The engineering problem addressed is to make the Twin’s state and command boun
 
 1. Model city infrastructure state and domain interactions in the `city_core` package.
 2. Provide a paced runtime, sensor adapters, event/scenario handling, and operator commands through `LiveCity`.
-3. Offer stable semantic MCP and REST interfaces backed by a shared `TwinFacade`.
+3. Provide a REST interface and shared `TwinFacade`; preserve the documented MCP interface contract while identifying the missing MCP server implementation in the current checkout.
 4. Apply authentication, a role/tool allowlist, projected sensor readings, command validation, isolation, and idempotency.
 5. Demonstrate six deterministic scenarios and test persistence, failure handling, dashboard display, and restart behavior.
 
@@ -39,14 +39,14 @@ flowchart LR
       GA["Trust and security service<br/>Not verified / not connected"]
     end
     subgraph T["Digital Twin layer — implemented locally"]
-      MCP["FastMCP interface"]
+      MCP["MCP adapter reference<br/>implementation unavailable in this checkout"]
       REST["REST interface"]
       F["TwinFacade<br/>auth, permissions, projections, safety"]
       L["LiveCity runtime"]
       C["CityCore simulation"]
       P["SQLite WAL persistence"]
       O["Events and audit logging"]
-      MCP --> F
+      MCP -. "documented contract; not runnable here" .-> F
       REST --> F
       F --> L --> C
       L --> P
@@ -64,10 +64,10 @@ flowchart LR
 |---|---|---|
 | `city_core` / CityCore | Applies validated effects and produces revisioned city state and replay transitions. Domains include traffic, water, power, air, responders, access, catalog, and clock. | [`src/city_core/`](../src/city_core), [`core.py`](../src/city_core/core.py), [`effects.py`](../src/city_core/effects.py) |
 | `LiveCity` | Owns a CityCore instance, simulation thread/clock, sensor and traffic adapters, scheduled actions, scenario runner, event history, operator request processing, and optional persistence. | [`runtime.py`](../src/city_live/runtime.py), [`operator.py`](../src/city_live/operator.py) |
-| `SensorBank` | Holds the local sensor registry, generated/delivered readings, fault injection, and sensor-to-device relations. | [`sensors.py`](../src/city_live/sensors.py), [`sensor_physics.py`](../src/city_live/sensor_physics.py) |
+| `SensorBank` | Holds the local sensor registry, generated/delivered readings, fault injection, and sensor-to-device relations. | [`sensors.py`](../src/city_live/sensors.py), [`faults.py`](../src/city_live/faults.py), [`registry.py`](../src/city_live/registry.py) |
 | `ScenarioRunner` | Loads scenario JSON, seeds scenario-local state, processes tick-based triggers, and emits lifecycle/correlation events. | [`b_scenarios.py`](../src/city_live/b_scenarios.py), [`scenarios/`](../scenarios) |
 | `TwinFacade` | Enforces caller role permissions at the application boundary; projects observations; applies scenario and isolation gates; delegates commands; records events. | [`facade.py`](../src/twin_interface/facade.py), [`permissions.py`](../src/twin_interface/permissions.py) |
-| FastMCP server | Publishes semantic MCP tools and MCP health endpoints, using the facade. | [`server.py`](../src/twin_interface/mcp_server/server.py) |
+| MCP adapter | Launchers reference `twin_interface.mcp_server.server`, but that implementation module is absent in this checkout; its advertised tools and transport cannot be verified here. | [`mcp_server/`](../src/twin_interface/mcp_server), [`run_twin.py`](../tools/run_twin.py), [`serve_mcp.py`](../tools/serve_mcp.py) |
 | REST router | Provides HTTP health, observations, events/timeline, commands, isolation, and restoration routes using the same facade. | [`router.py`](../src/twin_interface/rest/router.py) |
 | Dashboard bridge/UI | Serves the local operator and reported views; authenticated operator routes expose a frame, scenario start, and bounded operator commands. | [`server.py`](../src/city_dashboard/server.py), [`web/`](../src/city_dashboard/web) |
 | Twin persistence | Stores CityCore replay transitions, durable command receipts/operations, recovery metadata, and quarantines in SQLite. | [`store.py`](../src/twin_persistence/store.py), [`migrations.py`](../src/twin_persistence/migrations.py) |
@@ -80,7 +80,7 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph Interfaces["Inbound interfaces"]
-      M["FastMCP"]
+      M["MCP adapter reference<br/>not importable in this checkout"]
       R["REST"]
       H["DashboardBridge"]
     end
@@ -96,7 +96,7 @@ flowchart TB
     end
     subgraph Runtime["LiveCity owner"]
       SC["ScenarioRunner"]
-      SB["SensorBank / SensorPhysics"]
+      SB["SensorBank / fault adapters"]
       OP["Operator actions and schedules"]
       EVT["Bounded private event history"]
       SC --> SB
@@ -113,7 +113,7 @@ flowchart TB
     end
     DB["SQLite persistence<br/>opt-in for direct owner; enabled by production launchers"]
     LOG["EventStore / ScenarioLogger<br/>process-local sinks"]
-    M --> F
+    M -. "contract only; implementation missing" .-> F
     R --> F
     H --> Runtime
     F --> Runtime
@@ -214,6 +214,152 @@ flowchart LR
 
 Event names are not a guarantee of partner completion. Some source fields describe an inbound role call from the test harness; the evidence labels the call path as local. A scenario can complete its configured time window without a Brain decision or Guardian verdict.
 
+### 3.4 City plan, zones, and infrastructure topology
+
+The modeled city is a compact, typed infrastructure graph rather than a GIS-grade map. The CityCore catalog defines `CITY-01`, five zones, roads and junctions, a hospital and responder base, an industrial plant, an urban load, a river/catchment/basin/flood/outfall water chain, a pump and valve, and an electricity source with three feeders. The accepted catalog contains 35 entities, 36 directed relationships, and 21 device bindings. The catalog version is explicitly `pa-catalog-0.1-draft`; it is a simulation topology, not a surveyed municipal asset inventory.
+
+| Zone | Modeled role and representative entities | Connected modeled systems |
+|---|---|---|
+| `Z-DOWNTOWN` | Junctions `J-D1`, `J-D2`; roads `R-LOW`, `R-DOWN`; urban load `LOAD-URBAN` | Traffic, signals, flood exposure on `R-LOW`, urban feeder `F-URBAN` |
+| `Z-RESIDENTIAL` | Junction `J-R1`; roads `R-HIGH`, `R-LINK` | Traffic, residential sensor namespace, flood exposure on `R-HIGH` |
+| `Z-INDUSTRIAL` | Junction `J-I1`; road `R-IND`; plant `PLANT-01` | Traffic access, industrial feeder `F-IND`, modeled PM2.5 source |
+| `Z-RIVER` | `RIVER-01`, `CATCH-01`, `INLET-01`, basin `B-01`, surface store `FLOOD-01`, outfall `OUTFALL-01`, valve `V-12`, pump `P-03` | Rainfall/runoff, basin level, overflow exposure, drainage and pump discharge |
+| `Z-HEALTH` | Hospital `HOSP-01`, base `BASE-01`, `AMB-01`, `AMB-02`, `POL-01` | Emergency response and essential-services feeder `F-ESS` |
+
+### Figure 11. Conceptual CityCore topology (not to scale)
+
+```mermaid
+flowchart LR
+    subgraph R["Z-RIVER · water system"]
+      CATCH["CATCH-01"] --> BASIN["B-01"]
+      INLET["INLET-01"] --> BASIN
+      BASIN -->|overflow| FLOOD["FLOOD-01"]
+      BASIN --> OUT["OUTFALL-01"]
+      BASIN --> PUMP["P-03"]
+      FLOOD --> PUMP
+      VALVE["V-12"] -. controls .-> INLET
+      OUT --> RIVER["RIVER-01"]
+    end
+    JD1["J-D1 · downtown"] --- RLOW["R-LOW"]
+    RLOW --- JH1["J-H1 · health"]
+    JR1["J-R1 · residential"] --- RHIGH["R-HIGH"]
+    RHIGH --- JH1
+    JD2["J-D2 · downtown"] --- RLINK["R-LINK"]
+    RLINK --- JR1
+    JD1 --- RDOWN["R-DOWN"]
+    RDOWN --- JD2
+    JI1["J-I1 · industrial"] --- RIND["R-IND"]
+    RIND --- JD1
+    FLOOD -. exposes .-> RLOW
+    FLOOD -. exposes .-> RHIGH
+    JH1 --> HOSP["HOSP-01"]
+    JH1 --> BASE["BASE-01"] --> AMB["AMB-01 / AMB-02"]
+    GRID["GRID-01"] --> FESS["F-ESS"] --> HOSP
+    FESS --> PUMP
+    GRID --> FURB["F-URBAN"] --> LOAD["LOAD-URBAN"]
+    FURB --> JD1
+    FURB --> JD2
+    GRID --> FIND["F-IND"] --> PLANT["PLANT-01"]
+```
+
+The figure expresses only cataloged relationships and selected connectivity; it is not a map, a complete network drawing, or proof of field locations.
+
+Road and service relationships are explicit: roads connect junctions; emergency assets have access/base relationships; runoff feeds the basin; the basin can spill into a surface store that exposes selected roads; drainage and the pump discharge toward the river; and the grid supplies three feeders connected to modeled loads. These links let a change in one domain influence another instead of merely changing an isolated dashboard label.
+
+**Important representation boundary.** The topology catalog and the runtime device catalog are related, but they are not one globally reconciled physical-asset register. The runtime catalog maps prefixes `PRT`, `IND`, `DTN`, `RES`, and `HSP` to the five CityCore zones. For example, `PRT` maps to `Z-RIVER`. Device identifiers in the two catalogs can differ. The report therefore describes modeled bindings and explicit mappings, not verified field deployment or exact geospatial coordinates. The 3D model is illustrative and has not been georeferenced to this topology.
+
+**Source:** [`catalog.json`](../src/city_core/data/catalog.json), [`catalog.py`](../src/city_core/catalog.py), and the runtime mapping in [`device_catalog.json`](../src/city_live/data/device_catalog.json).
+
+### 3.5 Sensors and simulated actuators
+
+The generated device-catalog file contains 16 sensor definitions across the river/harbor (`PRT`), industrial (`IND`), downtown (`DTN`), and residential (`RES`) namespaces. The actual `SensorBank` currently loads the separate `sensors.json` proposal registry and appends 13 legacy `S-*` records from the CityCore catalog, so its effective registry contains 29 sensor identities. These are modeled/local adapters, not deployed field sensors. Typical units are water level in centimetres, flow in litres per second, pressure in bar, temperature in degrees Celsius, and traffic in vehicles per minute. Sampling intervals are device-specific (5, 10, or 60 simulation seconds).
+
+The table below summarizes the generated device catalog, not the effective SensorBank binding state. For current SensorBank sources, consult [`sensors.json`](../src/city_live/data/sensors.json) and the legacy adapter construction in [`registry.py`](../src/city_live/registry.py).
+
+| Runtime zone | Sensor inventory | Model binding and noteworthy behavior |
+|---|---|---|
+| `PRT` → `Z-RIVER` | `PRT-WLV-01`, `PRT-WLV-02`, `PRT-FLW-01`, `PRT-PRS-01` | Harbor level, pump outlet flow, and header pressure; the two level definitions name each other as backups. |
+| `IND` → `Z-INDUSTRIAL` | `IND-TMP-01`, `IND-TMP-02`, `IND-PRS-01`, `IND-FLW-01` | Process temperature (including a declared alternate), coolant pressure and flow. |
+| `DTN` → `Z-DOWNTOWN` | `DTN-TRF-01`, `DTN-TRF-02`, `DTN-WLV-01`, `DTN-TMP-01` | Traffic derived from departures on selected roads, storm-drain level, ambient temperature. |
+| `RES` → `Z-RESIDENTIAL` | `RES-WLV-01`, `RES-PRS-01`, `RES-FLW-01`, `RES-TRF-01` | Reservoir level, network pressure and flow, traffic derived from selected-road departures. |
+
+`SensorBank` samples the current CityCore snapshot into bounded history buffers. It maintains actual/source and reported values internally, applies configured faults, and produces separate public and private reading forms. The ordinary report projection is not a ground-truth channel. Fault injection and scenario-seeded measurements support repeatable tests of false readings, frozen data, dropout/death, delay, or noise; they do not represent a real sensor network.
+
+**Current catalog inconsistency—scenario blocker.** The 16-row `sensors.json` proposal registry has `source: null` for `PRT-WLV-01`, `IND-TMP-01`, `IND-TMP-02`, and most other proposed point sensors; only the three proposed traffic-count rows are source-bound there. `SensorBank.set_scenario_input()` and fault injection reject unbound rows. A focused execution against the current checkout on 6 November 2026 reproduced this: starting `t5` and `scn-03` fails with `SENSOR_UNBOUND`; starting `scn-02` succeeds, but its first tick fails with `SENSOR_UNBOUND`. This conflicts with the older 2 November campaign bundle, which records those scenarios as passing. Treat that bundle as historical evidence, not proof that those scenarios are currently reproducible, until the source registry/catalog mapping is reconciled and the current campaign is rerun.
+
+The runtime catalog has 18 actuator entries, of which 17 are marked supported by the catalog. Entries include traffic signal controls, valves, pumps, feeder switches, and emergency responders. Some identifiers are compatibility aliases, not separate actuators. In particular, `PRT-PMP-01` and `PRT-PMP-02` both resolve to CityCore target `P-03`; they do not establish an independent redundant pump. `RES-TLT-01` is marked unsupported. The CityCore topology itself declares eight actuator/control bindings. These counts describe software catalog records, not commissioned equipment.
+
+| Control family | Example identifiers | CityCore effect represented |
+|---|---|---|
+| Signals | `DTN-TLT-01` / `J-D1`, `DTN-TLT-02` / `J-D2` | Change a junction signal mode and therefore the modeled road capacity. |
+| Water controls | `DTN-VLV-01`, `IND-VLV-01`, `RES-VLV-01`, `V-12`; pump entries `P-03`, `PRT-PMP-01`, `PRT-PMP-02` | Change simulated valve opening or pump enable/speed at the mapped CityCore target. |
+| Feeders | `F-ESS`, `F-URBAN`, `F-IND` | Change modeled feeder availability/position and dependent asset power state. |
+| Responders | `AMB-01`, `AMB-02`, `POL-01` | Reserve or release a simulated responder on a validated road route. |
+
+Accepted commands mutate only the simulated CityCore state. They are subject to caller permissions, command/schema validation, availability and quarantine checks, scenario guards, and revision checks before the effect is applied. A successful response is not a physical actuation receipt.
+
+**Sources:** [`device_catalog.json`](../src/city_live/data/device_catalog.json), [`sensors.py`](../src/city_live/sensors.py), [`registry.py`](../src/city_live/registry.py), [`effects.py`](../src/city_core/effects.py), and [`device_catalog.py`](../src/city_live/device_catalog.py).
+
+### 3.6 Simulation model and state evolution
+
+CityCore uses a deterministic fixed step of 1,000 ms. LiveCity controls wall-clock pacing (0.5× to 10×) without changing the model step or skipping catch-up ticks. At each step the owner advances the CityCore domains, captures sensor-source state and road departures, publishes scheduled samples, and processes scenario triggers. The state is revisioned; effects carry an expected revision, and the core keeps transition records and state digests for replay/validation.
+
+The model contains coupled, bounded engineering rules:
+
+* **Water:** rainfall contributes catchment runoff; a valve controls inlet flow; gravity and pump capacities limit discharge; excess is retained in basin/surface storage. Derived surface depth can close configured flood-exposed roads at the model threshold.
+* **Traffic:** roads carry queues and arrivals; usable capacity depends on obstruction, flood closure, and the controlling signal mode. A priority signal has a configured capacity multiplier; stop or unpowered signals provide no modeled capacity.
+* **Power:** a source and three feeder states determine whether the hospital, pump, urban loads/signals, and plant are energized. Requested and delivered modeled demand are calculated from fixed profile values.
+* **Air:** each zone tracks PM2.5 concentration using a declared industrial source term and relaxation toward a background concentration.
+* **Emergency response:** ambulance and police units reserve validated routes over the road graph and move deterministically by tick; unusable roads can block progress.
+
+For scale, the packaged profile uses a 6,000 m³ basin capacity, a 20,000 m² catchment, a 1,000 m² surface store, maximum inlet/gravity/pump flows of 0.6/0.2/1.2 m³/s, and a 0.2 m flood-close threshold for the configured flood-exposed roads. Base road capacity is 0.5 vehicles/s; a priority signal uses a 1.5 multiplier. Feeder ratings are 100 kW (`F-ESS`), 120 kW (`F-URBAN`), and 150 kW (`F-IND`). These are explicit local model parameters, not site measurements or validated engineering design values.
+
+These are deliberately bounded local models, not calibrated engineering-grade hydrology, load-flow, traffic assignment, dispersion, or dispatch models. They provide a transparent causal sandbox for scenario response and interface/safety evaluation. The packaged initial condition and coefficients are versioned in [`initial_config.json`](../src/city_core/data/initial_config.json); domain transitions are implemented in [`water.py`](../src/city_core/water.py), [`traffic.py`](../src/city_core/traffic.py), [`power.py`](../src/city_core/power.py), [`air.py`](../src/city_core/air.py), and [`responders.py`](../src/city_core/responders.py).
+
+### 3.7 How scenarios are played and evaluated
+
+Scenario JSON files are translated by one `ScenarioRunner` into actions against the shared `LiveCity` owner and its CityCore. They do not start a parallel physics model. The runner seeds scenario inputs, schedules trigger actions against simulation ticks, applies configured sensor faults or local availability changes, and emits scenario events under one generated correlation ID. Client commands still pass through the same TwinFacade checks as other requests. However, the catalog inconsistency documented in Section 3.5 currently prevents some sensor-dependent scenarios from completing; scenario definitions and an older passing campaign must not be presented as a fresh pass for the current checkout.
+
+For an interactive local run, the repository launcher accepts a scenario ID:
+
+```powershell
+python tools\run_twin.py --scenario scn-02
+```
+
+The launcher prompts for a one-launch operator passphrase, starts the Twin, dashboard, and MCP endpoint against the same `LiveCity` owner, then starts the named scenario before wall-paced simulation begins. The operator can inspect the frame and event history, submit allowed commands, and stop the process with `quit` or Ctrl+C. For campaign evidence, use the project’s scenario-campaign runner rather than relying on a visual impression alone. Use a fresh `TWIN_STATE_DB_PATH` and unique run ID when an isolated persistent run is required; otherwise the configured SQLite database may restore an existing active run.
+
+| Stage | What happens | What should be recorded |
+|---|---|---|
+| Start | Load a named JSON scenario and create its correlation ID. | Scenario ID, run ID, starting tick/revision. Confirm the current registry binds every triggered sensor. |
+| Trigger | On the configured tick, seed a value, inject/clear a fault, or toggle a local channel flag. | Trigger source, target, tick, and whether it is a fixture. |
+| Observe | SensorBank samples from the model and the Twin emits state/events. | Actual versus reported values where authorized; public projections should not expose private ground truth. |
+| Decide/command | A test caller or operator may submit a command through the interface; no partner service is implied. | Caller role, request/correlation IDs, acceptance or rejection reason. |
+| Apply/check | On acceptance, CityCore records a simulated effect and advances revision; rejected effects should not mutate state. | Before/after state and revision, command result, persistence record where applicable. |
+| Close/evaluate | Scenario window completes; campaign checks the trace, invariants, and outcome. | Final state, event order, assertions, logs, and explicit limitations. |
+
+SCN-06 is especially useful for demonstrating disciplined failure handling: it deterministically flips local Brain/Guardian availability flags, expects calls to fail closed, keeps quarantine in force, and checks a fresh post-recovery command. It does **not** drop a network connection or restart an external partner. The scenario and evidence must be presented as a local interface failure-injection test.
+
+### 3.8 Technology stack and engineering differentiators
+
+| Layer | Technologies evidenced in the repository | Role |
+|---|---|---|
+| Twin and simulation | Python 3.12+; immutable/domain-oriented Python modules; Python standard library synchronization and HTTP server components | CityCore state transitions, LiveCity owner, sensors, scenario scheduler and local dashboard bridge. |
+| Persistence | SQLite via Python `sqlite3`; WAL mode and migrations in `twin_persistence` | Durable replay/state transitions, idempotency records, operation records, and recovery metadata. |
+| Interfaces | Python REST router; `TwinFacade`; JSON request/response envelopes; MCP launcher references | REST/facade code is present. The MCP launchers import a server module absent from this checkout, so no runnable MCP tool surface is claimed. |
+| Dashboard | React 19.3.1, Three.js 0.187.0, Vite 8.3.6, Lucide React 1.69.0; Node.js 20.19+ or 22.12+ | Workshop-style primary view; data comes from the existing public reported projection or authenticated private operator frame, not a second demo API. |
+| Verification | Pytest-based tests and repository campaign/evidence scripts; JSON scenario fixtures | Unit, integration, idempotency, restart, and scenario checks. |
+
+The report’s strongest differentiators are engineering properties demonstrated by the implementation—not claims of autonomous city operation:
+
+1. **A causal city sandbox, not just a 3D display.** Topology and domain state connect flood depth, road accessibility, signal capacity, feeder power, pump operation, air quality, and responder movement. Accepted simulated commands can be checked against resulting revisions and state.
+2. **One local Twin owner backs the implemented REST and dashboard surfaces.** The REST router uses `TwinFacade`; the dashboard bridge reads from and controls the same `LiveCity` owner through its existing routes. This avoids separate simulation backends, while retaining the appropriate authorization and projection boundary for each implemented interface. The referenced MCP server is unavailable in this checkout and is not included in this claim.
+3. **Sensor integrity is visible and privacy-aware.** The runtime can model actual/source and reported values separately, inject deterministic faults, and expose only the permitted projection to ordinary readers. A suspicious reading can be evaluated without presenting private ground truth as public data.
+4. **Failure behavior is part of the scenario design.** The campaign includes bad/frozen/dead data, quarantine, competing events, changed revisions, duplicate requests, and controlled communication unavailability—not only a successful command demonstration.
+5. **Restart safety has a durable design and executable evidence.** SQLite-backed request records and replayed CityCore state support returning an already committed result after restart instead of repeating a simulated effect. Cite the process-restart evidence in Section 9; do not generalize this to external physical actuators.
+6. **The evidence boundary is explicit.** Pending markers are not partner replies, model markers are not surveyed coordinates, and simulated actuator states are not field actuation. This candor makes the demonstration auditable and gives a credible roadmap to integration.
+
+> **Jury presentation tip.** Show one end-to-end causal chain: inject the documented water event, identify the resulting sensor sample and its reported status, submit a command with an explicit request/revision, show the safety decision, then compare CityCore state and revision before and after. Follow it with the same request replay (no second mutation) and a quarantined or stale-revision rejection. Label every test caller and local fixture, and state that Brain/Guardian partner services and physical equipment were not contacted.
+
 ## 4. Brain Layer
 
 The intended Brain responsibility is to consume projected Twin observations and city state, reason about operational objectives, and propose infrastructure commands through the existing interface. The Twin supports a `brain` role for read tools and actuator command submission.
@@ -232,9 +378,9 @@ The intended Guardian responsibility is to assess data trust, recommend or perfo
 
 ## 6. MCP Communication Architecture
 
-The FastMCP server in [`src/twin_interface/mcp_server/server.py`](../src/twin_interface/mcp_server/server.py) registers semantic tools and routes them into the same TwinFacade used by REST. The tool caller’s bearer token is extracted from the MCP HTTP authorization header; the credential is not an ordinary domain argument. Local MCP transport can be started by the project launcher; this does not add a partner integration.
+The repository contains an MCP package directory and launchers that import `twin_interface.mcp_server.server`, but the referenced `server.py` implementation is absent from this checkout. A direct import check on 6 November 2026 failed with `ModuleNotFoundError`. Consequently, this report cannot verify or claim a runnable FastMCP server, registered MCP tools, MCP authentication behavior, or a functioning MCP transport. The following tool list and sequence diagram preserve the previously documented interface contract only; they are **not verified as available in the current checkout**. The REST router and local dashboard routes are separate implementation surfaces.
 
-### Table 2. MCP tools and inputs
+### Table 2. Previously documented MCP tool contract (current availability not verified)
 
 | MCP tool | Inputs (excluding request context) | Result | Access status |
 |---|---|---|---|
@@ -246,7 +392,7 @@ The FastMCP server in [`src/twin_interface/mcp_server/server.py`](../src/twin_in
 | `isolate_device` | `device_id`, `reason=""` | Isolation result or error envelope | Guardian, Operator |
 | `restore_device` | `device_id` | Restoration result or error envelope | Guardian, Operator |
 
-MCP decorator discovery is the authoritative tool list. The broader permission matrix in [`permissions.py`](../src/twin_interface/permissions.py) contains names for additional scenario/fault operations that are not registered by the MCP server as tools in this report’s scope. Do not treat those matrix entries as available MCP methods.
+Because the MCP server implementation is missing, decorator discovery cannot be performed in this checkout and the table above must not be used as evidence that these tools are currently registered. The permission matrix is source code for facade-level role checks; it does not prove a running MCP transport or its methods.
 
 ### Table 3. REST and local dashboard interfaces
 
@@ -271,10 +417,12 @@ The REST routes and schemas are defined in [`router.py`](../src/twin_interface/r
 
 ### Figure 5. MCP communication and security boundary
 
+*Documented contract only; the FastMCP server node is not importable from this checkout.*
+
 ```mermaid
 flowchart LR
-    C["MCP client"] -->|HTTP MCP request + bearer header| S["FastMCP server"]
-    S -->|extract bearer token| AU["resolve role"]
+    C["MCP client"] -. "documented request / bearer contract" .-> S["FastMCP server<br/>implementation unavailable"]
+    S -. "intended token-to-role step" .-> AU["resolve role"]
     AU --> PM["Permission matrix"]
     PM -->|permitted tool| F["TwinFacade"]
     F --> PR["Projection / event selection"]
@@ -331,6 +479,8 @@ sequenceDiagram
 ## 7. Scenario Campaign
 
 Scenario definitions are stored in [`scenarios/scn_*.json`](../scenarios); orchestration is implemented in [`b_scenarios.py`](../src/city_live/b_scenarios.py). The latest individual and sequential execution evidence is in the campaign bundle. Here, PASS means the stated local scenario checks passed—not that external partner services participated.
+
+**Evidence recency warning:** the `PASS` outcomes below are those recorded in the 2 November 2026 campaign bundle. The focused current-source check on 6 November found `SENSOR_UNBOUND` failures for T5/SCN-01, SCN-02, and SCN-03 as described in Section 3.5. Those historical PASS labels do not establish that these three scenarios run successfully in the current checkout; update them only after the registry/catalog mismatch is fixed and the campaign is rerun.
 
 ### SCN-01 — Fake flood at the port
 
@@ -415,7 +565,7 @@ The independent campaign reports all six individual **local scenario checks** as
 |---|---|---|
 | Token authentication and role resolution | `resolve_token()` compares configured tokens in constant time; development tokens require explicit opt-in. | Implemented; [`auth.py`](../src/twin_interface/auth.py), regression tests |
 | Tool permissions | Tool-to-role allowlist separates actuator commands from isolation/restoration. | Implemented; [`permissions.py`](../src/twin_interface/permissions.py) |
-| Credential transport | MCP bearer is read from request context; REST expects Authorization bearer and rejects credential values in query/body; dashboard uses a launch passphrase/session cookie. | Implemented; MCP server, [`router.py`](../src/twin_interface/rest/router.py), dashboard tests |
+| Credential transport | REST expects Authorization bearer; dashboard uses a launch passphrase/session cookie. The previously documented MCP bearer behavior cannot be verified because the MCP server implementation is missing. | REST [`router.py`](../src/twin_interface/rest/router.py), dashboard tests; MCP **not verified** |
 | Sensor information projection | Ordinary sensor reads expose selected public fields; private evaluator-oriented ground truth is separately controlled. | Implemented; [`projections.py`](../src/twin_interface/projections.py), leakage tests |
 | Command schema and semantic validation | Command/device pairing and parameters are built/validated before an effect is applied. | Implemented; [`commands.py`](../src/city_live/commands.py) and CityCore |
 | Quarantine | Isolated devices are marked/rejected at the Twin boundary; quarantine rows can be persisted when SQLite is enabled. | Implemented and tested; SCN-04 and durable tests |
@@ -652,14 +802,21 @@ The implementation must still be represented accurately: Brain and Guardian are 
 ### Core and interfaces
 
 - [CityCore package](../src/city_core)
+- [CityCore topology catalog](../src/city_core/data/catalog.json)
+- [Versioned simulation initial state and parameters](../src/city_core/data/initial_config.json)
+- [Water, traffic, power, air, and responder domain models](../src/city_core)
 - [LiveCity runtime](../src/city_live/runtime.py)
 - [ScenarioRunner](../src/city_live/b_scenarios.py)
 - [SensorBank](../src/city_live/sensors.py)
+- [Runtime sensor and actuator catalog](../src/city_live/data/device_catalog.json)
+- [Generated sensor registry](../src/city_live/data/sensors.json)
+- [Scenario launcher](../tools/run_twin.py)
+- [Dashboard 3D frontend dependencies](../tools/dashboard-3d/package.json)
 - [TwinFacade](../src/twin_interface/facade.py)
 - [Authentication](../src/twin_interface/auth.py)
 - [Permissions](../src/twin_interface/permissions.py)
 - [Projections](../src/twin_interface/projections.py)
-- [FastMCP server](../src/twin_interface/mcp_server/server.py)
+- [MCP package placeholder](../src/twin_interface/mcp_server/__init__.py) (the server module imported by launchers is absent in this checkout)
 - [REST router](../src/twin_interface/rest/router.py)
 - [Dashboard server](../src/city_dashboard/server.py)
 - [Dashboard UI](../src/city_dashboard/web/index.html)
