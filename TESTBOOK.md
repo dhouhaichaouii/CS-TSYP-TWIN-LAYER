@@ -23,15 +23,15 @@ operator dashboard.
 The Residential `RES-AIR-TEST-01` observation in SCN-05 is a scenario-local
 fixture, not a sensor in the Twin registry. It appears as a clearly labeled
 scenario event and is never registered or sampled as hardware. SCN-04's listed
-backup pump `PRT-PMP-02` shares a CityCore physical target with `PRT-PMP-01`;
-quarantining the primary therefore also makes this alias ineligible as a
-fallback. The runner does not bypass that quarantine or invent another device.
+backup pump `PRT-PMP-02` explicitly shares the CityCore target `P-03` with
+`PRT-PMP-01`; it is not an independent fallback. The runner does not bypass
+that quarantine or invent another device.
 
 | ID | Existing scenario data | Shared Twin behavior | Partner behavior and command outcome |
 |---|---|---|---|
 | T5 / SCN-01 | Port flood spoof: PRT-WLV-01 actual input 40 cm, reported value 180 cm from the declared false-reading fault. | Samples through SensorBank; exposes the actual/reported mismatch in private Twin diagnostics and lifecycle events. Unsafe Brain commands linked to the untrusted sensor are rejected unless a validated registered backup reading is supplied. | Guardian is pending until it actually isolates the sensor. Brain is pending until an actual command or response arrives. No automatic flood action is fabricated. |
 | SCN-02 | Port level seeded to 110 cm from the existing scenario definition. | Forces a real Twin sensor sample of the seeded value and publishes it through the ordinary reading path. | The dashboard and MCP/REST consumers can observe it. A Brain command is applied only after existing permission, idempotency, quarantine, and CityCore validation. |
-| SCN-03 | Existing traffic and temperature sensor faults, plus seeded IND-TMP-02 backup input. | Samples the traffic counter before and during the STUCK fault, and records the dead sensor's failed reading. Backup commands require an existing configured backup whose latest reading is valid, matches actual input, and is linked to the target device. | Guardian and Brain outcomes remain pending until real inbound calls occur. The runner neither invents backup readings nor automatically issues a command. |
+| SCN-03 | Existing traffic and temperature sensor faults, plus seeded IND-TMP-02 backup input. | DTN-TRF-01 holds reported 48 (private fixture actual 55); IND-TMP-01 reports null/FAILED; backup IND-TMP-02 reports 70. | Controlled local Brain-role call without backup context is rejected as `SCENARIO_GUARDIAN_PENDING`; with `source_sensor_id=IND-TMP-02`, the sensor gate passes but the command is rejected as `UNSUPPORTED_DEVICE` because catalog entry IND-VLV-01 is `supported: false`. No CityCore revision/state change. This is not a real Brain or Guardian response; both real integrations are NOT VERIFIED. |
 | SCN-04 | Guardian containment of PRT-PMP-01; existing scenario data lists PRT-PMP-02 as backup. | Waits for real Guardian isolation before treating the target as quarantined. Twin rejects a Brain request while isolation is pending and rejects it through the normal quarantine gate after isolation. | PRT-PMP-02 is not an eligible fallback in the current device catalog because it maps to the same physical pump target as PRT-PMP-01. |
 | SCN-05 | Seeded Downtown traffic value and scenario-local Residential air fixture at the same tick. | Publishes the traffic event through SensorBank. Emits the air fixture as a labeled fixture event only; it is not inserted into the hardware registry. | Only an actual Brain command to an existing eligible signal can change CityCore. No Guardian or Brain response is synthesized for the air fixture. |
 | SCN-06 | Controlled, deterministic availability transitions for Brain-facing and Guardian-facing inbound Twin interfaces. | Emits explicit baseline, unavailable, and recovered lifecycle records. Injected failures block Brain commands and Guardian isolate/restore calls; an unavailable Guardian also blocks Brain and operator actuator commands. Quarantine is preserved. | This is local `ScenarioRunner` failure injection, not a network outage or service probe. No Brain decision or Guardian verdict is fabricated. Outage requests are rejected, not queued; delayed requests are evaluated again against current revision and safety gates. |
@@ -107,3 +107,21 @@ report, Twin events, EventStore export, dashboard frame, and sanitized audit
 log. A passing run validates controlled local failure injection only; no
 external Brain or Guardian service is involved. There is no durable pending
 command queue or process-restart recovery in this architecture.
+
+## Current verification record — 7 November 2026
+
+| Command | Exit | Result |
+|---|---:|---|
+| `$env:PYTHONPATH='src'; tmp/twin-audit-venv/Scripts/python.exe -X utf8 -m unittest live_tests.test_scenario_orchestration.ScenarioOrchestrationTests.test_scn03_rejects_ambiguous_valve_even_with_valid_backup_sensor` | 0 | Isolated SCN-03 test: 1 passed. Both expected rejections were asserted; CityCore revision did not change. |
+| `tmp/twin-audit-venv/Scripts/python.exe -X utf8 tools/run_scenario_campaign.py --evidence-root test-evidence` | 1 | All six individual scenarios PASS; sequential and cross-scenario checks PASS. Overall **BLOCKED** because real Brain/Guardian outage cases require absent partner services. Latest campaign completed `2026-11-07T17:55:50.889053Z`; see [campaign JSON](test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/campaign.json). |
+| `$env:PYTHONPATH='src'; tmp/twin-audit-venv/Scripts/python.exe -X utf8 -m unittest discover -s tests/security -t .` | 0 | 10 security tests passed. |
+| `$env:PYTHONPATH='src'; tmp/twin-audit-venv/Scripts/python.exe -X utf8 -m unittest tests.interface.test_facade tests.interface.test_command_integration` | 0 | 15 interface tests passed. |
+| `$env:PYTHONPATH='src'; tmp/twin-audit-venv/Scripts/python.exe -X utf8 -m unittest tests.interface.test_asgi_app.UnifiedAsgiAppTests.test_rest_header_auth_permissions_and_credential_rejection` | 0 | 1 interface test passed; malformed JSON/non-object inputs returned 400, missing auth 401, and role denials 403. |
+
+The new campaign evidence is in
+[`campaign.json`](test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/campaign.json),
+with SCN-03 Twin events, dashboard frame, and audit log in that folder's
+`individual/` and `audit/` subfolders. Campaign calls are controlled local
+TwinFacade calls. Real Brain/Guardian integration is **NOT VERIFIED**;
+`IND-VLV-01` is unsupported and no actuator or post-action physical feedback is
+claimed.

@@ -4,6 +4,7 @@
 > **Audience:** Brain team, Guardian team, Operator dashboard, Jury/Evaluator  
 > **Status:** Round 1 matching — 31 October 2026 · Contract version `twin-interface-0.1`
 
+
 The Twin Layer is the single source of truth for the city. Partners never touch
 the simulation core directly: every read or write goes through the **TwinFacade**,
 which authenticates the caller, enforces the role matrix and quarantine flags,
@@ -149,11 +150,19 @@ applies physics twice. Reusing a `request_id` with different parameters returns
 
 | Family | Example IDs | Supported commands |
 | :--- | :--- | :--- |
-| Pump | `PRT-PMP-01`, `PRT-PMP-02` | `start`, `stop`, `set_speed` (`speed_pct` 0–100) |
-| Valve | `V-12`, `IND-VLV-01`, `DTN-VLV-01` | `set_opening` (`open_pct` 0–100) |
-| Signal | `DTN-TLT-01` | `set_phase`, `set_mode`, `set_priority_corridor` |
-| Feeder | `F-ESS`, `F-URBAN`, `F-IND` | `open`, `close` |
-| Responder | `AMB-01`, `POL-01` | `dispatch`, `release` |
+| Pump | `PRT-PMP-01`, `PRT-PMP-02`, `P-03` | `start`, `stop`, `set_speed` (`speed_pct` 0–100) |
+| Valve | `V-12` | `set_opening` (`open_pct` 0–100) |
+| Signal | `DTN-TLT-01`, `DTN-TLT-02`, `J-D1`, `J-D2` | `set_phase`, `set_mode`, `set_priority_corridor` |
+| Feeder | `F-ESS`, `F-URBAN`, `F-IND` | `open`, `close`, `connect`, `disconnect` |
+| Responder | `AMB-01`, `AMB-02`, `POL-01` | `dispatch`, `release` |
+
+`PRT-PMP-02` is mapped to the same core target as `PRT-PMP-01`; it is not an
+independent backup. `IND-VLV-01`, `DTN-VLV-01`, `RES-VLV-01`, and
+`RES-TLT-01` are registered but unsupported and are rejected until their
+CityCore mappings are confirmed. `RES-TRF-01` is associated with `DTN-TLT-02`
+because its registered source is CityCore road `R-LINK`, controlled by `J-D2`.
+An `APPLIED` response means the simulated CityCore effect was committed; it
+includes `execution_status: EXECUTED` and is not a physical actuation result.
 
 ### `isolate_device(token, device_id, reason?)`
 

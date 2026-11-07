@@ -249,7 +249,7 @@ class Campaign:
                     )
                 ]
                 expected_effect = scenario_id in (
-                    'SCN-02', 'SCN-03', 'SCN-05', 'SCN-06',
+                    'SCN-02', 'SCN-05', 'SCN-06',
                 )
                 effect_applied = after['revision'] > before['revision']
                 outcomes = [
@@ -304,6 +304,20 @@ class Campaign:
                     bool(command_events),
                     'Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.',
                 )
+                if scenario_id == 'SCN-03':
+                    rejection_reasons = [
+                        row.get('error', {}).get('details', {}).get('reason')
+                        for row in actions
+                    ]
+                    self.check(
+                        checks, 'scenario_expected_safe_rejections',
+                        rejection_reasons == [
+                            'SCENARIO_GUARDIAN_PENDING', 'UNSUPPORTED_DEVICE',
+                        ],
+                        f'actual_rejection_reasons={rejection_reasons}; '
+                        'backup context clears the sensor safety gate, but the '
+                        'catalog does not support IND-VLV-01.',
+                    )
                 self.check(
                     checks, 'expected_effect_semantics',
                     effect_applied == expected_effect,

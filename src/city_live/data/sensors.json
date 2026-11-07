@@ -339,7 +339,7 @@
       ],
       "interval": 10,
       "linked_device_ids": [
-        "RES-TLT-01"
+        "DTN-TLT-02"
       ],
       "backup_ids": [],
       "source": "departures:R-LINK"

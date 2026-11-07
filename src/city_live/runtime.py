@@ -19,6 +19,7 @@ from .sensors import SensorBank
 from .b_scenarios import ScenarioRunner
 from .demand import TrafficDemand
 from .operator import OperatorControls
+from .sensor_physics import SensorPhysics, advance as advance_sensor_physics, measurements as sensor_measurements
 
 
 def serialized(method):
@@ -93,6 +94,7 @@ class LiveCity(OperatorControls):
         self._effect_counter, self._private_seq = 0, 0
         self._quarantined_devices = {}
         self._traffic = TrafficDemand(self._seed)
+        self._sensor_physics = SensorPhysics()
         self._sensors.reset()
         self._store.reset(self._run_id)
         if hasattr(self, '_scenario_runner'):
@@ -116,13 +118,15 @@ class LiveCity(OperatorControls):
                       details.get('action_id'))
         self._events = (*self._events, event)[-self._history_limit:]
 
-    def _effect(self, effect, *, persist=True):
+    def _effect(self, effect, *, persist=True, correlation_id=None):
         context = self._snapshot().context
         source = 'B_SCENARIO' if effect['tag'] in DRIVERS else 'B_ACTUATOR'
         effect_id = f'live-{self._effect_counter + 1:010d}'
         request = {'contract_version': CONTRACT_VERSION, 'run_id': self._run_id,
                    'effect_id': effect_id, 'expected_revision': context.revision,
-                   'source': source, 'correlation_id': effect_id, 'effect': effect}
+                   'source': source,
+                   'correlation_id': effect_id if correlation_id is None else correlation_id,
+                   'effect': effect}
         handle = self._core.scenarios if source == 'B_SCENARIO' else self._core.actuators
         receipt = require(handle.apply_effect(request))
         self._effect_counter += 1
@@ -227,7 +231,11 @@ class LiveCity(OperatorControls):
         departures = {road: max(0, old.queue_vehicles + old.arrival_rate_veh_s
             - committed.physical_state.roads[road].queue_vehicles)
             for road, old in before.physical_state.roads.items()}
-        expired = self._sensors.capture(committed, departures)
+        self._sensor_physics = advance_sensor_physics(
+            self._sensor_physics, committed, self._epoch
+        )
+        model_values = sensor_measurements(self._sensor_physics)
+        expired = self._sensors.capture(committed, departures, model_values)
         for sensor_id in expired:
             self._event('FAULT_CLEARED', {'sensor_id': sensor_id, 'automatic': True})
         previous = self._sensors.latest

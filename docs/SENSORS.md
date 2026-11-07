@@ -51,13 +51,22 @@ agreement and external interoperability remain unverified.
 
 ## Implemented model and migration
 
+**Interpretation limit:** The SensorPhysics values below are deterministic,
+illustrative model outputs, not calibrated physical measurements. The model's
+hydraulic, coolant, process-temperature, ambient, and residential parameters
+have no supplied field calibration. Their existence does not prove that a
+registered sensor is physically connected to a similarly named CityCore asset
+or actuator. In particular, Harbour, drain, and residential stores are separate
+from the CityCore river system. Pressure values are illustrative and must not be
+presented as engineering pressure telemetry.
+
 Runtime owns immutable `SensorPhysics` (`pdf-city-physics-1`) beside its unchanged
 core state. It reads committed rain and feeder availability and advances exactly
 once per tick before sampling. Measurement faults never feed into this state.
 Sensor values are rounded to two decimals, with reported values clamped to PDF
 hard limits; privileged truth/diagnostics remain unclamped for saturation evidence.
 
-| Quantity | Local physical rule / declared parameters |
+| Quantity | Illustrative local rule / declared parameters |
 | --- | --- |
 | Harbour level, primary outlet flow, header pressure | Independent 1000 m² storage, initial 500 m³ (50 cm). Inflow 0.06 m³/s plus rain over 10000 m². Automatic primary discharge 0.06 + 0.002×(volume−500) m³/s, bounded 0–0.25 and available water, disabled without F-URBAN power. Header pressure 2 + 4×flow/0.25 bar while pumping; zero stopped. Backup level samples the same storage independently. No second-pump capacity or automatic failover is invented. |
 | Downtown storm drain | Independent 100 m² storage, initial 20 m³ (20 cm); rainfall over 3000 m² enters it; gravity discharge 0.04×sqrt(volume/20) m³/s, bounded by available water. This separate drain catchment does not subtract/duplicate transfers from the core flood storage. |

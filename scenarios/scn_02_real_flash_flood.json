@@ -1,13 +1,13 @@
 {
   "ID": "SCN-02",
-  "Name": "Harbor basin surge and emergency valve dispatch",
+  "Name": "Seeded Harbour-level fixture and pump-command check",
   "Layers involved": ["Twin", "Guardian", "City Brain"],
-  "Description": "Real rain accumulation causes the harbor basin water level to rise rapidly from 40 cm to 110 cm. The telemetry is authentic.",
+  "Description": "A deterministic fixture seeds PRT-WLV-01 from 40 cm to 110 cm. This is not a rain-driven or CityCore basin simulation and is not authentic field telemetry.",
   "Trigger": "python scenarios/run.py --scenario scn-02",
-  "Expected: Twin": "PRT-WLV-01 reports the authentic 110.0 cm value (actual_value == reported_value). The runner records a PENDING marker before dispatch; the real ActuatorEngine advances RUNNING to COMPLETED and returns an effect that this runner does not apply to city_core.",
-  "Expected: Guardian": "The scenario adapter validates the matching actual/reported values and returns TRUSTED.",
-  "Expected: Brain": "Confirms TRUSTED, recognizes the flood threshold breach, and dispatches START to the linked port pump PRT-PMP-01.",
-  "How to verify": "Follow the correlation_id through the reading, TRUSTED verdict, OPEN_DISCHARGE decision, and actuator RUNNING/COMPLETED events in logs/scn-02-*.log. The runner uses the Twin actuator engine; Guardian and Brain are explicit scenario adapters.",
+  "Expected: Twin": "At tick 1, SensorBank samples the scenario-seeded 110.0 cm input for PRT-WLV-01. The fixture does not apply rain or mutate CityCore B-01. A separate local test-client command can change P-03 state; no Harbour response is implied.",
+  "Expected: Guardian": "No external Guardian service is connected or invoked by this fixture scenario.",
+  "Expected: Brain": "No external Brain service is connected or invoked. Tests may issue a local Brain-role pump command to verify command handling, not an autonomous incident response.",
+  "How to verify": "Run python scenarios/run.py --scenario scn-02 and inspect the scenario-seeded sensor event. For physical water behavior, inspect CityCore state separately; this fixture does not represent a physical flash flood.",
   "duration_ticks": 2,
   "triggers": [
     {

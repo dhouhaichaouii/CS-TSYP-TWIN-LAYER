@@ -1,0 +1,2273 @@
+{
+  "completed_at": "2026-11-07T17:38:17.768506+00:00",
+  "evidence_directory": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0",
+  "limitations": [
+    "Brain and Guardian partner service processes are absent; controlled local TwinFacade role calls prove the Twin boundary only.",
+    "No Guardian request-bound positive approval endpoint exists; pending is not approval.",
+    "SCN-04 PRT-PMP-01 and PRT-PMP-02 map to the same CityCore physical target, so the backup cannot be used after primary quarantine.",
+    "SCN-04 declares no sensor trigger, so a sensor-state update is not applicable to that scenario definition.",
+    "The database persists CityCore replay transitions and actuator receipts, but runtime scenario/sensor adapters, event-store history, and pending scenario state remain process-local.",
+    "Kafka is not present; Kafka failure recovery is not tested.",
+    "This Python runner does not exercise browser rendering; see browser-validation.json for the separately executed dashboard session."
+  ],
+  "overall": "BLOCKED",
+  "partner_service_boundary": {
+    "brain": "No Brain service/client is present in this repository. Campaign calls to TwinFacade are controlled local test-client calls, not actual Brain service responses.",
+    "guardian": "No Guardian service/client is present in this repository. Campaign calls to TwinFacade are controlled local test-client calls, not actual Guardian service responses.",
+    "kafka": "No Kafka component is configured or present in this repository."
+  },
+  "parts": {
+    "A_individual": [
+      {
+        "actions": [
+          {
+            "error": {
+              "code": "INVALID_STATE",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "SCENARIO_GUARDIAN_PENDING",
+                "request_id": "scn-01-spoofed-command"
+              },
+              "message": "Scenario safety is waiting for the Guardian veto check."
+            },
+            "ok": false
+          }
+        ],
+        "after_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 70,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "audit_line_count": 38,
+        "audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\individual-scn-01_campaign-1-7cb48c018074.jsonl",
+        "before_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 70,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "brain_lifecycle": {
+          "brain_decision_events": 1,
+          "real_brain_service_response": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "checks": [
+          {
+            "check": "scenario_received",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "Twin_update_observed",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "dashboard_frame_current",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "correlation_consistent",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "command_lifecycle_present",
+            "evidence": "Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.",
+            "status": "PASS"
+          },
+          {
+            "check": "expected_effect_semantics",
+            "evidence": "before_revision=70; after_revision=70; expected_effect=False; outcomes=[{'ok': False, 'error': {'code': 'INVALID_STATE', 'message': 'Scenario safety is waiting for the Guardian veto check.', 'details': {'device_id': 'PRT-PMP-01', 'command': 'set_speed', 'request_id': 'scn-01-spoofed-command', 'execution_status': 'REJECTED', 'reason': 'SCENARIO_GUARDIAN_PENDING', 'correlation_id': 'campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13', 'city_core_updated': False}}}]; SCN-06 submits a fresh command only after channel recovery; no outage request is queued.",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_written",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_sanitized",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "event_order_monotonic",
+            "evidence": "",
+            "status": "PASS"
+          }
+        ],
+        "command_events": [
+          {
+            "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-88645d3b-4c14-4815-a15c-79becd0ecc76",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_speed",
+              "origin_event_ids": [
+                "event-07719e69-0569-4518-ae9f-4e308755f66b"
+              ],
+              "request_id": "scn-01-spoofed-command",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "T5",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:45Z"
+          },
+          {
+            "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-db874bd8-41d8-41ea-96dc-6a766906f288",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_speed",
+              "request_id": "scn-01-spoofed-command"
+            },
+            "scenario_id": "T5",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:45Z"
+          },
+          {
+            "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-31203ffa-715a-4a6d-85d8-26a47b1bb1e1",
+            "event_type": "COMMAND_REJECTED",
+            "payload": {
+              "command": "set_speed",
+              "error": "SCENARIO_GUARDIAN_PENDING",
+              "origin_event_ids": [
+                "event-07719e69-0569-4518-ae9f-4e308755f66b"
+              ],
+              "reason": "TwinFacade validation or safety check rejected command",
+              "request_id": "scn-01-spoofed-command"
+            },
+            "scenario_id": "T5",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:45Z"
+          }
+        ],
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "dashboard": "PASS: private operator frame includes current scenario and readings",
+        "dashboard_browser_render": "NOT TESTED",
+        "guardian_lifecycle": {
+          "pending_marker_observed": true,
+          "real_guardian_service_verdict": false,
+          "status": "BLOCKED"
+        },
+        "lifecycle_types": [
+          "BRAIN_DECIDED",
+          "BRAIN_PENDING",
+          "COMMAND_PENDING",
+          "COMMAND_REJECTED",
+          "GUARDIAN_PENDING",
+          "RECEIVED",
+          "SCENARIO_WINDOW_COMPLETE",
+          "TWIN_UPDATED"
+        ],
+        "overall": "PASS",
+        "partner_integration": {
+          "brain_service": "BLOCKED",
+          "guardian_service": "BLOCKED",
+          "guardian_test_call": null,
+          "test_client_calls_are_external_service_responses": false
+        },
+        "scenario_id": "SCN-01",
+        "sensor_event_ids": [
+          "event-3cd28702-0c07-4104-9551-53908018407c",
+          "event-849272aa-2ea4-4119-9bce-5ae2852a32cf",
+          "event-798885b9-0ea2-45ba-8c93-73e7e4936777",
+          "event-c5ff69d3-5aec-483d-8acd-978bf61a9261",
+          "event-c9b8c1e7-962c-49fb-bc4e-79871e0d7c15",
+          "event-c4d790de-9e89-49c5-ba90-4b479f270b09",
+          "event-be6c19b5-1a3d-4fad-8aac-a03c5fa0dcda",
+          "event-9f0abe10-caba-42fa-89fe-6a0c3821bcd9",
+          "event-b99c628f-be5a-4d1a-99e8-a1e9b22de18b",
+          "event-e7d17c7c-5ef3-46d2-885d-8f13a52e762f",
+          "event-07719e69-0569-4518-ae9f-4e308755f66b"
+        ]
+      },
+      {
+        "actions": [
+          {
+            "error": null,
+            "ok": true
+          },
+          {
+            "error": null,
+            "ok": true
+          }
+        ],
+        "after_city_state": {
+          "pump": {
+            "effective_enabled": true,
+            "effective_speed_fraction": 0.3
+          },
+          "revision": 9,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "audit_line_count": 12,
+        "audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\individual-scn-02_campaign-2-9a38b2625942.jsonl",
+        "before_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 8,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "brain_lifecycle": {
+          "brain_decision_events": 1,
+          "real_brain_service_response": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "checks": [
+          {
+            "check": "scenario_received",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "Twin_update_observed",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "dashboard_frame_current",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "correlation_consistent",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "command_lifecycle_present",
+            "evidence": "Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.",
+            "status": "PASS"
+          },
+          {
+            "check": "expected_effect_semantics",
+            "evidence": "before_revision=8; after_revision=9; expected_effect=True; outcomes=[{'ok': True, 'error': None}, {'ok': True, 'error': None}]; SCN-06 submits a fresh command only after channel recovery; no outage request is queued.",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_written",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_sanitized",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "event_order_monotonic",
+            "evidence": "",
+            "status": "PASS"
+          }
+        ],
+        "command_events": [
+          {
+            "correlation_id": "campaign-2-9a38b2625942:SCN-02:2453f208-a8b6-4f2c-90d2-6a5c6bd0dae6",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-9d3ab4c2-314b-46c4-b414-da154195f47c",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_speed",
+              "origin_event_ids": [
+                "event-d5f73dc2-4526-45a0-af04-54d214df87a6"
+              ],
+              "request_id": "scn-02-pump-command",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-02",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:03Z"
+          },
+          {
+            "correlation_id": "campaign-2-9a38b2625942:SCN-02:2453f208-a8b6-4f2c-90d2-6a5c6bd0dae6",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-5621d500-bed4-45d0-8985-27bb6116b6ca",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_speed",
+              "request_id": "scn-02-pump-command"
+            },
+            "scenario_id": "SCN-02",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:03Z"
+          },
+          {
+            "correlation_id": "campaign-2-9a38b2625942:SCN-02:2453f208-a8b6-4f2c-90d2-6a5c6bd0dae6",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-b71081b6-b331-4688-ba47-8733edd5b7f2",
+            "event_type": "COMMAND_EXECUTED",
+            "payload": {
+              "city_core_updated": true,
+              "command": "set_speed",
+              "effect_id": "live-0000000006",
+              "effective_revision": 9,
+              "origin_event_ids": [
+                "event-d5f73dc2-4526-45a0-af04-54d214df87a6"
+              ],
+              "request_id": "scn-02-pump-command"
+            },
+            "scenario_id": "SCN-02",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:03Z"
+          }
+        ],
+        "correlation_id": "campaign-2-9a38b2625942:SCN-02:2453f208-a8b6-4f2c-90d2-6a5c6bd0dae6",
+        "dashboard": "PASS: private operator frame includes current scenario and readings",
+        "dashboard_browser_render": "NOT TESTED",
+        "guardian_lifecycle": {
+          "pending_marker_observed": true,
+          "real_guardian_service_verdict": false,
+          "status": "BLOCKED"
+        },
+        "lifecycle_types": [
+          "BRAIN_DECIDED",
+          "BRAIN_PENDING",
+          "COMMAND_EXECUTED",
+          "COMMAND_PENDING",
+          "COMPLETED",
+          "GUARDIAN_PENDING",
+          "RECEIVED",
+          "SCENARIO_WINDOW_COMPLETE",
+          "SENSOR_EVENT_SCHEDULED",
+          "TWIN_UPDATED"
+        ],
+        "overall": "PASS",
+        "partner_integration": {
+          "brain_service": "BLOCKED",
+          "guardian_service": "BLOCKED",
+          "guardian_test_call": null,
+          "test_client_calls_are_external_service_responses": false
+        },
+        "scenario_id": "SCN-02",
+        "sensor_event_ids": [
+          "event-d5f73dc2-4526-45a0-af04-54d214df87a6"
+        ]
+      },
+      {
+        "actions": [
+          {
+            "error": {
+              "code": "INVALID_STATE",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_opening",
+                "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+                "device_id": "IND-VLV-01",
+                "execution_status": "REJECTED",
+                "reason": "SCENARIO_GUARDIAN_PENDING",
+                "request_id": "scn-03-no-backup"
+              },
+              "message": "Scenario safety is waiting for the Guardian veto check."
+            },
+            "ok": false
+          },
+          {
+            "error": {
+              "code": "DEVICE_NOT_FOUND",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_opening",
+                "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+                "device_id": "IND-VLV-01",
+                "execution_status": "REJECTED",
+                "reason": "UNSUPPORTED_DEVICE",
+                "request_id": "scn-03-valid-backup"
+              },
+              "message": "Simulation rejected command: UNSUPPORTED_DEVICE."
+            },
+            "ok": false
+          }
+        ],
+        "after_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 10,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "audit_line_count": 28,
+        "audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\individual-scn-03_campaign-3-1fd546948928.jsonl",
+        "before_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 10,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "brain_lifecycle": {
+          "brain_decision_events": 2,
+          "real_brain_service_response": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "checks": [
+          {
+            "check": "scenario_received",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "Twin_update_observed",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "dashboard_frame_current",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "correlation_consistent",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "command_lifecycle_present",
+            "evidence": "Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.",
+            "status": "PASS"
+          },
+          {
+            "check": "scenario_expected_safe_rejections",
+            "evidence": "actual_rejection_reasons=['SCENARIO_GUARDIAN_PENDING', 'UNSUPPORTED_DEVICE']; backup context clears the sensor safety gate, but the catalog does not support IND-VLV-01.",
+            "status": "PASS"
+          },
+          {
+            "check": "expected_effect_semantics",
+            "evidence": "before_revision=10; after_revision=10; expected_effect=False; outcomes=[{'ok': False, 'error': {'code': 'INVALID_STATE', 'message': 'Scenario safety is waiting for the Guardian veto check.', 'details': {'device_id': 'IND-VLV-01', 'command': 'set_opening', 'request_id': 'scn-03-no-backup', 'execution_status': 'REJECTED', 'reason': 'SCENARIO_GUARDIAN_PENDING', 'correlation_id': 'campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f', 'city_core_updated': False}}}, {'ok': False, 'error': {'code': 'DEVICE_NOT_FOUND', 'message': 'Simulation rejected command: UNSUPPORTED_DEVICE.', 'details': {'device_id': 'IND-VLV-01', 'command': 'set_opening', 'request_id': 'scn-03-valid-backup', 'execution_status': 'REJECTED', 'reason': 'UNSUPPORTED_DEVICE', 'correlation_id': 'campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f', 'city_core_updated': False}}}]; SCN-06 submits a fresh command only after channel recovery; no outage request is queued.",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_written",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_sanitized",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "event_order_monotonic",
+            "evidence": "",
+            "status": "PASS"
+          }
+        ],
+        "command_events": [
+          {
+            "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+            "device_id": "IND-VLV-01",
+            "event_id": "event-f69c5357-a888-4e62-a79c-3f33d34b3aaa",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_opening",
+              "origin_event_ids": [
+                "event-22fd5db0-0919-45c4-98f1-b0a21e645005",
+                "event-babdfd80-2647-4f07-8f5b-1c3fa61d0395"
+              ],
+              "request_id": "scn-03-no-backup",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-03",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+            "device_id": "IND-VLV-01",
+            "event_id": "event-0212cc6f-bbee-45a3-833e-fe58cd3c8123",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_opening",
+              "request_id": "scn-03-no-backup"
+            },
+            "scenario_id": "SCN-03",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+            "device_id": "IND-VLV-01",
+            "event_id": "event-65cac9ca-77ae-49ee-81da-06a9296c7355",
+            "event_type": "COMMAND_REJECTED",
+            "payload": {
+              "command": "set_opening",
+              "error": "SCENARIO_GUARDIAN_PENDING",
+              "origin_event_ids": [
+                "event-22fd5db0-0919-45c4-98f1-b0a21e645005",
+                "event-babdfd80-2647-4f07-8f5b-1c3fa61d0395"
+              ],
+              "reason": "TwinFacade validation or safety check rejected command",
+              "request_id": "scn-03-no-backup"
+            },
+            "scenario_id": "SCN-03",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+            "device_id": "IND-VLV-01",
+            "event_id": "event-6e1a65bc-75a6-47fc-be1f-6a3ec6b09703",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_opening",
+              "origin_event_ids": [
+                "event-22fd5db0-0919-45c4-98f1-b0a21e645005",
+                "event-babdfd80-2647-4f07-8f5b-1c3fa61d0395"
+              ],
+              "request_id": "scn-03-valid-backup",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-03",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+            "device_id": "IND-VLV-01",
+            "event_id": "event-5ef786de-c1aa-4837-81de-134180295b98",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_opening",
+              "request_id": "scn-03-valid-backup"
+            },
+            "scenario_id": "SCN-03",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+            "device_id": "IND-VLV-01",
+            "event_id": "event-6d49e498-194f-47b1-a734-672d392aec93",
+            "event_type": "COMMAND_REJECTED",
+            "payload": {
+              "command": "set_opening",
+              "error": "UNSUPPORTED_DEVICE",
+              "origin_event_ids": [
+                "event-22fd5db0-0919-45c4-98f1-b0a21e645005",
+                "event-babdfd80-2647-4f07-8f5b-1c3fa61d0395"
+              ],
+              "reason": "TwinFacade validation or safety check rejected command",
+              "request_id": "scn-03-valid-backup"
+            },
+            "scenario_id": "SCN-03",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:05Z"
+          }
+        ],
+        "correlation_id": "campaign-3-1fd546948928:SCN-03:712b8da6-30cd-4a83-80e6-4febbc8d5c7f",
+        "dashboard": "PASS: private operator frame includes current scenario and readings",
+        "dashboard_browser_render": "NOT TESTED",
+        "guardian_lifecycle": {
+          "pending_marker_observed": true,
+          "real_guardian_service_verdict": false,
+          "status": "BLOCKED"
+        },
+        "lifecycle_types": [
+          "BRAIN_DECIDED",
+          "BRAIN_PENDING",
+          "COMMAND_PENDING",
+          "COMMAND_REJECTED",
+          "GUARDIAN_PENDING",
+          "RECEIVED",
+          "SCENARIO_WINDOW_COMPLETE",
+          "TWIN_UPDATED"
+        ],
+        "overall": "PASS",
+        "partner_integration": {
+          "brain_service": "BLOCKED",
+          "guardian_service": "BLOCKED",
+          "guardian_test_call": null,
+          "test_client_calls_are_external_service_responses": false
+        },
+        "scenario_id": "SCN-03",
+        "sensor_event_ids": [
+          "event-d99b7746-5331-4280-8c6c-1e8b434a896a",
+          "event-3022a055-99e8-4209-86b7-69845bf83f34",
+          "event-babdfd80-2647-4f07-8f5b-1c3fa61d0395",
+          "event-f53ed23d-3894-4d3e-b7ce-00791a917496",
+          "event-8d2c5884-e7e7-45d8-924c-4a40becfde18",
+          "event-e52183be-7ef0-4344-9da2-95e12e06702a",
+          "event-22fd5db0-0919-45c4-98f1-b0a21e645005"
+        ]
+      },
+      {
+        "actions": [
+          {
+            "error": {
+              "code": "INVALID_STATE",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "SCENARIO_GUARDIAN_PENDING",
+                "request_id": "scn-04-pending-guardian"
+              },
+              "message": "Scenario safety is waiting for the Guardian veto check."
+            },
+            "ok": false
+          },
+          {
+            "error": null,
+            "ok": true
+          },
+          {
+            "error": {
+              "code": "GUARDIAN_RESTRICTED",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "GUARDIAN_RESTRICTED",
+                "request_id": "scn-04-isolated-primary"
+              },
+              "message": "Device is isolated by the Guardian."
+            },
+            "ok": false
+          },
+          {
+            "error": {
+              "code": "GUARDIAN_RESTRICTED",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+                "device_id": "PRT-PMP-02",
+                "execution_status": "REJECTED",
+                "reason": "GUARDIAN_RESTRICTED",
+                "request_id": "scn-04-aliased-backup"
+              },
+              "message": "Device is isolated by the Guardian."
+            },
+            "ok": false
+          }
+        ],
+        "after_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 7,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "audit_line_count": 18,
+        "audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\individual-scn-04_campaign-4-93399548da0e.jsonl",
+        "before_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 7,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "brain_lifecycle": {
+          "brain_decision_events": 3,
+          "real_brain_service_response": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "checks": [
+          {
+            "check": "scenario_received",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "sensor_state_update",
+            "evidence": "SCN-04 defines an actuator quarantine trigger and no sensor event.",
+            "status": "NOT TESTED"
+          },
+          {
+            "check": "dashboard_frame_current",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "correlation_consistent",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "command_lifecycle_present",
+            "evidence": "Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.",
+            "status": "PASS"
+          },
+          {
+            "check": "expected_effect_semantics",
+            "evidence": "before_revision=7; after_revision=7; expected_effect=False; outcomes=[{'ok': False, 'error': {'code': 'INVALID_STATE', 'message': 'Scenario safety is waiting for the Guardian veto check.', 'details': {'device_id': 'PRT-PMP-01', 'command': 'set_speed', 'request_id': 'scn-04-pending-guardian', 'execution_status': 'REJECTED', 'reason': 'SCENARIO_GUARDIAN_PENDING', 'correlation_id': 'campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb', 'city_core_updated': False}}}, {'ok': True, 'error': None}, {'ok': False, 'error': {'code': 'GUARDIAN_RESTRICTED', 'message': 'Device is isolated by the Guardian.', 'details': {'device_id': 'PRT-PMP-01', 'command': 'set_speed', 'request_id': 'scn-04-isolated-primary', 'execution_status': 'REJECTED', 'reason': 'GUARDIAN_RESTRICTED', 'correlation_id': 'campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb', 'city_core_updated': False}}}, {'ok': False, 'error': {'code': 'GUARDIAN_RESTRICTED', 'message': 'Device is isolated by the Guardian.', 'details': {'device_id': 'PRT-PMP-02', 'command': 'set_speed', 'request_id': 'scn-04-aliased-backup', 'execution_status': 'REJECTED', 'reason': 'GUARDIAN_RESTRICTED', 'correlation_id': 'campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb', 'city_core_updated': False}}}]; SCN-06 submits a fresh command only after channel recovery; no outage request is queued.",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_written",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_sanitized",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "event_order_monotonic",
+            "evidence": "",
+            "status": "PASS"
+          }
+        ],
+        "command_events": [
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-45003300-4069-4afb-9fe9-9327c4b7a92a",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_speed",
+              "origin_event_ids": [],
+              "request_id": "scn-04-pending-guardian",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-04",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-ff4c3623-f721-4eca-83ce-3d0ff333f7db",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_speed",
+              "request_id": "scn-04-pending-guardian"
+            },
+            "scenario_id": "SCN-04",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-29174c68-f70b-4792-9655-dcafaf01a72f",
+            "event_type": "COMMAND_REJECTED",
+            "payload": {
+              "command": "set_speed",
+              "error": "SCENARIO_GUARDIAN_PENDING",
+              "origin_event_ids": [],
+              "reason": "TwinFacade validation or safety check rejected command",
+              "request_id": "scn-04-pending-guardian"
+            },
+            "scenario_id": "SCN-04",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-23533a4c-3f8a-4f1f-9eab-05254aea7331",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_speed",
+              "origin_event_ids": [],
+              "request_id": "scn-04-isolated-primary",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-04",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-ae0bc1ff-ca45-4700-8773-78b81113e7ee",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_speed",
+              "request_id": "scn-04-isolated-primary"
+            },
+            "scenario_id": "SCN-04",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-96977d3c-b4d5-474f-af59-61696f9924e4",
+            "event_type": "COMMAND_REJECTED",
+            "payload": {
+              "command": "set_speed",
+              "error": "GUARDIAN_RESTRICTED",
+              "origin_event_ids": [],
+              "reason": "TwinFacade validation or safety check rejected command",
+              "request_id": "scn-04-isolated-primary"
+            },
+            "scenario_id": "SCN-04",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-02",
+            "event_id": "event-b3f65b7e-14b7-477b-845b-7c5360af2490",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_speed",
+              "origin_event_ids": [],
+              "request_id": "scn-04-aliased-backup",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-04",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-02",
+            "event_id": "event-c1189ab3-9c6e-4888-9ec3-aa34dee5d71b",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_speed",
+              "request_id": "scn-04-aliased-backup"
+            },
+            "scenario_id": "SCN-04",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:02Z"
+          },
+          {
+            "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+            "device_id": "PRT-PMP-02",
+            "event_id": "event-1a654a26-54e6-4662-b4e2-65ddf3c4c17e",
+            "event_type": "COMMAND_REJECTED",
+            "payload": {
+              "command": "set_speed",
+              "error": "GUARDIAN_RESTRICTED",
+              "origin_event_ids": [],
+              "reason": "TwinFacade validation or safety check rejected command",
+              "request_id": "scn-04-aliased-backup"
+            },
+            "scenario_id": "SCN-04",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:02Z"
+          }
+        ],
+        "correlation_id": "campaign-4-93399548da0e:SCN-04:e3ffe0e9-e041-40d9-865c-d4784b23b7eb",
+        "dashboard": "PASS: private operator frame includes current scenario and readings",
+        "dashboard_browser_render": "NOT TESTED",
+        "guardian_lifecycle": {
+          "pending_marker_observed": true,
+          "real_guardian_service_verdict": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "lifecycle_types": [
+          "BRAIN_DECIDED",
+          "COMMAND_PENDING",
+          "COMMAND_REJECTED",
+          "GUARDIAN_PENDING",
+          "GUARDIAN_REJECTED",
+          "RECEIVED",
+          "SCENARIO_WINDOW_COMPLETE"
+        ],
+        "overall": "PASS",
+        "partner_integration": {
+          "brain_service": "BLOCKED",
+          "guardian_service": "NOT TESTED",
+          "guardian_test_call": "controlled local TwinFacade role call",
+          "test_client_calls_are_external_service_responses": false
+        },
+        "scenario_id": "SCN-04",
+        "sensor_event_ids": []
+      },
+      {
+        "actions": [
+          {
+            "error": null,
+            "ok": true
+          }
+        ],
+        "after_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 13,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "priority"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "audit_line_count": 14,
+        "audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\individual-scn-05_campaign-5-10c14260282e.jsonl",
+        "before_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 12,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "brain_lifecycle": {
+          "brain_decision_events": 1,
+          "real_brain_service_response": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "checks": [
+          {
+            "check": "scenario_received",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "Twin_update_observed",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "dashboard_frame_current",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "correlation_consistent",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "command_lifecycle_present",
+            "evidence": "Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.",
+            "status": "PASS"
+          },
+          {
+            "check": "expected_effect_semantics",
+            "evidence": "before_revision=12; after_revision=13; expected_effect=True; outcomes=[{'ok': True, 'error': None}]; SCN-06 submits a fresh command only after channel recovery; no outage request is queued.",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_written",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_sanitized",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "event_order_monotonic",
+            "evidence": "",
+            "status": "PASS"
+          }
+        ],
+        "command_events": [
+          {
+            "correlation_id": "campaign-5-10c14260282e:SCN-05:2b29deb8-e24b-41df-b994-fc6d68397bf0",
+            "device_id": "DTN-TLT-01",
+            "event_id": "event-7ca19ad4-ca64-4d57-8967-1b46b7e9d7b6",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_priority_corridor",
+              "origin_event_ids": [
+                "event-2da96933-9473-4164-b2c5-3e67c963acf6"
+              ],
+              "request_id": "scn-05-traffic-signal",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-05",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:07Z"
+          },
+          {
+            "correlation_id": "campaign-5-10c14260282e:SCN-05:2b29deb8-e24b-41df-b994-fc6d68397bf0",
+            "device_id": "DTN-TLT-01",
+            "event_id": "event-8039ebeb-1903-4111-82d1-088117431247",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_priority_corridor",
+              "request_id": "scn-05-traffic-signal"
+            },
+            "scenario_id": "SCN-05",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:07Z"
+          },
+          {
+            "correlation_id": "campaign-5-10c14260282e:SCN-05:2b29deb8-e24b-41df-b994-fc6d68397bf0",
+            "device_id": "DTN-TLT-01",
+            "event_id": "event-5517835a-b0cb-4954-961e-1f56b3175c17",
+            "event_type": "COMMAND_EXECUTED",
+            "payload": {
+              "city_core_updated": true,
+              "command": "set_priority_corridor",
+              "effect_id": "live-0000000006",
+              "effective_revision": 13,
+              "origin_event_ids": [
+                "event-2da96933-9473-4164-b2c5-3e67c963acf6"
+              ],
+              "request_id": "scn-05-traffic-signal"
+            },
+            "scenario_id": "SCN-05",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:07Z"
+          }
+        ],
+        "correlation_id": "campaign-5-10c14260282e:SCN-05:2b29deb8-e24b-41df-b994-fc6d68397bf0",
+        "dashboard": "PASS: private operator frame includes current scenario and readings",
+        "dashboard_browser_render": "NOT TESTED",
+        "guardian_lifecycle": {
+          "pending_marker_observed": true,
+          "real_guardian_service_verdict": false,
+          "status": "BLOCKED"
+        },
+        "lifecycle_types": [
+          "BRAIN_DECIDED",
+          "BRAIN_PENDING",
+          "COMMAND_EXECUTED",
+          "COMMAND_PENDING",
+          "COMPLETED",
+          "GUARDIAN_PENDING",
+          "RECEIVED",
+          "SCENARIO_WINDOW_COMPLETE",
+          "SENSOR_EVENT_SCHEDULED",
+          "TWIN_UPDATED"
+        ],
+        "overall": "PASS",
+        "partner_integration": {
+          "brain_service": "BLOCKED",
+          "guardian_service": "BLOCKED",
+          "guardian_test_call": null,
+          "test_client_calls_are_external_service_responses": false
+        },
+        "scenario_id": "SCN-05",
+        "sensor_event_ids": [
+          "event-91c81bb6-16c5-4ef9-8df9-8bd6457e34b3",
+          "event-2da96933-9473-4164-b2c5-3e67c963acf6"
+        ]
+      },
+      {
+        "actions": [
+          {
+            "error": null,
+            "ok": true
+          }
+        ],
+        "after_city_state": {
+          "pump": {
+            "effective_enabled": true,
+            "effective_speed_fraction": 0.3
+          },
+          "revision": 11,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "audit_line_count": 14,
+        "audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\individual-scn-06_campaign-6-2131a14f91b2.jsonl",
+        "before_city_state": {
+          "pump": {
+            "effective_enabled": false,
+            "effective_speed_fraction": 0.0
+          },
+          "revision": 10,
+          "signals": {
+            "J-D1": {
+              "effective_mode": "normal"
+            },
+            "J-D2": {
+              "effective_mode": "normal"
+            }
+          },
+          "valve": {
+            "effective_opening_fraction": 0.3333333333333333
+          }
+        },
+        "brain_lifecycle": {
+          "brain_decision_events": 1,
+          "real_brain_service_response": false,
+          "status": "CONTROLLED_TEST_CALL_ONLY"
+        },
+        "checks": [
+          {
+            "check": "scenario_received",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "sensor_state_update",
+            "evidence": "SCN-06 defines communication outage/recovery triggers, not a sensor event.",
+            "status": "NOT TESTED"
+          },
+          {
+            "check": "controlled_channel_failure_and_recovery",
+            "evidence": "channel_lifecycle_events=['PARTNER_CHANNEL_RECOVERED', 'PARTNER_CHANNEL_UNAVAILABLE']",
+            "status": "PASS"
+          },
+          {
+            "check": "dashboard_frame_current",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "correlation_consistent",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "command_lifecycle_present",
+            "evidence": "Local controlled Brain-role command calls exercise TwinFacade; not external Brain service calls.",
+            "status": "PASS"
+          },
+          {
+            "check": "expected_effect_semantics",
+            "evidence": "before_revision=10; after_revision=11; expected_effect=True; outcomes=[{'ok': True, 'error': None}]; SCN-06 submits a fresh command only after channel recovery; no outage request is queued.",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_written",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "audit_log_sanitized",
+            "evidence": "",
+            "status": "PASS"
+          },
+          {
+            "check": "event_order_monotonic",
+            "evidence": "",
+            "status": "PASS"
+          }
+        ],
+        "command_events": [
+          {
+            "correlation_id": "campaign-6-2131a14f91b2:SCN-06:a3648925-2475-4845-b199-33ca6bab2613",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-5e51d632-b6cd-44a9-bdbf-724f6d44129f",
+            "event_type": "BRAIN_DECIDED",
+            "payload": {
+              "command": "set_speed",
+              "origin_event_ids": [],
+              "request_id": "scn-06-recovered-command",
+              "service_response": "real_inbound_brain_command"
+            },
+            "scenario_id": "SCN-06",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-6-2131a14f91b2:SCN-06:a3648925-2475-4845-b199-33ca6bab2613",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-cd695efa-3230-4ed2-b0dd-460cfd98f6f6",
+            "event_type": "COMMAND_PENDING",
+            "payload": {
+              "command": "set_speed",
+              "request_id": "scn-06-recovered-command"
+            },
+            "scenario_id": "SCN-06",
+            "source": "brain",
+            "timestamp": "2026-10-18T00:00:05Z"
+          },
+          {
+            "correlation_id": "campaign-6-2131a14f91b2:SCN-06:a3648925-2475-4845-b199-33ca6bab2613",
+            "device_id": "PRT-PMP-01",
+            "event_id": "event-7f76b94b-a78b-47d5-baf7-672e77bbf1c8",
+            "event_type": "COMMAND_EXECUTED",
+            "payload": {
+              "city_core_updated": true,
+              "command": "set_speed",
+              "effect_id": "live-0000000006",
+              "effective_revision": 11,
+              "origin_event_ids": [],
+              "request_id": "scn-06-recovered-command"
+            },
+            "scenario_id": "SCN-06",
+            "source": "twin",
+            "timestamp": "2026-10-18T00:00:05Z"
+          }
+        ],
+        "correlation_id": "campaign-6-2131a14f91b2:SCN-06:a3648925-2475-4845-b199-33ca6bab2613",
+        "dashboard": "PASS: private operator frame includes current scenario and readings",
+        "dashboard_browser_render": "NOT TESTED",
+        "guardian_lifecycle": {
+          "pending_marker_observed": false,
+          "real_guardian_service_verdict": false,
+          "status": "BLOCKED"
+        },
+        "lifecycle_types": [
+          "BRAIN_DECIDED",
+          "COMMAND_EXECUTED",
+          "COMMAND_PENDING",
+          "COMPLETED",
+          "PARTNER_CHANNEL_AVAILABLE",
+          "PARTNER_CHANNEL_RECOVERED",
+          "PARTNER_CHANNEL_UNAVAILABLE",
+          "RECEIVED",
+          "SCENARIO_WINDOW_COMPLETE"
+        ],
+        "overall": "PASS",
+        "partner_integration": {
+          "brain_service": "BLOCKED",
+          "guardian_service": "BLOCKED",
+          "guardian_test_call": null,
+          "test_client_calls_are_external_service_responses": false
+        },
+        "scenario_id": "SCN-06",
+        "sensor_event_ids": []
+      }
+    ],
+    "B_sequential": {
+      "event_store_retained_across_supported_resets": 123,
+      "historical_audit_line_count": 125,
+      "historical_audit_log": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\audit\\sequential-five-scenarios_sequential-9d39d0aea46b.jsonl",
+      "overall": "PASS",
+      "pending_commands": "No command queue exists in this in-process command path; stale correlated command rejected after each reset.",
+      "runs": [
+        {
+          "action_outcomes": [
+            {
+              "error": {
+                "code": "INVALID_STATE",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_speed",
+                  "correlation_id": "sequential-9d39d0aea46b:T5:7856bde3-b3b8-4cd3-9f41-6bf4c36fd7cc",
+                  "device_id": "PRT-PMP-01",
+                  "execution_status": "REJECTED",
+                  "reason": "SCENARIO_GUARDIAN_PENDING",
+                  "request_id": "scn-01-spoofed-command"
+                },
+                "message": "Scenario safety is waiting for the Guardian veto check."
+              },
+              "ok": false
+            }
+          ],
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 70,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 70,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "correlation_id": "sequential-9d39d0aea46b:T5:7856bde3-b3b8-4cd3-9f41-6bf4c36fd7cc",
+          "historical_audit_lines": 38,
+          "historical_event_store_count": 37,
+          "history_preserved_from_previous_scenario": null,
+          "no_pending_scheduled_actions": true,
+          "run_id": "sequential-9d39d0aea46b",
+          "scenario_id": "SCN-01",
+          "stale_prior_command": null,
+          "status": "PASS"
+        },
+        {
+          "action_outcomes": [
+            {
+              "error": null,
+              "ok": true
+            },
+            {
+              "error": null,
+              "ok": true
+            }
+          ],
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": true,
+              "effective_speed_fraction": 0.3
+            },
+            "revision": 9,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 8,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "correlation_id": "sequential-1-3716ccb3:SCN-02:fadc9307-b721-4d40-8570-700dcf0cf1b9",
+          "historical_audit_lines": 50,
+          "historical_event_store_count": 49,
+          "history_preserved_from_previous_scenario": true,
+          "no_pending_scheduled_actions": true,
+          "run_id": "sequential-1-3716ccb3",
+          "scenario_id": "SCN-02",
+          "stale_prior_command": {
+            "error": "INVALID_STATE",
+            "ok": false
+          },
+          "status": "PASS"
+        },
+        {
+          "action_outcomes": [
+            {
+              "error": {
+                "code": "INVALID_STATE",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_opening",
+                  "correlation_id": "sequential-2-fc20f449:SCN-03:886bdac9-949f-4894-abbf-6cee297f63c2",
+                  "device_id": "IND-VLV-01",
+                  "execution_status": "REJECTED",
+                  "reason": "SCENARIO_GUARDIAN_PENDING",
+                  "request_id": "scn-03-no-backup"
+                },
+                "message": "Scenario safety is waiting for the Guardian veto check."
+              },
+              "ok": false
+            },
+            {
+              "error": {
+                "code": "DEVICE_NOT_FOUND",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_opening",
+                  "correlation_id": "sequential-2-fc20f449:SCN-03:886bdac9-949f-4894-abbf-6cee297f63c2",
+                  "device_id": "IND-VLV-01",
+                  "execution_status": "REJECTED",
+                  "reason": "UNSUPPORTED_DEVICE",
+                  "request_id": "scn-03-valid-backup"
+                },
+                "message": "Simulation rejected command: UNSUPPORTED_DEVICE."
+              },
+              "ok": false
+            }
+          ],
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 10,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 10,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "correlation_id": "sequential-2-fc20f449:SCN-03:886bdac9-949f-4894-abbf-6cee297f63c2",
+          "historical_audit_lines": 78,
+          "historical_event_store_count": 77,
+          "history_preserved_from_previous_scenario": true,
+          "no_pending_scheduled_actions": true,
+          "run_id": "sequential-2-fc20f449",
+          "scenario_id": "SCN-03",
+          "stale_prior_command": {
+            "error": "INVALID_STATE",
+            "ok": false
+          },
+          "status": "PASS"
+        },
+        {
+          "action_outcomes": [
+            {
+              "error": {
+                "code": "INVALID_STATE",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_speed",
+                  "correlation_id": "sequential-3-b8db5f5c:SCN-04:ad94e780-069d-41bd-abe4-a0b121d7d8b4",
+                  "device_id": "PRT-PMP-01",
+                  "execution_status": "REJECTED",
+                  "reason": "SCENARIO_GUARDIAN_PENDING",
+                  "request_id": "scn-04-pending-guardian"
+                },
+                "message": "Scenario safety is waiting for the Guardian veto check."
+              },
+              "ok": false
+            },
+            {
+              "error": null,
+              "ok": true
+            },
+            {
+              "error": {
+                "code": "GUARDIAN_RESTRICTED",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_speed",
+                  "correlation_id": "sequential-3-b8db5f5c:SCN-04:ad94e780-069d-41bd-abe4-a0b121d7d8b4",
+                  "device_id": "PRT-PMP-01",
+                  "execution_status": "REJECTED",
+                  "reason": "GUARDIAN_RESTRICTED",
+                  "request_id": "scn-04-isolated-primary"
+                },
+                "message": "Device is isolated by the Guardian."
+              },
+              "ok": false
+            },
+            {
+              "error": {
+                "code": "GUARDIAN_RESTRICTED",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_speed",
+                  "correlation_id": "sequential-3-b8db5f5c:SCN-04:ad94e780-069d-41bd-abe4-a0b121d7d8b4",
+                  "device_id": "PRT-PMP-02",
+                  "execution_status": "REJECTED",
+                  "reason": "GUARDIAN_RESTRICTED",
+                  "request_id": "scn-04-aliased-backup"
+                },
+                "message": "Device is isolated by the Guardian."
+              },
+              "ok": false
+            }
+          ],
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "correlation_id": "sequential-3-b8db5f5c:SCN-04:ad94e780-069d-41bd-abe4-a0b121d7d8b4",
+          "historical_audit_lines": 96,
+          "historical_event_store_count": 95,
+          "history_preserved_from_previous_scenario": true,
+          "no_pending_scheduled_actions": true,
+          "run_id": "sequential-3-b8db5f5c",
+          "scenario_id": "SCN-04",
+          "stale_prior_command": {
+            "error": "INVALID_STATE",
+            "ok": false
+          },
+          "status": "PASS"
+        },
+        {
+          "action_outcomes": [
+            {
+              "error": null,
+              "ok": true
+            }
+          ],
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 13,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "priority"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 12,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "correlation_id": "sequential-4-f5f05d9d:SCN-05:0a58cf28-3a90-4611-9962-40a3dcd5b3eb",
+          "historical_audit_lines": 110,
+          "historical_event_store_count": 109,
+          "history_preserved_from_previous_scenario": true,
+          "no_pending_scheduled_actions": true,
+          "run_id": "sequential-4-f5f05d9d",
+          "scenario_id": "SCN-05",
+          "stale_prior_command": {
+            "error": "INVALID_STATE",
+            "ok": false
+          },
+          "status": "PASS"
+        },
+        {
+          "action_outcomes": [
+            {
+              "error": null,
+              "ok": true
+            }
+          ],
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": true,
+              "effective_speed_fraction": 0.3
+            },
+            "revision": 11,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 10,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "correlation_id": "sequential-5-d42ba282:SCN-06:cd1f43f5-7b99-4860-a040-64e8350c7bb0",
+          "historical_audit_lines": 124,
+          "historical_event_store_count": 123,
+          "history_preserved_from_previous_scenario": true,
+          "no_pending_scheduled_actions": true,
+          "run_id": "sequential-5-d42ba282",
+          "scenario_id": "SCN-06",
+          "stale_prior_command": {
+            "error": "INVALID_STATE",
+            "ok": false
+          },
+          "status": "PASS"
+        }
+      ]
+    },
+    "C_cross_scenario": {
+      "cases": [
+        {
+          "case": "duplicate_trigger_delivery",
+          "event_count_after_duplicate_delivery": 5,
+          "event_count_before": 5,
+          "status": "PASS"
+        },
+        {
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "all_responses_identical": true,
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "call_count": 8,
+          "case": "concurrent_duplicate_command_with_active_spoof",
+          "effect_count_delta": 0,
+          "response": {
+            "data": null,
+            "error": {
+              "code": "INVALID_STATE",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "cross-8c08b9da5334:SCN-02:924f2397-8f46-4c6b-8334-b73395dd1384",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "SCENARIO_GUARDIAN_PENDING",
+                "request_id": "cross-concurrent-idempotent-command"
+              },
+              "message": "Scenario safety is waiting for the Guardian veto check."
+            },
+            "ok": false,
+            "run_id": "cross-8c08b9da5334",
+            "timestamp": "2026-11-07T17:38:17Z"
+          },
+          "status": "PASS"
+        },
+        {
+          "case": "competing_commands_same_expected_revision",
+          "decision_pending_execution_order": true,
+          "ordered_lifecycle": [
+            "RECEIVED",
+            "SENSOR_EVENT_SCHEDULED",
+            "TWIN_UPDATED",
+            "GUARDIAN_PENDING",
+            "BRAIN_PENDING",
+            "BRAIN_DECIDED",
+            "COMMAND_PENDING",
+            "COMMAND_EXECUTED",
+            "COMPLETED",
+            "BRAIN_DECIDED",
+            "COMMAND_PENDING",
+            "COMMAND_REJECTED"
+          ],
+          "outcomes": [
+            {
+              "data": {
+                "city_core_updated": true,
+                "command": "set_speed",
+                "context": {
+                  "correlation_id": "cross-compete-61ac3153:SCN-02:817e5eb5-b79c-48f9-9a33-1ec62da09f96",
+                  "expected_revision": 6,
+                  "scenario_id": "SCN-02"
+                },
+                "correlation_id": "cross-compete-61ac3153:SCN-02:817e5eb5-b79c-48f9-9a33-1ec62da09f96",
+                "device_id": "PRT-PMP-01",
+                "effect_id": "live-0000000006",
+                "effective_effect": {
+                  "speed_fraction": 0.21,
+                  "tag": "pump_speed",
+                  "target_id": "P-03"
+                },
+                "effective_revision": 7,
+                "execution_reason": "CITYCORE_EFFECT_COMMITTED",
+                "execution_status": "EXECUTED",
+                "request_id": "competing-1",
+                "requested_effect": {
+                  "speed_fraction": 0.21,
+                  "tag": "pump_speed",
+                  "target_id": "P-03"
+                },
+                "status": "APPLIED",
+                "timestamp": "2026-11-07T17:38:17Z"
+              },
+              "error": null,
+              "ok": true,
+              "run_id": "cross-compete-61ac3153",
+              "timestamp": "2026-11-07T17:38:17Z"
+            },
+            {
+              "data": null,
+              "error": {
+                "code": "STATE_CONFLICT",
+                "details": {
+                  "city_core_updated": false,
+                  "command": "set_speed",
+                  "correlation_id": "cross-compete-61ac3153:SCN-02:817e5eb5-b79c-48f9-9a33-1ec62da09f96",
+                  "device_id": "PRT-PMP-01",
+                  "execution_status": "REJECTED",
+                  "reason": "STATE_CONFLICT",
+                  "request_id": "competing-2"
+                },
+                "message": "Simulation rejected command: STATE_CONFLICT."
+              },
+              "ok": false,
+              "run_id": "cross-compete-61ac3153",
+              "timestamp": "2026-11-07T17:38:17Z"
+            }
+          ],
+          "revision_after": 7,
+          "revision_before": 6,
+          "status": "PASS",
+          "unauthorized_execution": false
+        },
+        {
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "case": "sensor_failure_during_emergency",
+          "command_response": {
+            "data": null,
+            "error": {
+              "code": "INVALID_STATE",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "cross-flood-fault-dccbd21e:SCN-02:af5c87b6-6977-4907-ac7b-fa3bf6f6ef21",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "SCENARIO_GUARDIAN_PENDING",
+                "request_id": "sensor-failure-during-flood"
+              },
+              "message": "Scenario safety is waiting for the Guardian veto check."
+            },
+            "ok": false,
+            "run_id": "cross-flood-fault-dccbd21e",
+            "timestamp": "2026-11-07T17:38:17Z"
+          },
+          "status": "PASS"
+        },
+        {
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 6,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "alias_response": {
+            "data": null,
+            "error": {
+              "code": "GUARDIAN_RESTRICTED",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "same-target-backup-alias",
+                "device_id": "PRT-PMP-02",
+                "execution_status": "REJECTED",
+                "reason": "GUARDIAN_RESTRICTED",
+                "request_id": "same-target-backup-alias"
+              },
+              "message": "Device is isolated by the Guardian."
+            },
+            "ok": false,
+            "run_id": "cross-quarantine-0f2ecf8c",
+            "timestamp": "2026-11-07T17:38:17Z"
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 6,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "case": "preferred_actuator_quarantined_during_emergency",
+          "guardian_call": "controlled local TwinFacade role call",
+          "primary_response": {
+            "data": null,
+            "error": {
+              "code": "GUARDIAN_RESTRICTED",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "cross-quarantine-0f2ecf8c:SCN-02:4827941c-0306-4ad8-a56f-8e744ba82960",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "GUARDIAN_RESTRICTED",
+                "request_id": "preferred-quarantined-actuator"
+              },
+              "message": "Device is isolated by the Guardian."
+            },
+            "ok": false,
+            "run_id": "cross-quarantine-0f2ecf8c",
+            "timestamp": "2026-11-07T17:38:17Z"
+          },
+          "status": "PASS"
+        }
+      ],
+      "concurrency_model": "Isolated LiveCity owner; controlled calls through its serialized facade; no assumed parallel physics.",
+      "overall": "PASS"
+    },
+    "D_failure_recovery": {
+      "cases": [
+        {
+          "case": "Brain service unavailable",
+          "reason": "No Brain service/client is present; only explicit local test caller calls are available. This is not a partner outage test.",
+          "status": "BLOCKED"
+        },
+        {
+          "case": "Guardian service unavailable",
+          "reason": "No Guardian service/client is present; only explicit local test caller calls are available. This is not a partner outage test.",
+          "status": "BLOCKED"
+        },
+        {
+          "case": "Kafka interruption",
+          "reason": "Kafka is not integrated or configured in the inspected repository.",
+          "status": "NOT TESTED"
+        },
+        {
+          "case": "Real process crash / restart",
+          "correlation_id": "jury-restart-correlation",
+          "evidence_directory": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER\\test-evidence\\scenario-campaign-20261107T173816.558116Z-7379b7d0\\process-restart",
+          "first_process_revision": 1,
+          "process_exit_codes": [
+            0,
+            0
+          ],
+          "request_id": "jury-restart-request",
+          "same_result_returned": true,
+          "second_process_revision_after": 1,
+          "second_process_revision_before": 1,
+          "status": "PASS"
+        },
+        {
+          "after_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 6,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "before_city_state": {
+            "pump": {
+              "effective_enabled": false,
+              "effective_speed_fraction": 0.0
+            },
+            "revision": 6,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "case": "failed actuator validation",
+          "response": {
+            "data": null,
+            "error": {
+              "code": "INVALID_PARAM",
+              "details": {
+                "city_core_updated": false,
+                "command": "set_speed",
+                "correlation_id": "recovery-160ef57c283f:SCN-02:47b8a315-b653-462c-8366-3b5fe8ab7331",
+                "device_id": "PRT-PMP-01",
+                "execution_status": "REJECTED",
+                "reason": "INVALID_ARGUMENT",
+                "request_id": "failed-actuator-validation"
+              },
+              "message": "Simulation rejected command: INVALID_ARGUMENT."
+            },
+            "ok": false,
+            "run_id": "recovery-160ef57c283f",
+            "timestamp": "2026-11-07T17:38:17Z"
+          },
+          "status": "PASS"
+        },
+        {
+          "before_restart_city_state": {
+            "pump": {
+              "effective_enabled": true,
+              "effective_speed_fraction": 0.3
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "case": "in-memory owner recreation and idempotency survival",
+          "effect_count_after_replay": 6,
+          "effect_count_before_replay": 6,
+          "evidence": "The recreated owner used the same SQLite WAL database; the stored receipt was returned and replay-restored CityCore state did not change again.",
+          "first_process_command_response": {
+            "data": {
+              "city_core_updated": true,
+              "command": "set_speed",
+              "context": {
+                "correlation_id": "recovery-160ef57c283f:SCN-02:47b8a315-b653-462c-8366-3b5fe8ab7331",
+                "scenario_id": "SCN-02"
+              },
+              "correlation_id": "recovery-160ef57c283f:SCN-02:47b8a315-b653-462c-8366-3b5fe8ab7331",
+              "device_id": "PRT-PMP-01",
+              "effect_id": "live-0000000006",
+              "effective_effect": {
+                "speed_fraction": 0.3,
+                "tag": "pump_speed",
+                "target_id": "P-03"
+              },
+              "effective_revision": 7,
+              "execution_reason": "CITYCORE_EFFECT_COMMITTED",
+              "execution_status": "EXECUTED",
+              "request_id": "restart-idempotency-probe",
+              "requested_effect": {
+                "speed_fraction": 0.3,
+                "tag": "pump_speed",
+                "target_id": "P-03"
+              },
+              "status": "APPLIED",
+              "timestamp": "2026-11-07T17:38:17Z"
+            },
+            "error": null,
+            "ok": true,
+            "run_id": "recovery-160ef57c283f",
+            "timestamp": "2026-11-07T17:38:17Z"
+          },
+          "recreated_owner_command_response": {
+            "city_core_updated": true,
+            "command": "set_speed",
+            "command_id": "restart-idempotency-probe",
+            "correlation_id": "recovery-160ef57c283f:SCN-02:47b8a315-b653-462c-8366-3b5fe8ab7331",
+            "device_id": "PRT-PMP-01",
+            "effect_id": "live-0000000006",
+            "effective_effect": {
+              "speed_fraction": 0.3,
+              "tag": "pump_speed",
+              "target_id": "P-03"
+            },
+            "effective_revision": 7,
+            "execution_reason": "CITYCORE_EFFECT_COMMITTED",
+            "execution_status": "EXECUTED",
+            "requested_effect": {
+              "speed_fraction": 0.3,
+              "tag": "pump_speed",
+              "target_id": "P-03"
+            },
+            "status": "APPLIED"
+          },
+          "recreated_owner_state": {
+            "pump": {
+              "effective_enabled": true,
+              "effective_speed_fraction": 0.3
+            },
+            "revision": 7,
+            "signals": {
+              "J-D1": {
+                "effective_mode": "normal"
+              },
+              "J-D2": {
+                "effective_mode": "normal"
+              }
+            },
+            "valve": {
+              "effective_opening_fraction": 0.3333333333333333
+            }
+          },
+          "repeated_request_returned_original_result": true,
+          "status": "PASS"
+        }
+      ],
+      "overall": "BLOCKED"
+    }
+  },
+  "repository_root": "C:\\Users\\lenovo\\CS-TSYP-TWIN-LAYER",
+  "reproduction_commands": [
+    "python tools/run_scenario_campaign.py --evidence-root test-evidence",
+    "python tools/run_scn06_campaign.py",
+    "python tools/run_durable_idempotency_evidence.py",
+    "python tools/run_live_checks.py --evidence <new-temporary-evidence-directory>",
+    "python tools/run_dashboard_checks.py --evidence <new-temporary-evidence-directory>",
+    "python tools/run_checks.py --evidence <new-temporary-evidence-directory>"
+  ],
+  "schema_version": "scenario-integration-campaign-1",
+  "started_at": "2026-11-07T17:38:16.561115+00:00",
+  "statuses": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "SKIPPED",
+    "NOT TESTED"
+  ]
+}

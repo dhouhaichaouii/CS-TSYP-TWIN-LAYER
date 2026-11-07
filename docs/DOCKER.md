@@ -75,8 +75,16 @@ Compose builds the same image, publishes local port `8000`, restarts the
 service unless stopped, and keeps JSONL logs in the `twin-layer-logs` named
 volume. Point `TWIN_ENV_FILE` at the private environment file created above:
 
+The repository includes a safe placeholder template. Copy it to the ignored
+`.env` file, replace every `REPLACE_ME` with a separately generated secret,
+and set the hostnames allowed for the target deployment. The placeholders are
+intentionally too short to pass application startup validation; do not run the
+service with them and do not commit the populated `.env` file.
+
 ```powershell
-$env:TWIN_ENV_FILE = "$env:USERPROFILE\twin-layer.env"
+Copy-Item .env.example .env
+# Edit .env and replace all placeholders with real values before starting.
+$env:TWIN_ENV_FILE = ".env"
 docker compose up --build
 ```
 

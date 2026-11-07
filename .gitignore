@@ -4,4 +4,24 @@ __pycache__/
 *.new
 /tmp/
 logs/*.jsonl
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.env
+.env.*
+!.env.example
+
+# Internal contributor notes and contracts; keep these out of jury submissions.
+**/PERSON_*.md
+**/*INTERNAL*.md
+**/PLAN_AND_STEPS.md
+
+# Keep readable test evidence; omit generated campaign state databases and markers.
+test-evidence/**/*.sqlite3
+test-evidence/**/*.owner
 

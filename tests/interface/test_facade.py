@@ -190,10 +190,14 @@ class TwinFacadeTests(unittest.TestCase):
         self.assertIsNotNone(translate("PRT-PMP-02", "set_speed", {"speed_pct": 30, "extra": 1})[1])
         self.assertIsNotNone(translate("PRT-PMP-02", "explode", {})[1])
 
-        valve, err = translate("IND-VLV-01", "set_opening", {"open_pct": 25})
+        valve, err = translate("V-12", "set_opening", {"open_pct": 25})
         self.assertIsNone(err)
         self.assertEqual(valve["target_id"], "V-12")
         self.assertEqual(valve["opening_fraction"], 0.25)
+        self.assertEqual(
+            translate("IND-VLV-01", "set_opening", {"open_pct": 25})[1],
+            "UNSUPPORTED_DEVICE",
+        )
         self.assertIsNotNone(translate("IND-VLV-01", "set_opening", {"open_pct": 101})[1])
         self.assertIsNotNone(translate("IND-VLV-01", "set_opening", {"open_pct": "wide"})[1])
         self.assertIsNotNone(translate("IND-VLV-01", "open", {})[1])

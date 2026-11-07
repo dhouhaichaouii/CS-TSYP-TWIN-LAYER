@@ -1,0 +1,30 @@
+{
+  "python": "3.12.16",
+  "tests_run": 127,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "coverage_kind": "stdlib trace executable lines per behavior module including new worker threads; not branch coverage",
+  "coverage_exclusions": "__init__.py import/export only AST guard; launch/check/demo tools",
+  "module_percent": {
+    "src\\city_live\\b_scenarios.py": 96,
+    "src\\city_live\\cli.py": 97,
+    "src\\city_live\\commands.py": 100,
+    "src\\city_live\\demand.py": 100,
+    "src\\city_live\\demo.py": 100,
+    "src\\city_live\\device_catalog.py": 100,
+    "src\\city_live\\faults.py": 100,
+    "src\\city_live\\history.py": 92,
+    "src\\city_live\\operator.py": 89,
+    "src\\city_live\\operator_requests.py": 92,
+    "src\\city_live\\records.py": 96,
+    "src\\city_live\\registry.py": 98,
+    "src\\city_live\\runtime.py": 90,
+    "src\\city_live\\scenarios.py": 86,
+    "src\\city_live\\sensor_physics.py": 100,
+    "src\\city_live\\sensors.py": 92
+  },
+  "coverage_pass": true,
+  "initializer_ok": true,
+  "passed": true
+}

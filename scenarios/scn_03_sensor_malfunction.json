@@ -4,10 +4,10 @@
   "Layers involved": ["Twin", "Guardian", "City Brain"],
   "Description": "A downtown traffic counter freezes during rush hour while an industrial temperature sensor abruptly dies.",
   "Trigger": "python scenarios/run.py --scenario scn-03",
-  "Expected: Twin": "DTN-TRF-01 holds its pre-fault traffic value and IND-TMP-01 reports null with status FAILED. A STUCK fault reports status OK in the current Twin contract; Guardian independently detects the lack of variance.",
-  "Expected: Guardian": "The scenario adapter detects repeated frozen values and the missing temperature packet in the same simulation step, marks both streams UNTRUSTED, and quarantines both sensors.",
-  "Expected: Brain": "Ignores both quarantined streams and reads the compatible backup IND-TMP-02 for its fallback decision.",
-  "How to verify": "Inspect both Twin readings, the Guardian isolation events, and the Brain backup-feed event in logs/scn-03-*.log. Guardian/Brain decisions are emitted by deterministic scenario adapters.",
+  "Expected: Twin": "DTN-TRF-01 holds its pre-fault reported value (48) with status OK while its private actual input is 55; IND-TMP-01 reports null with status FAILED; registered backup IND-TMP-02 reports 70. A Brain-role command to IND-VLV-01 without backup context is rejected with SCENARIO_GUARDIAN_PENDING. With source_sensor_id IND-TMP-02, it passes that safety check but is rejected with UNSUPPORTED_DEVICE because IND-VLV-01 is not a supported actuator. CityCore revision and actuator state do not change.",
+  "Expected: Guardian": "The Twin emits a pending marker for an untrusted sensor-linked command. No Guardian service or autonomous Guardian verdict is run by this scenario; real Guardian behavior is NOT VERIFIED.",
+  "Expected: Brain": "No Brain service or autonomous Brain decision is run by this scenario. A controlled local Brain-role test call with the valid backup is still rejected because IND-VLV-01 is unsupported; no actuator fallback is claimed. Real Brain behavior is NOT VERIFIED.",
+  "How to verify": "Run live_tests.test_scenario_orchestration.ScenarioOrchestrationTests.test_scn03_rejects_ambiguous_valve_even_with_valid_backup_sensor and tools/run_scenario_campaign.py. Inspect the SCN-03 scenario campaign JSON, Twin events, and audit log. The campaign commands are controlled local TwinFacade calls, not real partner responses.",
   "duration_ticks": 3,
   "triggers": [
     {

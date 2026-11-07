@@ -12,7 +12,7 @@ import threading
 from typing import Any
 
 from city_live.runtime import LiveCity
-from city_live.commands import preview_command_effect
+from city_live.commands import build_command_effect, preview_command_effect
 from city_live.records import LiveError
 from twin_interface.auth import Role, resolve_token
 from twin_interface.envelope import ErrorCode, error_envelope, success_envelope, utc_now_iso
@@ -385,7 +385,7 @@ class TwinFacade:
                     command_id=request_id,
                     run_id=execution_context.get("run_id", self.run_id),
                     expected_revision=execution_context.get("expected_revision"),
-                    correlation_id=scenario_correlation,
+                    correlation_id=scenario_correlation or request_id,
                     scenario_id=execution_context.get("scenario_id"),
                 )
                 self._city.scenario_command_finished(
@@ -401,11 +401,24 @@ class TwinFacade:
                 "device_id": device_id,
                 "command": command,
                 "status": result["status"],
+                "execution_status": result.get("execution_status", "EXECUTED"),
+                "requested_effect": result.get("requested_effect"),
+                "effective_effect": result.get("effective_effect"),
+                "execution_reason": result.get("execution_reason"),
+                "city_core_updated": result.get("city_core_updated", True),
+                "correlation_id": result.get("correlation_id"),
                 "effective_revision": result["effective_revision"],
                 "effect_id": result["effect_id"],
                 "context": context or {},
                 "timestamp": utc_now_iso(),
             }
+            # Persisted receipts from before these fields were added remain
+            # replayable with a truthful projection of their committed effect.
+            if result_data["status"] == "APPLIED" and result_data["effective_effect"] is None:
+                effect = build_command_effect(device_id, command, params)
+                result_data["requested_effect"] = effect
+                result_data["effective_effect"] = effect
+                result_data["execution_reason"] = "CITYCORE_EFFECT_COMMITTED"
 
             # The LiveCity receipt is authoritative; this cache only preserves
             # the facade's response projection and avoids duplicate audit events.
@@ -422,7 +435,13 @@ class TwinFacade:
                     "device_id": device_id,
                     "command": command,
                     "params": dict(params),
-                    "outcome": "APPLIED",
+                    "outcome": result["status"],
+                    "execution_status": result_data["execution_status"],
+                    "requested_effect": result_data["requested_effect"],
+                    "effective_effect": result_data["effective_effect"],
+                    "execution_reason": result_data["execution_reason"],
+                    "correlation_id": result_data["correlation_id"],
+                    "city_core_updated": result_data["city_core_updated"],
                 },
                 source=role or "unknown",
             )
@@ -436,6 +455,22 @@ class TwinFacade:
                 command,
                 request_id,
                 error=exc.code,
+            )
+            correlation_id = scenario_correlation or request_id
+            self._record_event(
+                "ACTUATOR_COMMAND_REJECTED",
+                {
+                    "request_id": request_id,
+                    "device_id": device_id,
+                    "command": command,
+                    "requested_params": params if type(params) is dict else None,
+                    "effective_effect": None,
+                    "execution_status": "REJECTED",
+                    "reason": exc.code,
+                    "correlation_id": correlation_id,
+                    "city_core_updated": False,
+                },
+                source=role or "unknown",
             )
             code = {
                 "UNSUPPORTED_DEVICE": ErrorCode.DEVICE_NOT_FOUND,
@@ -472,7 +507,15 @@ class TwinFacade:
                     if exc.code == "SCENARIO_GUARDIAN_UNAVAILABLE"
                     else f"Simulation rejected command: {exc.code}."
                 ),
-                details={"device_id": device_id, "command": command},
+                details={
+                    "device_id": device_id,
+                    "command": command,
+                    "request_id": request_id,
+                    "execution_status": "REJECTED",
+                    "reason": exc.code,
+                    "correlation_id": correlation_id,
+                    "city_core_updated": False,
+                },
             )
         except Exception as exc:
             return error_envelope(

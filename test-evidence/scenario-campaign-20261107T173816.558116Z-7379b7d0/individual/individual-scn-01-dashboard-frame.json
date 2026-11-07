@@ -1,0 +1,3856 @@
+{
+  "actions": [],
+  "comparisons": [
+    {
+      "actual_value": 40.0,
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 45,
+      "delta": 140.0,
+      "fault": "FALSE_READING",
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 85,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "actual_value": 18.24,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 45,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 18.24,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 82,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "actual_value": 60.0,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 45,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 83,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "actual_value": 2.96,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 45,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 84,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "actual_value": 50.0,
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 45,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 86,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "actual_value": 18.49,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "DTN-TLT-01"
+      ],
+      "reported_value": 18.49,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-01",
+      "seq": 67,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "actual_value": 16.01,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 16.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-02",
+      "seq": 68,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "actual_value": 60.0,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-FLW-01",
+      "seq": 70,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "IND"
+    },
+    {
+      "actual_value": 4.0,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-PRS-01",
+      "seq": 71,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "IND"
+    },
+    {
+      "actual_value": 65.21,
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-02"
+      ],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.21,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-01",
+      "seq": 72,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "actual_value": 65.21,
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-01"
+      ],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.21,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-02",
+      "seq": 73,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "actual_value": 25.01,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 25.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-FLW-01",
+      "seq": 78,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "RES"
+    },
+    {
+      "actual_value": 4.0,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-PRS-01",
+      "seq": 79,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "RES"
+    },
+    {
+      "actual_value": 17.94,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 17.94,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-TRF-01",
+      "seq": 80,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "RES"
+    },
+    {
+      "actual_value": 200.0,
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "delta": 0.0,
+      "fault": null,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 200.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-WLV-01",
+      "seq": 81,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "RES"
+    }
+  ],
+  "diagnostics": {
+    "access": {
+      "destination_node_id": "J-H1",
+      "facility_id": "HOSP-01",
+      "reachable_by_origin": {
+        "J-D1": true,
+        "J-D2": true,
+        "J-H1": true,
+        "J-I1": true,
+        "J-R1": true
+      }
+    },
+    "active_disturbances": [],
+    "active_faults": {},
+    "context": {
+      "catalog_version": "pa-catalog-0.1-draft",
+      "contract_version": "pa-internal-0.2-draft",
+      "model_version": "pa-model-0.2-draft",
+      "revision": 70,
+      "run_id": "campaign-1-7cb48c018074",
+      "sim_time_ms": 45000,
+      "tick": 45
+    },
+    "flood": {
+      "R-DOWN": {
+        "depth_m": 0.0,
+        "flooded": false
+      },
+      "R-HIGH": {
+        "depth_m": 0.0,
+        "flooded": false
+      },
+      "R-IND": {
+        "depth_m": 0.0,
+        "flooded": false
+      },
+      "R-LINK": {
+        "depth_m": 0.0,
+        "flooded": false
+      },
+      "R-LOW": {
+        "depth_m": 0.0,
+        "flooded": false
+      }
+    },
+    "physical_state": {
+      "air": {
+        "Z-DOWNTOWN": {
+          "external_source_ug_m3_s": 0.0,
+          "pm25_ug_m3": 10.0
+        },
+        "Z-HEALTH": {
+          "external_source_ug_m3_s": 0.0,
+          "pm25_ug_m3": 10.0
+        },
+        "Z-INDUSTRIAL": {
+          "external_source_ug_m3_s": 0.0,
+          "pm25_ug_m3": 17.291090704898593
+        },
+        "Z-RESIDENTIAL": {
+          "external_source_ug_m3_s": 0.0,
+          "pm25_ug_m3": 11.822772676224682
+        },
+        "Z-RIVER": {
+          "external_source_ug_m3_s": 0.0,
+          "pm25_ug_m3": 10.0
+        }
+      },
+      "feeders": {
+        "F-ESS": {
+          "effective_closed": true
+        },
+        "F-IND": {
+          "effective_closed": true
+        },
+        "F-URBAN": {
+          "effective_closed": true
+        }
+      },
+      "pump": {
+        "effective_enabled": false,
+        "effective_speed_fraction": 0.0
+      },
+      "responders": {
+        "AMB-01": {
+          "at_node_id": "J-H1",
+          "destination_node_id": null,
+          "edge_index": 0,
+          "edge_remaining_s": 0.0,
+          "mission_ref": null,
+          "route_road_ids": [],
+          "status": "available"
+        },
+        "AMB-02": {
+          "at_node_id": "J-H1",
+          "destination_node_id": null,
+          "edge_index": 0,
+          "edge_remaining_s": 0.0,
+          "mission_ref": null,
+          "route_road_ids": [],
+          "status": "available"
+        },
+        "POL-01": {
+          "at_node_id": "J-H1",
+          "destination_node_id": null,
+          "edge_index": 0,
+          "edge_remaining_s": 0.0,
+          "mission_ref": null,
+          "route_road_ids": [],
+          "status": "available"
+        }
+      },
+      "roads": {
+        "R-DOWN": {
+          "arrival_rate_veh_s": 0.20436235785677925,
+          "obstruction_fraction": 0.0,
+          "queue_vehicles": 0.0
+        },
+        "R-HIGH": {
+          "arrival_rate_veh_s": 0.20744149530739137,
+          "obstruction_fraction": 0.0,
+          "queue_vehicles": 0.0
+        },
+        "R-IND": {
+          "arrival_rate_veh_s": 0.2090911150312498,
+          "obstruction_fraction": 0.0,
+          "queue_vehicles": 0.0
+        },
+        "R-LINK": {
+          "arrival_rate_veh_s": 0.2108299113495457,
+          "obstruction_fraction": 0.0,
+          "queue_vehicles": 0.0
+        },
+        "R-LOW": {
+          "arrival_rate_veh_s": 0.19072188676725332,
+          "obstruction_fraction": 0.0,
+          "queue_vehicles": 0.0
+        }
+      },
+      "signals": {
+        "J-D1": {
+          "effective_mode": "normal"
+        },
+        "J-D2": {
+          "effective_mode": "normal"
+        }
+      },
+      "source": {
+        "source_available": true
+      },
+      "valve": {
+        "effective_opening_fraction": 0.3333333333333333
+      },
+      "water": {
+        "basin_volume_m3": 5800.0,
+        "cumulative_in_m3": 9.0,
+        "cumulative_out_m3": 9.0,
+        "last_step": {
+          "gravity_out_m3": 0.2,
+          "inlet_in_m3": 0.19999999999999998,
+          "pump_out_m3": 0.0,
+          "rain_in_m3": 0.0
+        },
+        "outfall_blocked": false,
+        "rain_mm_h": 0.0,
+        "river_level_m": 1.0,
+        "surface_volume_m3": 0.0
+      }
+    },
+    "power": {
+      "assets": {
+        "HOSP-01": {
+          "delivered_load_kw": 50.0,
+          "feeder_id": "F-ESS",
+          "powered": true,
+          "requested_demand_kw": 50.0
+        },
+        "J-D1": {
+          "delivered_load_kw": 0.1,
+          "feeder_id": "F-URBAN",
+          "powered": true,
+          "requested_demand_kw": 0.1
+        },
+        "J-D2": {
+          "delivered_load_kw": 0.1,
+          "feeder_id": "F-URBAN",
+          "powered": true,
+          "requested_demand_kw": 0.1
+        },
+        "LOAD-URBAN": {
+          "delivered_load_kw": 80.0,
+          "feeder_id": "F-URBAN",
+          "powered": true,
+          "requested_demand_kw": 80.0
+        },
+        "P-03": {
+          "delivered_load_kw": 0.0,
+          "feeder_id": "F-ESS",
+          "powered": true,
+          "requested_demand_kw": 0.0
+        },
+        "PLANT-01": {
+          "delivered_load_kw": 100.0,
+          "feeder_id": "F-IND",
+          "powered": true,
+          "requested_demand_kw": 100.0
+        }
+      },
+      "feeders": {
+        "F-ESS": {
+          "delivered_load_kw": 50.0,
+          "energized": true,
+          "overload": false,
+          "rated_capacity_kw": 100.0,
+          "requested_demand_kw": 50.0,
+          "unmet_demand_kw": 0.0
+        },
+        "F-IND": {
+          "delivered_load_kw": 100.0,
+          "energized": true,
+          "overload": false,
+          "rated_capacity_kw": 150.0,
+          "requested_demand_kw": 100.0,
+          "unmet_demand_kw": 0.0
+        },
+        "F-URBAN": {
+          "delivered_load_kw": 80.2,
+          "energized": true,
+          "overload": false,
+          "rated_capacity_kw": 120.0,
+          "requested_demand_kw": 80.2,
+          "unmet_demand_kw": 0.0
+        }
+      },
+      "hospital_powered": true,
+      "pump_running": false
+    },
+    "sensor_model": {
+      "ambient_c": 20.016362432532635,
+      "coolant_flow_l_s": 60.0,
+      "coolant_pressure_bar": 4.0,
+      "drain_inflow_m3_s": 0.0,
+      "drain_outflow_m3_s": 0.038239099581824434,
+      "drain_volume_m3": 18.239620110776745,
+      "harbour_header_bar": 2.96,
+      "harbour_inflow_m3_s": 0.06,
+      "harbour_outflow_m3_s": 0.06,
+      "harbour_volume_m3": 500.0,
+      "network_flow_m3_s": 0.025016362432532635,
+      "network_pressure_bar": 3.999996291243115,
+      "process_c": 65.23361910603559,
+      "reservoir_supply_m3_s": 0.025000354867952015,
+      "reservoir_volume_m3": 199.99962912448342,
+      "tick": 45,
+      "version": "pdf-city-physics-1"
+    },
+    "traffic": {
+      "R-DOWN": {
+        "capacity_veh_s": 0.5,
+        "depth_m": 0.0,
+        "usable": true
+      },
+      "R-HIGH": {
+        "capacity_veh_s": 0.5,
+        "depth_m": 0.0,
+        "usable": true
+      },
+      "R-IND": {
+        "capacity_veh_s": 0.5,
+        "depth_m": 0.0,
+        "usable": true
+      },
+      "R-LINK": {
+        "capacity_veh_s": 0.5,
+        "depth_m": 0.0,
+        "usable": true
+      },
+      "R-LOW": {
+        "capacity_veh_s": 0.5,
+        "depth_m": 0.0,
+        "usable": true
+      }
+    },
+    "traffic_profile": "normal",
+    "visibility": "PRIVATE_OPERATOR_ONLY",
+    "water_levels": {
+      "basin_m": 2.9,
+      "surface_m": 0.0
+    }
+  },
+  "events": [
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": null,
+        "event_id": "event-6581abc7-2d4c-46f9-88db-6e3a07328fe6",
+        "event_type": "RECEIVED",
+        "payload": {
+          "guardian_policy": "veto_only",
+          "name": "Fake flood at the port",
+          "partner_mode": "existing inbound MCP/REST contracts"
+        },
+        "scenario_id": "T5",
+        "source": "scenario_trigger",
+        "timestamp": "2026-10-18T00:00:00Z"
+      },
+      "device_id": null,
+      "event_id": "campaign-1-7cb48c018074:ev-0000000001",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 1,
+      "sim_tick": 0,
+      "timestamp": "2026-10-18T00:00:00Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-3cd28702-0c07-4104-9551-53908018407c",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 1,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 40.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 1,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:01Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000002",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 2,
+      "sim_tick": 1,
+      "timestamp": "2026-10-18T00:00:01Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-7fe097fa-a2c1-4486-81e4-2299ff7b9681",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:01Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000003",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 3,
+      "sim_tick": 1,
+      "timestamp": "2026-10-18T00:00:01Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-38e6c88c-abc6-4f67-b0f1-609b31f1711b",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:01Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000004",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 4,
+      "sim_tick": 1,
+      "timestamp": "2026-10-18T00:00:01Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-849272aa-2ea4-4119-9bce-5ae2852a32cf",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "fault_type": "FALSE_READING",
+          "scenario_local_fixture": false
+        },
+        "scenario_id": "T5",
+        "source": "scenario_trigger",
+        "timestamp": "2026-10-18T00:00:05Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000005",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 5,
+      "sim_tick": 4,
+      "timestamp": "2026-10-18T00:00:04Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-798885b9-0ea2-45ba-8c93-73e7e4936777",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 5,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 5,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:05Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000006",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 6,
+      "sim_tick": 5,
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-1c9c1981-a4ed-48e2-9962-a0514bf1ff82",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:05Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000007",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 7,
+      "sim_tick": 5,
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-61644c08-004d-416a-85c9-0f3ea28482a1",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:05Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000008",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 8,
+      "sim_tick": 5,
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-c5ff69d3-5aec-483d-8acd-978bf61a9261",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 10,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 10,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:10Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000009",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 9,
+      "sim_tick": 10,
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-1237b65b-1064-4861-bed4-0d59e0c6956a",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:10Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000010",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 10,
+      "sim_tick": 10,
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-ea9c5bad-b49a-4e93-8c54-9d88cb8cf298",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:10Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000011",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 11,
+      "sim_tick": 10,
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-c9b8c1e7-962c-49fb-bc4e-79871e0d7c15",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 15,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 15,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:15Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000012",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 12,
+      "sim_tick": 15,
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-53d4cac4-6401-4681-bfb3-2a104a91aa1a",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:15Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000013",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 13,
+      "sim_tick": 15,
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-02217aae-09ab-4aa2-b07f-9fbb56d5d8a9",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:15Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000014",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 14,
+      "sim_tick": 15,
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-c4d790de-9e89-49c5-ba90-4b479f270b09",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 20,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 20,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:20Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000015",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 15,
+      "sim_tick": 20,
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-78fbbda3-64b4-4b21-9870-3c69fcd8a965",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:20Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000016",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 16,
+      "sim_tick": 20,
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-6ef29365-a583-48f6-a901-db1cbca1bbe8",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:20Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000017",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 17,
+      "sim_tick": 20,
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-be6c19b5-1a3d-4fad-8aac-a03c5fa0dcda",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 25,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 25,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:25Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000018",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 18,
+      "sim_tick": 25,
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-d76da77b-a173-43c8-9306-6adc934e94b1",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:25Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000019",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 19,
+      "sim_tick": 25,
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-5aba0ee5-2b04-4256-98c8-2a5d4f94d9e1",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:25Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000020",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 20,
+      "sim_tick": 25,
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-9f0abe10-caba-42fa-89fe-6a0c3821bcd9",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 30,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 30,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:30Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000021",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 21,
+      "sim_tick": 30,
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-339d63d4-1707-4229-92cc-39d31b4fec76",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:30Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000022",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 22,
+      "sim_tick": 30,
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-1cc1e1f9-fe91-47e6-8467-29c7a2bb2404",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:30Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000023",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 23,
+      "sim_tick": 30,
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-b99c628f-be5a-4d1a-99e8-a1e9b22de18b",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 35,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 35,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:35Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000024",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 24,
+      "sim_tick": 35,
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-34618a2b-0703-4576-99f0-72d9c6bfa175",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:35Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000025",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 25,
+      "sim_tick": 35,
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-57de6894-a954-40e7-8a88-c702f08cc8c0",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:35Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000026",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 26,
+      "sim_tick": 35,
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-e7d17c7c-5ef3-46d2-885d-8f13a52e762f",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 40,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 40,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:40Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000027",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 27,
+      "sim_tick": 40,
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-c894f889-7efb-4337-910a-9eb3f1253f28",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:40Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000028",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 28,
+      "sim_tick": 40,
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-30aaf7e3-aee9-4700-ab60-31dd650259ef",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:40Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000029",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 29,
+      "sim_tick": 40,
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-07719e69-0569-4518-ae9f-4e308755f66b",
+        "event_type": "TWIN_UPDATED",
+        "payload": {
+          "input_origin": "Twin SensorBank",
+          "reading": {
+            "available": true,
+            "backup_ids": [
+              "PRT-WLV-02"
+            ],
+            "delivery_tick": 45,
+            "linked_device_ids": [
+              "PRT-PMP-01"
+            ],
+            "reported_value": 180.0,
+            "sensor_id": "PRT-WLV-01",
+            "sim_tick": 45,
+            "status": "OK",
+            "type": "water_level",
+            "unit": "cm",
+            "zone_id": "PRT"
+          }
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000030",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 30,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-0f093693-e5a3-47b0-87d1-f56c63971aa6",
+        "event_type": "GUARDIAN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_guardian_call",
+          "positive_approval_supported": false,
+          "reason": "sensor event is available for Guardian review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000031",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 31,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-WLV-01",
+        "event_id": "event-c8862288-3ec0-406d-a0b4-32f67ab3bdc7",
+        "event_type": "BRAIN_PENDING",
+        "payload": {
+          "partner_status": "awaiting_real_brain_command",
+          "reason": "Twin observation is available for Brain review"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": "PRT-WLV-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000032",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 32,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": null,
+        "event_id": "event-a8772925-191f-4892-bb18-0857dc2dee85",
+        "event_type": "SCENARIO_WINDOW_COMPLETE",
+        "payload": {
+          "note": "Window complete does not imply Brain or Guardian completion.",
+          "partner_decisions_confirmed": false
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": null,
+      "event_id": "campaign-1-7cb48c018074:ev-0000000033",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 33,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-PMP-01",
+        "event_id": "event-88645d3b-4c14-4815-a15c-79becd0ecc76",
+        "event_type": "BRAIN_DECIDED",
+        "payload": {
+          "command": "set_speed",
+          "origin_event_ids": [
+            "event-07719e69-0569-4518-ae9f-4e308755f66b"
+          ],
+          "request_id": "scn-01-spoofed-command",
+          "service_response": "real_inbound_brain_command"
+        },
+        "scenario_id": "T5",
+        "source": "brain",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": "PRT-PMP-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000034",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 34,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-PMP-01",
+        "event_id": "event-db874bd8-41d8-41ea-96dc-6a766906f288",
+        "event_type": "COMMAND_PENDING",
+        "payload": {
+          "command": "set_speed",
+          "request_id": "scn-01-spoofed-command"
+        },
+        "scenario_id": "T5",
+        "source": "brain",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": "PRT-PMP-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000035",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 35,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    },
+    {
+      "details": {
+        "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+        "device_id": "PRT-PMP-01",
+        "event_id": "event-31203ffa-715a-4a6d-85d8-26a47b1bb1e1",
+        "event_type": "COMMAND_REJECTED",
+        "payload": {
+          "command": "set_speed",
+          "error": "SCENARIO_GUARDIAN_PENDING",
+          "origin_event_ids": [
+            "event-07719e69-0569-4518-ae9f-4e308755f66b"
+          ],
+          "reason": "TwinFacade validation or safety check rejected command",
+          "request_id": "scn-01-spoofed-command"
+        },
+        "scenario_id": "T5",
+        "source": "twin",
+        "timestamp": "2026-10-18T00:00:45Z"
+      },
+      "device_id": "PRT-PMP-01",
+      "event_id": "campaign-1-7cb48c018074:ev-0000000036",
+      "incident_id": null,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-private-events-0.1-local",
+      "seq": 36,
+      "sim_tick": 45,
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "SCENARIO_LIFECYCLE",
+      "zone_id": null
+    }
+  ],
+  "frame_seq": 1,
+  "readings": [
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 1,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 40.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 1,
+      "sim_tick": 1,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:01Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 5,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 19.8,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 2,
+      "sim_tick": 5,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 5,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 3,
+      "sim_tick": 5,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 5,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 4,
+      "sim_tick": 5,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 5,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 5,
+      "sim_tick": 5,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 5,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 6,
+      "sim_tick": 5,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:05Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "DTN-TLT-01"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-01",
+      "seq": 7,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-02",
+      "seq": 8,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 19.6,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 9,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-FLW-01",
+      "seq": 10,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-PRS-01",
+      "seq": 11,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-02"
+      ],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.05,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-01",
+      "seq": 12,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-01"
+      ],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.05,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-02",
+      "seq": 13,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 14,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 15,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 16,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 17,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 25.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-FLW-01",
+      "seq": 18,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-PRS-01",
+      "seq": 19,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-TRF-01",
+      "seq": 20,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 10,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 200.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-WLV-01",
+      "seq": 21,
+      "sim_tick": 10,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:10Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 15,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 19.4,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 22,
+      "sim_tick": 15,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 15,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 23,
+      "sim_tick": 15,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 15,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 24,
+      "sim_tick": 15,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 15,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 25,
+      "sim_tick": 15,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 15,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 26,
+      "sim_tick": 15,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:15Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "DTN-TLT-01"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-01",
+      "seq": 27,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-02",
+      "seq": 28,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 19.21,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 29,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-FLW-01",
+      "seq": 30,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-PRS-01",
+      "seq": 31,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-02"
+      ],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.1,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-01",
+      "seq": 32,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-01"
+      ],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.1,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-02",
+      "seq": 33,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 34,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 35,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 36,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 37,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 25.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-FLW-01",
+      "seq": 38,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-PRS-01",
+      "seq": 39,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-TRF-01",
+      "seq": 40,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 20,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 200.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-WLV-01",
+      "seq": 41,
+      "sim_tick": 20,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:20Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 25,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 19.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 42,
+      "sim_tick": 25,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 25,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 43,
+      "sim_tick": 25,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 25,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 44,
+      "sim_tick": 25,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 25,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 45,
+      "sim_tick": 25,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 25,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 46,
+      "sim_tick": 25,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:25Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "DTN-TLT-01"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-01",
+      "seq": 47,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-02",
+      "seq": 48,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 18.82,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 49,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-FLW-01",
+      "seq": 50,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-PRS-01",
+      "seq": 51,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-02"
+      ],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.16,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-01",
+      "seq": 52,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-01"
+      ],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.16,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-02",
+      "seq": 53,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 54,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 55,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 56,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 57,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 25.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-FLW-01",
+      "seq": 58,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-PRS-01",
+      "seq": 59,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 30.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-TRF-01",
+      "seq": 60,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 30,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 200.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-WLV-01",
+      "seq": 61,
+      "sim_tick": 30,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:30Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 35,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 18.62,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 62,
+      "sim_tick": 35,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 35,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 63,
+      "sim_tick": 35,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 35,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 64,
+      "sim_tick": 35,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 35,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 65,
+      "sim_tick": 35,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 35,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 66,
+      "sim_tick": 35,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:35Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "DTN-TLT-01"
+      ],
+      "reported_value": 18.49,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-01",
+      "seq": 67,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 16.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-TRF-02",
+      "seq": 68,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 18.43,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 69,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-FLW-01",
+      "seq": 70,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-PRS-01",
+      "seq": 71,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-02"
+      ],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.21,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-01",
+      "seq": 72,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "IND-TMP-01"
+      ],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "reported_value": 65.21,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "IND-TMP-02",
+      "seq": 73,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 74,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 75,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 76,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 77,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 25.01,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-FLW-01",
+      "seq": 78,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 4.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-PRS-01",
+      "seq": 79,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "reported_value": 17.94,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-TRF-01",
+      "seq": 80,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 40,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "reported_value": 200.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "RES-WLV-01",
+      "seq": 81,
+      "sim_tick": 40,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:40Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "RES"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 45,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "reported_value": 18.24,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "DTN-WLV-01",
+      "seq": 82,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 45,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 60.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-FLW-01",
+      "seq": 83,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [],
+      "delivery_tick": 45,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 2.96,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-PRS-01",
+      "seq": 84,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "delivery_tick": 45,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "reported_value": 180.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-01",
+      "seq": 85,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "available": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "delivery_tick": 45,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "reported_value": 50.0,
+      "run_id": "campaign-1-7cb48c018074",
+      "schema_version": "twin-reading-0.2-local",
+      "sensor_id": "PRT-WLV-02",
+      "seq": 86,
+      "sim_tick": 45,
+      "status": "OK",
+      "timestamp": "2026-10-18T00:00:45Z",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    }
+  ],
+  "revision": 70,
+  "run_id": "campaign-1-7cb48c018074",
+  "scenario": {
+    "correlation_id": "campaign-1-7cb48c018074:T5:67003ea4-f7ef-405f-bb6c-2dec88b6ec13",
+    "guardian_policy": "veto_only",
+    "name": "Fake flood at the port",
+    "scenario_id": "T5",
+    "start_tick": 0,
+    "status": "WINDOW_COMPLETE"
+  },
+  "schema_version": "twin-dashboard-operator-0.1-local",
+  "sensors": [
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Ambient temperature",
+      "hard_limits": [
+        -10,
+        50
+      ],
+      "interval": 60,
+      "linked_device_ids": [],
+      "normal_limits": [
+        5,
+        35
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "DTN-TMP-01",
+      "source": "model:ambient_temperature",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "DTN"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Vehicles, intersection A; approved local selected-road counter",
+      "hard_limits": [
+        0,
+        120
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "DTN-TLT-01"
+      ],
+      "normal_limits": [
+        0,
+        60
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "DTN-TRF-01",
+      "source": "departures:R-LOW",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Vehicles, intersection B; approved local selected-road counter",
+      "hard_limits": [
+        0,
+        120
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "normal_limits": [
+        0,
+        60
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "DTN-TRF-02",
+      "source": "departures:R-DOWN",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "DTN"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Storm drain level",
+      "hard_limits": [
+        0,
+        200
+      ],
+      "interval": 5,
+      "linked_device_ids": [
+        "DTN-VLV-01"
+      ],
+      "normal_limits": [
+        0,
+        60
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "DTN-WLV-01",
+      "source": "model:drain_level",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "DTN"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Coolant line flow",
+      "hard_limits": [
+        0,
+        200
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "normal_limits": [
+        10,
+        120
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "IND-FLW-01",
+      "source": "model:coolant_flow",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "IND"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Coolant line pressure",
+      "hard_limits": [
+        0,
+        10
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "normal_limits": [
+        2,
+        6
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "IND-PRS-01",
+      "source": "model:coolant_pressure",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "IND"
+    },
+    {
+      "active": true,
+      "backup_ids": [
+        "IND-TMP-02"
+      ],
+      "description": "Process temperature",
+      "hard_limits": [
+        -10,
+        150
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "normal_limits": [
+        20,
+        90
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "IND-TMP-01",
+      "source": "model:process_temperature",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "active": true,
+      "backup_ids": [
+        "IND-TMP-01"
+      ],
+      "description": "Process temperature (backup)",
+      "hard_limits": [
+        -10,
+        150
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "IND-VLV-01"
+      ],
+      "normal_limits": [
+        20,
+        90
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "IND-TMP-02",
+      "source": "model:process_temperature",
+      "type": "temperature",
+      "unit": "\u00b0C",
+      "zone_id": "IND"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Pump outlet flow",
+      "hard_limits": [
+        0,
+        500
+      ],
+      "interval": 5,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "normal_limits": [
+        0,
+        250
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "PRT-FLW-01",
+      "source": "model:harbour_flow",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "PRT"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Pump header pressure",
+      "hard_limits": [
+        0,
+        10
+      ],
+      "interval": 5,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "normal_limits": [
+        2,
+        6
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "PRT-PRS-01",
+      "source": "model:harbour_pressure",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "PRT"
+    },
+    {
+      "active": true,
+      "backup_ids": [
+        "PRT-WLV-02"
+      ],
+      "description": "Harbour water level",
+      "hard_limits": [
+        0,
+        300
+      ],
+      "interval": 5,
+      "linked_device_ids": [
+        "PRT-PMP-01"
+      ],
+      "normal_limits": [
+        20,
+        80
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "PRT-WLV-01",
+      "source": "model:harbour_level",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "active": true,
+      "backup_ids": [
+        "PRT-WLV-01"
+      ],
+      "description": "Harbour water level (backup)",
+      "hard_limits": [
+        0,
+        300
+      ],
+      "interval": 5,
+      "linked_device_ids": [
+        "PRT-PMP-02"
+      ],
+      "normal_limits": [
+        20,
+        80
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "PRT-WLV-02",
+      "source": "model:harbour_level",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "PRT"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Network flow",
+      "hard_limits": [
+        0,
+        150
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "normal_limits": [
+        5,
+        60
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "RES-FLW-01",
+      "source": "model:network_flow",
+      "type": "flow",
+      "unit": "L/s",
+      "zone_id": "RES"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Network pressure",
+      "hard_limits": [
+        0,
+        10
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "normal_limits": [
+        3,
+        5
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "RES-PRS-01",
+      "source": "model:network_pressure",
+      "type": "pressure",
+      "unit": "bar",
+      "zone_id": "RES"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Vehicles, main road; approved local selected-road counter",
+      "hard_limits": [
+        0,
+        100
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "DTN-TLT-02"
+      ],
+      "normal_limits": [
+        0,
+        40
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "RES-TRF-01",
+      "source": "departures:R-LINK",
+      "type": "traffic_count",
+      "unit": "veh/min",
+      "zone_id": "RES"
+    },
+    {
+      "active": true,
+      "backup_ids": [],
+      "description": "Reservoir level",
+      "hard_limits": [
+        0,
+        300
+      ],
+      "interval": 10,
+      "linked_device_ids": [
+        "RES-VLV-01"
+      ],
+      "normal_limits": [
+        100,
+        250
+      ],
+      "proposal": true,
+      "registered_run_id": null,
+      "registered_tick": 0,
+      "replaces": null,
+      "sensor_id": "RES-WLV-01",
+      "source": "model:reservoir_level",
+      "type": "water_level",
+      "unit": "cm",
+      "zone_id": "RES"
+    }
+  ],
+  "sim_tick": 45,
+  "status": {
+    "error": null,
+    "pending_actions": 0,
+    "revision": 70,
+    "run_id": "campaign-1-7cb48c018074",
+    "schema_version": "twin-live-0.1-local",
+    "sim_tick": 45,
+    "speed": 1.0,
+    "state": "READY",
+    "tick_budget": 10000,
+    "timestamp": "2026-10-18T00:00:45Z"
+  },
+  "timestamp": "2026-10-18T00:00:45Z",
+  "visibility": "PRIVATE_OPERATOR_ONLY"
+}

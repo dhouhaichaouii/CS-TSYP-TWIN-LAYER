@@ -116,6 +116,12 @@ These are simulated CityCore changes, not physical city-device operations.
 The successful commands were sent through controlled local Brain-role test
 calls; no actual Brain service generated them.
 
+The campaign is historical evidence from 2 November 2026. In the current
+registry, the `IND-VLV-01` cross-zone mapping to the PRT valve target `V-12` is
+unsupported and rejected; the prior SCN-03 accepted command must not be used as
+current behavior evidence. SCN-04's `PRT-PMP-02` shares `P-03` with
+`PRT-PMP-01`, so it is not an independent fallback.
+
 ### Dashboard and audit
 
 The campaign verified that a private operator dashboard frame included the
@@ -162,25 +168,26 @@ does not establish durable process-restart recovery.
 - **Actuator changed CityCore:** **No.**
 - **Test result:** **PASS** for the campaign's safe-rejection behavior; no
   claim of a real Guardian verdict or real Brain refusal.
-- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-01-city-events.json),
-  [dashboard frame](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-01-dashboard-frame.json),
-  [audit log](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/audit/individual-scn-01_campaign-1-8690060cfc21.jsonl).
+- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-01-city-events.json),
+  [dashboard frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-01-dashboard-frame.json),
+  [audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-01_campaign-1-050c177757bd.jsonl).
 - **Limitations:** No real external flood telemetry, Guardian service verdict,
   Brain service decision, or browser rendering was tested. The campaign did
   not expose the private actual value in its event evidence.
 
-### SCN-02 — Harbor basin surge and emergency valve dispatch
+### SCN-02 — Seeded Harbour-level fixture and pump-command check
 
-- **Objective:** Send a high-water Twin event through the common path and
-  verify that an accepted pump command changes CityCore.
-- **Initial conditions:** The scenario starts from the configured 40 cm port
-  level and explicitly seeds the Twin input to 110 cm at tick 1. This is a
-  seeded simulation event, not live external telemetry.
+- **Objective:** Verify scenario-fixture sampling and, separately, local pump
+  command handling. It does not simulate a rain-driven flood.
+- **Initial conditions:** The scenario explicitly seeds the PRT-WLV-01 input
+  to 110 cm at tick 1. The value is a fixture, not a Harbour water balance,
+  CityCore B-01 state, or live external telemetry.
 - **Trigger:** `python scenarios/run.py --scenario scn-02`.
 - **Expected behavior:** Twin publishes the 110 cm reading; an accepted
   command must pass through the existing TwinFacade and actually update
   CityCore.
-- **Actual observed behavior:** `PRT-WLV-01` reported 110 cm with status `OK`.
+- **Actual observed behavior:** `PRT-WLV-01` reported the scenario-seeded 110 cm
+  with status `OK`; the trigger itself did not mutate rain or B-01.
   A controlled local Brain-role command set `PRT-PMP-01` speed to 0.3; its
   CityCore revision advanced **8 → 9**. Replaying the same request did not
   create a second revision/effect.
@@ -190,24 +197,28 @@ does not establish durable process-restart recovery.
 - **Actuator changed CityCore:** **Yes**, simulated pump state changed.
 - **Test result:** **PASS** for seeded event processing and CityCore command
   effect.
-- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-02-city-events.json),
-  [dashboard frame](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-02-dashboard-frame.json),
-  [audit log](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/audit/individual-scn-02_campaign-2-a017fc0510c3.jsonl).
-- **Limitations:** No real rain sensor or Brain-generated decision, Guardian
-  service response, or browser render was tested.
+- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-02-city-events.json),
+  [dashboard frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-02-dashboard-frame.json),
+  [audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-02_campaign-2-b8b93aa4efe8.jsonl).
+- **Limitations:** The seeded value does not establish physical flood
+  detection or pump-to-Harbour feedback. No real rain sensor, Brain-generated
+  decision, Guardian service response, or browser render was tested.
 
-### SCN-03 — Sensor death and frozen traffic telemetry
+### SCN-03 — Sensor death and frozen traffic telemetry (historical 2 Nov result; superseded)
 
-- **Objective:** Distinguish a frozen stream and a dead sensor from usable
-  telemetry, and accept a backup-feed command only when the configured backup
-  is valid.
+- **Objective:** Demonstrate frozen/dead sensor reporting, fail closed when an
+  untrusted linked sensor has no valid backup context, and report the supported
+  actuator catalog accurately.
 - **Initial conditions:** Scenario inputs include traffic baseline 48,
   declared frozen-sensor input 55, industrial temperature input 71, and
   registered backup `IND-TMP-02` input 70.
 - **Trigger:** `python scenarios/run.py --scenario scn-03`.
 - **Expected behavior:** The frozen traffic report remains at its prior
-  sample, the dead sensor becomes unavailable, and a command without a valid
-  backup is rejected.
+  sample, the dead sensor becomes unavailable, and the registered backup
+  reports its seeded value. The Brain-role test command without backup context
+  is rejected as `SCENARIO_GUARDIAN_PENDING`. Supplying the valid backup clears
+  that safety gate, after which `IND-VLV-01` is rejected as
+  `UNSUPPORTED_DEVICE`. Neither request changes CityCore state.
 - **Actual observed behavior:** `DTN-TRF-01` continued reporting 48 during the
   `STUCK` fault. `IND-TMP-01` transitioned from a reported 71 to `null` with
   status `FAILED`/unavailable. The registered backup reported 70. A
@@ -216,15 +227,25 @@ does not establish durable process-restart recovery.
 - **Services involved:** `ScenarioRunner`, SensorBank, TwinFacade, CityCore,
   dashboard frame, EventStore and audit logger. Brain and Guardian services
   were **BLOCKED / absent**; the command was a controlled local role call.
-- **Actuator changed CityCore:** **Yes**, on the validated-backup command.
-- **Test result:** **PASS** for frozen/dead reading handling, unsafe-command
-  rejection, and the tested registered-backup command.
-- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-03-city-events.json),
-  [dashboard frame](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-03-dashboard-frame.json),
-  [audit log](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/audit/individual-scn-03_campaign-3-e1763ea7c18d.jsonl).
+- **Actuator changed CityCore:** **No.** `IND-VLV-01` is catalogued as
+  `supported: false`; do not infer or add an industrial valve capability from
+  its sensor links or nominal target ID.
+- **Test result:** **PASS** for frozen/dead reading handling and both expected
+  safe rejections. Real Brain and Guardian behavior is **NOT VERIFIED**.
+- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-03-city-events.json),
+  [dashboard frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-03-dashboard-frame.json),
+  [audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-03_campaign-3-a5e4fe608977.jsonl).
 - **Limitations:** No real sensor hardware, Brain decision, or Guardian
   service decision was exercised. The private truth inputs are scenario
   fixtures, not independently verified field telemetry.
+
+**7 Nov 2026 correction:** The current actuator catalog marks `IND-VLV-01`
+`supported: false`. In the current campaign, the command without backup
+context is rejected with `SCENARIO_GUARDIAN_PENDING`; the command with valid
+`IND-TMP-02` context passes that safety gate and is then rejected with
+`UNSUPPORTED_DEVICE`. Neither command changes CityCore (revision 10 before and
+after). The 2 Nov success and evidence linked above are historical and do not
+describe current behavior. Current run evidence is recorded below.
 
 ### SCN-04 — Guardian containment prevents unsafe Brain dispatch
 
@@ -250,24 +271,25 @@ does not establish durable process-restart recovery.
 - **Test result:** **PASS** for pending/quarantine rejection. Sensor update is
   **NOT TESTED / not defined** by this scenario. Alternative actuator
   execution was not demonstrated.
-- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-04-city-events.json),
-  [dashboard frame](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-04-dashboard-frame.json),
-  [audit log](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/audit/individual-scn-04_campaign-4-0f186f3719a1.jsonl).
+- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-04-city-events.json),
+  [dashboard frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-04-dashboard-frame.json),
+  [audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-04_campaign-4-7dd2cebe5eed.jsonl).
 - **Limitations:** No actual Guardian service was connected. The named backup
   is not an independent actuator; the catalog maps it to the same target, so
   no safe fallback can be claimed.
 
-### SCN-05 — Concurrent real emergency and spoofing attack
+### SCN-05 — Seeded traffic and local air-quality fixtures
 
-- **Objective:** Keep a legitimate traffic response distinct from a
-  simultaneous spoofed, scenario-local air-quality fixture.
-- **Initial conditions:** Downtown traffic is scenario-seeded to 105 at tick
-  5. `RES-AIR-TEST-01` is declared as a local air-quality fixture, not a
-  registered Twin sensor; its fixture values are actual 18 and reported 180.
+- **Objective:** Verify fixture labeling and distinguish fixture inputs from
+  physical CityCore incidents.
+- **Initial conditions:** DTN-TRF-01 is scenario-seeded to 105 at tick 5;
+  this does not create a road obstruction or prove physical congestion.
+  `RES-AIR-TEST-01` is a local fixture, not a registered Twin sensor; its
+  fixture values are actual 18 and reported 180.
 - **Trigger:** `python scenarios/run.py --scenario scn-05`.
-- **Expected behavior:** The Twin processes the traffic reading and labels the
-  air event as a fixture. A safe accepted signal command may affect the
-  configured traffic light; the fixture must not be presented as hardware.
+- **Expected behavior:** The Twin labels both values as scenario inputs. A
+  separate local signal command can exercise the configured traffic path; the
+  seeded traffic value is not the physical input to that path.
 - **Actual observed behavior:** `DTN-TRF-01` reported 105 with status `OK`.
   The lifecycle recorded the air fixture as `scenario_local_fixture: true`.
   A controlled local Brain-role command changed `DTN-TLT-01` from `normal` to
@@ -278,13 +300,15 @@ does not establish durable process-restart recovery.
   EventStore and audit logger. Brain and Guardian services were **BLOCKED /
   absent**; the command was a local test-client call.
 - **Actuator changed CityCore:** **Yes**, simulated traffic signal changed.
-- **Test result:** **PASS** for the seeded traffic event, fixture labeling,
-  correlation and CityCore signal effect.
-- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-05-city-events.json),
-  [dashboard frame](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/individual/individual-scn-05-dashboard-frame.json),
-  [audit log](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/audit/individual-scn-05_campaign-5-809600b3e5cc.jsonl).
-- **Limitations:** Neither event is live external telemetry. The air feed is
-  explicitly a fixture, and no real Brain or Guardian service was involved.
+- **Test result:** **PASS** for seeded traffic input handling, fixture
+  labeling, correlation and local CityCore signal command. This is not a
+  physical accident-to-sensor causal demonstration.
+- **Evidence:** [Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-05-city-events.json),
+  [dashboard frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-05-dashboard-frame.json),
+  [audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-05_campaign-5-4a47c7d9e6ef.jsonl).
+- **Limitations:** Neither event is live external telemetry; neither trigger
+  creates the corresponding physical incident state. The air feed is explicitly
+  a fixture, and no real Brain or Guardian service was involved.
 
 ### SCN-06 — Inter-Layer Communication Failure and Recovery
 
@@ -324,10 +348,10 @@ does not establish durable process-restart recovery.
   recovery and revalidation. No effect was applied during either outage.
 - **Test result:** **PASS** for the deterministic local scenario campaign and
   the targeted automated checks. This is not a real-service recovery result.
-- **Evidence:** [SCN-06 campaign report](../test-evidence/scn06-20261102T162055.402283Z-2fe9bc5c/campaign.json),
-  [Twin events](../test-evidence/scn06-20261102T162055.402283Z-2fe9bc5c/twin-events.json),
-  [dashboard frame](../test-evidence/scn06-20261102T162055.402283Z-2fe9bc5c/dashboard-frame.json),
-  [audit log](../test-evidence/scn06-20261102T162055.402283Z-2fe9bc5c/audit/scn-06_scn06-27ad756a9ed0.jsonl).
+- **Evidence:** [SCN-06 campaign report](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/campaign.json),
+  [Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-06-city-events.json),
+  [dashboard frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-06-dashboard-frame.json),
+  [audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-06_campaign-6-27de1d8d4287.jsonl).
 - **Limitations:** No live Brain/Guardian clients, connection probes, transport
   failure, distributed queue, or automatic pending-operation reconciliation
   exists. In-memory request idempotency is not durable across process
@@ -372,6 +396,29 @@ has no Kafka component in this integration.
 
 ## Campaign results and reproduction
 
+### Current SCN-03 validation — 7 November 2026
+
+The 2 November campaign results below are historical. On 7 November, the
+focused SCN-03 orchestration test passed and a fresh complete campaign
+completed at `2026-11-07T17:55:50.889053Z`. All six individual scenario runs,
+the sequential run, and cross-scenario checks passed. SCN-03's expected safe
+rejections were `SCENARIO_GUARDIAN_PENDING` without backup context and
+`UNSUPPORTED_DEVICE` with valid `IND-TMP-02` context; CityCore revision stayed
+10 before and after. The campaign's overall status is **BLOCKED** (exit code 1)
+because real Brain and Guardian outage/recovery cases cannot run without those
+services. This is not a real partner integration result.
+
+Evidence from this rerun:
+
+- [Campaign report](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/campaign.json)
+- [SCN-03 Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-03-city-events.json)
+- [SCN-03 operator frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-03-dashboard-frame.json)
+- [SCN-03 audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-03_campaign-3-a5e4fe608977.jsonl)
+
+Campaign commands are controlled local Brain-role calls through TwinFacade.
+Real Brain/Guardian service behavior remains **NOT VERIFIED**. No actuator or
+physical feedback is claimed for `IND-VLV-01`.
+
 | Campaign part | Result |
 |---|---|
 | Five SCN-01–SCN-05 individual scenario runs | **PASS**; SCN-04 sensor-update check is **NOT TESTED** because it defines no sensor event. |
@@ -403,7 +450,7 @@ python scenarios/run.py --scenario scn-06
 ```
 
 The campaign evidence used for this book is
-[`campaign.json`](../test-evidence/scenario-campaign-20261102T154417.731910Z-d4acc976/campaign.json).
+[`campaign.json`](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/campaign.json).
 The directory also contains per-run Twin event histories, EventStore exports,
 dashboard frames, and audit logs.
 
@@ -432,9 +479,9 @@ as real partner-service responses.
 | Twin-to-Brain communication | **Partial** | Pending lifecycle markers and the inbound Brain command boundary exist. No outbound Brain client or real Brain service response was tested. |
 | Twin-to-Guardian communication | **Partial** | Authenticated Guardian isolation boundary and pending markers exist. No actual Guardian service was connected; positive request-bound approval is unsupported. |
 | Brain and Guardian coordination | **Partial / controlled local calls** | The Twin veto/quarantine path was exercised with separate local role calls; no real service-to-service coordination or approval handshake was validated. |
-| Authorized actuator execution | **Demonstrated in controlled Twin path** | SCN-02, SCN-03 and SCN-05 changed CityCore after Twin checks. The command callers were local test clients, not the Brain service; no positive Guardian approval was tested. |
-| Rejected actuator command | **Demonstrated** | SCN-01 untrusted/pending safety rejection; SCN-03 invalid backup rejection; SCN-04 pending and quarantined rejection. |
-| Alternative actuator execution | **Not demonstrated** | SCN-04's listed `PRT-PMP-02` shares the same CityCore target and was rejected. SCN-03 validated an alternative sensor feed, not an alternative actuator. |
+| Authorized actuator execution | **Demonstrated in controlled Twin path** | SCN-02 and SCN-05 changed CityCore after Twin checks. The command callers were local test clients, not the Brain service; no positive Guardian approval was tested. |
+| Rejected actuator command | **Demonstrated** | SCN-01 untrusted/pending safety rejection; SCN-03 missing-backup `SCENARIO_GUARDIAN_PENDING` and catalog `UNSUPPORTED_DEVICE`; SCN-04 pending and quarantined rejection. |
+| Alternative actuator execution | **Not demonstrated** | SCN-04's listed `PRT-PMP-02` shares the same CityCore target and was rejected. SCN-03 validates the backup sensor reading only; the requested `IND-VLV-01` actuator is unsupported. |
 | Sensor failure handling | **Demonstrated** | SCN-03 frozen traffic report, dead sensor `FAILED`/unavailable, and valid registered backup reading. |
 | Multiple-event synchronization | **Demonstrated in controlled in-process tests** | Five cross-scenario checks passed under serialized facade access; no distributed broker or parallel physics claim. |
 | Service failure and recovery | **Partial: controlled scenario injection demonstrated; real services not tested** | SCN-06 fail-closed and recovery checks passed locally. Partner services were absent; Kafka and real process restart remain **NOT TESTED**. Owner recreation still permits a duplicate request ID. |
