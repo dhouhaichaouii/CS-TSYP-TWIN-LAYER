@@ -4,6 +4,8 @@ __pycache__/
 *.new
 /tmp/
 logs/*.jsonl
+logs/*.sqlite3*
+logs/*.owner
 .venv/
 venv/
 .pytest_cache/
