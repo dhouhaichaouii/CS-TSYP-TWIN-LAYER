@@ -31,7 +31,7 @@ For the shared operator dashboard/MCP runtime and one scenario, run:
 python -X utf8 scenarios/run.py --scenario scn-03
 ```
 
-Authenticate to the local operator dashboard using the passphrase requested by the launcher. SCN-03 should show the stuck traffic reading, the failed temperature sensor, and the seeded backup reading. A Brain-role command with no backup context is held with `SCENARIO_GUARDIAN_PENDING`; valid backup context still cannot actuate unsupported `IND-VLV-01` and yields `UNSUPPORTED_DEVICE`. CityCore remains unchanged.
+Authenticate to the local operator dashboard using the passphrase requested by the launcher. SCN-03 shows the stuck traffic reading, the failed temperature sensor, and the seeded backup reading. It targets supported signal `DTN-TLT-01`, linked to the frozen traffic sensor. Because that traffic sensor has no registered backup, both no-backup and unrelated industrial-backup contexts are held with `SCENARIO_GUARDIAN_PENDING`, leaving CityCore unchanged. The focused test and 8 November campaign verified this local behavior.
 
 Run the dated campaign for saved scenario evidence:
 

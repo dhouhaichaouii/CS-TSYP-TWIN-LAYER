@@ -396,28 +396,27 @@ has no Kafka component in this integration.
 
 ## Campaign results and reproduction
 
-### Current SCN-03 validation — 7 November 2026
+### SCN-03 validation status — 8 November 2026
 
-The 2 November campaign results below are historical. On 7 November, the
-focused SCN-03 orchestration test passed and a fresh complete campaign
-completed at `2026-11-07T17:55:50.889053Z`. All six individual scenario runs,
-the sequential run, and cross-scenario checks passed. SCN-03's expected safe
-rejections were `SCENARIO_GUARDIAN_PENDING` without backup context and
-`UNSUPPORTED_DEVICE` with valid `IND-TMP-02` context; CityCore revision stayed
-10 before and after. The campaign's overall status is **BLOCKED** (exit code 1)
-because real Brain and Guardian outage/recovery cases cannot run without those
-services. This is not a real partner integration result.
+The 2 November and 7 November campaign results below are historical. The
+SCN-03 test command was changed from unsupported `IND-VLV-01` to supported
+`DTN-TLT-01`, which is linked to frozen `DTN-TRF-01`. The 8 November focused
+test and campaign verified that both missing and unrelated industrial backup
+contexts are rejected with `SCENARIO_GUARDIAN_PENDING` and no CityCore state
+change. The latest campaign remains **BLOCKED** overall because real Brain and
+Guardian outage cases cannot run without those services; this is not partner-
+integration evidence.
 
-Evidence from this rerun:
+Evidence from the 8 November rerun:
 
-- [Campaign report](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/campaign.json)
-- [SCN-03 Twin events](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-03-city-events.json)
-- [SCN-03 operator frame](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/individual/individual-scn-03-dashboard-frame.json)
-- [SCN-03 audit log](../test-evidence/scenario-campaign-20261107T175549.588643Z-6c9f9858/audit/individual-scn-03_campaign-3-a5e4fe608977.jsonl)
+- [Campaign report](../test-evidence/scenario-campaign-20261108T074306.489418Z-f1e94dce/campaign.json)
+- [SCN-03 Twin events](../test-evidence/scenario-campaign-20261108T074306.489418Z-f1e94dce/individual/individual-scn-03-city-events.json)
+- [SCN-03 operator frame](../test-evidence/scenario-campaign-20261108T074306.489418Z-f1e94dce/individual/individual-scn-03-dashboard-frame.json)
+- [SCN-03 audit log](../test-evidence/scenario-campaign-20261108T074306.489418Z-f1e94dce/audit/individual-scn-03_campaign-3-ff347598eee5.jsonl)
 
 Campaign commands are controlled local Brain-role calls through TwinFacade.
-Real Brain/Guardian service behavior remains **NOT VERIFIED**. No actuator or
-physical feedback is claimed for `IND-VLV-01`.
+Real Brain/Guardian service behavior remains **NOT VERIFIED**. These are
+controlled local TwinFacade calls, not real partner responses.
 
 | Campaign part | Result |
 |---|---|
@@ -480,8 +479,8 @@ as real partner-service responses.
 | Twin-to-Guardian communication | **Partial** | Authenticated Guardian isolation boundary and pending markers exist. No actual Guardian service was connected; positive request-bound approval is unsupported. |
 | Brain and Guardian coordination | **Partial / controlled local calls** | The Twin veto/quarantine path was exercised with separate local role calls; no real service-to-service coordination or approval handshake was validated. |
 | Authorized actuator execution | **Demonstrated in controlled Twin path** | SCN-02 and SCN-05 changed CityCore after Twin checks. The command callers were local test clients, not the Brain service; no positive Guardian approval was tested. |
-| Rejected actuator command | **Demonstrated** | SCN-01 untrusted/pending safety rejection; SCN-03 missing-backup `SCENARIO_GUARDIAN_PENDING` and catalog `UNSUPPORTED_DEVICE`; SCN-04 pending and quarantined rejection. |
-| Alternative actuator execution | **Not demonstrated** | SCN-04's listed `PRT-PMP-02` shares the same CityCore target and was rejected. SCN-03 validates the backup sensor reading only; the requested `IND-VLV-01` actuator is unsupported. |
+| Rejected actuator command | **Demonstrated** | SCN-01 pending rejection; updated SCN-03 linked-signal rejection due to missing traffic backup; SCN-04 pending/quarantined rejection. |
+| Alternative actuator execution | **Not demonstrated** | SCN-04's listed `PRT-PMP-02` shares the same CityCore target and was rejected. SCN-03 now targets the linked signal but expects rejection while its source sensor is untrusted. |
 | Sensor failure handling | **Demonstrated** | SCN-03 frozen traffic report, dead sensor `FAILED`/unavailable, and valid registered backup reading. |
 | Multiple-event synchronization | **Demonstrated in controlled in-process tests** | Five cross-scenario checks passed under serialized facade access; no distributed broker or parallel physics claim. |
 | Service failure and recovery | **Partial: controlled scenario injection demonstrated; real services not tested** | SCN-06 fail-closed and recovery checks passed locally. Partner services were absent; Kafka and real process restart remain **NOT TESTED**. Owner recreation still permits a duplicate request ID. |
