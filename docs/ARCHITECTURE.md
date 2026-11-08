@@ -1,44 +1,44 @@
-# Twin Layer architecture
+# Architecture
 
-## Runtime boundaries
+## Responsibility
 
-The production implementation is under `src/`. `LiveCity` owns the active simulated state, `ScenarioRunner` applies declared scenario inputs/faults, and the `SensorBank` samples values before fault transforms produce reported readings. The `TwinFacade` is the shared role-authentication, projection, safety, and command boundary used by REST and MCP.
+The Twin owns the local city simulation, sensor readings, scenario inputs, command validation, and Twin event records. It is the safety and state boundary between callers and simulated CityCore effects.
 
 ```mermaid
 flowchart LR
-  O[Operator or scenario] --> L[LiveCity / ScenarioRunner]
-  L --> C[CityCore state and effects]
-  C --> S[SensorBank and sensor-side models]
-  S --> F[TwinFacade]
-  F --> R[REST adapter]
-  F --> M[MCP adapter]
-  F --> UI[Operator dashboard]
-  BM[Local Brain mock] --> F
-  GM[Local Guardian mock] --> F
+  Scenario[Scenario definitions and operator inputs] --> Live[LiveCity and ScenarioRunner]
+  Live --> Core[CityCore simulated state]
+  Core --> Sensors[SensorBank and sensor models]
+  Sensors --> Facade[TwinFacade: roles, projection, safety, idempotency]
+  Facade --> REST[REST interface]
+  Facade --> MCP[MCP interface]
+  Facade --> Dashboard[Operator dashboard and event trace]
+  BrainMock[Local Brain mock] --> Facade
+  GuardianMock[Local Guardian mock] --> Facade
 ```
 
-The mocks call the same façade in-process. There is no outbound real Brain/Guardian client in this repository.
+The mocks run in-process for the standalone demonstration. This repository has no outbound Brain/Guardian clients, and the dashboard does not independently verify the process that supplied a role-authenticated request. Partner integration is **NOT VERIFIED**.
 
-## Main packages
+## Request and observation flow
 
-- `city_core`: immutable state, domain balances, effect validation, replay, and lifecycle.
-- `city_live`: runtime composition, sensors, faults, illustrative sensor physics, scenario orchestration, and operator commands.
-- `twin_interface`: role tokens, permissions, public projections, TwinFacade, REST, and MCP.
-- `city_dashboard`: local operator UI and its API bridge.
-- `twin_observability`: timeline/event records and JSONL scenario logs.
-- `twin_persistence`: SQLite-backed CityCore replay/effect receipt persistence used by the unified ASGI app.
+1. A scenario or operator action supplies a declared input or fault.
+2. `LiveCity` advances CityCore and the sensor path.
+3. Sensor truth and reported values remain distinct; fault injection changes the reporting path.
+4. `TwinFacade` applies role checks, validation, quarantine, idempotency, and CityCore effect checks.
+5. Twin events and dashboard frames record local observations and outcomes.
 
-## State and causality
+A simulated command result is not a physical actuator acknowledgement. A pending marker means a response is awaited; it is not a Brain or Guardian decision.
 
-CityCore state is separate from sensor-reported values. Sensor faults alter reported readings or availability; they do not themselves apply CityCore effects. Some sensor-side models are illustrative and not coupled to similarly named CityCore devices. Verified feedback is relationship-specific; see [sensor verification](SENSOR_VERIFICATION.md) and the [scenario matrix](SCENARIO_VERIFICATION_MATRIX.md).
+## Main code areas
 
-Actuator calls are validated through TwinFacade and mapped to supported CityCore effects. A catalog entry with `supported: false` must reject rather than imply a physical capability. Device IDs that alias one target do not represent independent redundancy.
+| Path | Responsibility |
+| --- | --- |
+| `src/city_core/` | Simulated city state and domain effects |
+| `src/city_live/` | Runtime, sensors, scenarios, and operator lifecycle |
+| `src/twin_interface/` | Shared facade, role checks, REST and MCP adapters |
+| `src/city_dashboard/` | Local operator dashboard and frame projection |
+| `mocks/` | In-process demo clients |
+| `scenarios/` | Scenario definitions and launcher |
+| `test-evidence/` | Dated campaign and validation evidence |
 
-## Entry points
-
-- Local dashboard and MCP share one owner: `python tools/run_twin.py --dev`.
-- Network-facing REST/MCP ASGI process: `python src/twin_app.py` with production role tokens and host configuration.
-- Local mocks proof: `python tools/run_standalone.py --ticks 1150 --run-id <fresh-id>`.
-- Existing scenario: `python scenarios/run.py --scenario <scenario-id>`.
-
-Setup, evidence, and limitations are linked from the root [README](../README.md).
+For current results, read [Status](STATUS.md) and [Testing](TESTING.md).

@@ -1,24 +1,24 @@
-# Known limitations
+# Known Limitations
 
-These limitations describe the current implementation and should be stated during jury review.
+These limits apply to the current repository and should be stated during a demonstration.
 
-## Partner integration and trust
+## Integration
 
-- Real Brain and Guardian clients and service processes are absent. Connectivity, protocol compatibility, authentication, latency, and outage recovery are **NOT VERIFIED**.
-- Guardian enforcement is veto/quarantine-based. The Twin does not require a request-bound positive Guardian approval before a Brain command.
-- SCN-06 uses local channel-availability injection, not a real service outage. Unavailable work is rejected rather than queued for automatic retry.
+- Real Brain and Guardian services, outbound clients, credentials, and network connections are absent. Integration, protocol compatibility, latency, and real outage recovery are **NOT VERIFIED**.
+- The standalone demonstration uses in-process mocks. Twin event source/role labels do not independently attest which process made a request.
+- Guardian behavior is veto/quarantine-based. A request-bound positive Guardian approval is not implemented.
+- SCN-06 changes local availability flags. It does not probe or disconnect partner networks. Requests during simulated unavailability are rejected, not queued for automatic replay.
 
-## Simulation and devices
+## Devices and simulation
 
-- Sensor faults change reported values/status independently of CityCore state. Some sensor-side physical models are illustrative, uncalibrated, and independent from similarly named CityCore assets.
-- Pump and valve consequences do not feed every related sensor. Only specific pathways, such as supported traffic signal/departure readings, have verified feedback.
-- `IND-VLV-01` is catalogued as unsupported. SCN-03 no longer targets it; the scenario command targets linked signal `DTN-TLT-01` and is rejected because frozen traffic sensor `DTN-TRF-01` has no registered backup. This local behavior passed the 8 November focused test and campaign; no industrial valve actuation is claimed.
-- `PRT-PMP-01` and `PRT-PMP-02` map to the same target (`P-03`), so the second ID is not independent redundancy.
-- The model does not establish calibrated hydraulic behavior or field-device telemetry.
+- `IND-VLV-01` is unsupported. SCN-03 uses supported signal `DTN-TLT-01` and safely rejects the request when its linked traffic source has no registered backup.
+- `PRT-PMP-01` and `PRT-PMP-02` share CityCore target `P-03`; they are not independent redundant pumps.
+- Sensor-side physics are illustrative and uncalibrated. Some sensor models are not causally connected to similarly named CityCore assets or actuators. Sensor readings are not field telemetry.
+- The dashboard can show Twin records and simulated state. It does not show verified physical actuator feedback or a verified live three-service workflow.
 
-## Runtime, evidence, and deployment
+## Runtime and testing
 
-- Event history, sensor adapters, and portions of runtime state are process-local; SQLite persistence does not prove complete whole-runtime restoration.
-- Docker/hosted deployment requires valid distinct role tokens, exact allowed hostnames, and suitable persistent storage. Local tests are not deployment availability evidence.
-- The dashboard can display Twin/operator events. Browser-rendered end-to-end interaction across three independently running layers is **NOT VERIFIED**.
-- The full interface suite currently has known dashboard/OpenAPI failures. See the [current status](STATUS.md), [validation index](../test-evidence/README.md), and [test results](TEST_AND_RUNTIME_RESULTS.md).
+- The current dashboard redesign and Operational trace have not been browser-verified.
+- The dated interface test run has 3 failures and 1 error. See [Testing](TESTING.md) and its linked raw output.
+- Persistence checks cover selected CityCore state and actuator receipts. They do not prove full restoration of scenario timing, sensor adapters, event history, or pending partner work.
+- Kafka is not integrated. Its interruption and recovery behavior are **NOT TESTED**.
