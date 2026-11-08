@@ -37,7 +37,6 @@ class OperatorControls:
                 'access': plain(snapshot.access), 'active_faults': plain(self._sensors.faults),
                 'active_disturbances': disturbances(snapshot.physical_state),
                 'traffic_profile': self._traffic.profile,
-                'sensor_model': plain(self._sensor_physics),
                 'water_levels': {'basin_m': snapshot.physical_state.water.basin_level_m,
                                  'surface_m': snapshot.physical_state.water.surface_depth_m}}
 
@@ -219,22 +218,12 @@ class OperatorControls:
             except (sqlite3.Error, OSError, RuntimeError, ValueError) as error:
                 raise LiveError('PERSISTENCE_FAILURE') from error
 
-        receipt = self._effect(
-            effect,
-            persist=durable is None,
-            correlation_id=command_id if correlation_id is None else correlation_id,
-        )
+        receipt = self._effect(effect, persist=durable is None)
         result = {
             'command_id': command_id,
             'device_id': device_id,
             'command': command,
             'status': 'APPLIED',
-            'requested_effect': effect,
-            'effective_effect': effect,
-            'execution_status': 'EXECUTED',
-            'execution_reason': 'CITYCORE_EFFECT_COMMITTED',
-            'city_core_updated': True,
-            'correlation_id': receipt.correlation_id,
             'effective_revision': receipt.context.revision,
             'effect_id': receipt.effect_id,
         }

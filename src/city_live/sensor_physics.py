@@ -1,9 +1,7 @@
-"""Illustrative deterministic model outputs for the PDF sensor inventory.
+"""Small deterministic PDF sensor model, owned only by the live composition.
 
-This live-composition extension uses one-second balances and uncalibrated
-parameters. Its hydraulic, coolant, process and ambient outputs are not
-engineering measurements. Harbour, drain and reservoir stores are independent
-of CityCore river assets; similarly named sensors do not establish topology.
+One-second balances, illustrative parameters (not calibrated engineering data).
+Independent harbour/drain/reservoir storages do not rename core river assets.
 """
 from dataclasses import dataclass, replace
 from math import sin, pi, sqrt
@@ -22,7 +20,6 @@ RESERVOIR_TARGET_M3 = 200.0
 
 @dataclass(frozen=True, slots=True)
 class SensorPhysics:
-    """Immutable state for illustrative, uncalibrated sensor-side models."""
     version: str = MODEL_VERSION
     tick: int = 0
     harbour_volume_m3: float = HARBOUR_TARGET_M3
@@ -43,11 +40,7 @@ class SensorPhysics:
 
 
 def advance(state, snapshot, epoch):
-    """Advance illustrative stores from committed conditions, never sensor reports.
-
-    Equations and parameters are deterministic demonstration models, not
-    calibrated physical models or authoritative CityCore hydraulic state.
-    """
+    """Return the next state; inputs are committed core conditions, never reports."""
     tick = snapshot.context.tick
     if tick != state.tick + 1:
         from .records import LiveError
@@ -90,11 +83,7 @@ def advance(state, snapshot, epoch):
 
 
 def measurements(state):
-    """Return illustrative model outputs in the inventory's declared units.
-
-    These values are uncalibrated. Backup sensors may project the same modeled
-    quantity while retaining independent SensorBank fault state.
-    """
+    """Privileged physical quantities in PDF units, shared by backup sensors."""
     return {
         'harbour_level': state.harbour_volume_m3 / HARBOUR_AREA_M2 * 100,
         'harbour_flow': state.harbour_outflow_m3_s * 1000,

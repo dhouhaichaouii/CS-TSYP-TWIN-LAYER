@@ -167,7 +167,7 @@ devices:
     hard_min: 0
     hard_max: 100
     backup_ids: []
-    linked_device_ids: [DTN-TLT-02]
+    linked_device_ids: [RES-TLT-01]
   - device_id: PRT-PMP-01
     zone_id: PRT
     type: Pump

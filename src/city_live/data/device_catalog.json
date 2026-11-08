@@ -397,7 +397,7 @@
       ],
       "interval": 10,
       "linked_device_ids": [
-        "DTN-TLT-02"
+        "RES-TLT-01"
       ],
       "backup_ids": [],
       "source": "departures:R-LINK",
@@ -447,7 +447,6 @@
       "aliases": [
         "A-DISPATCH-01"
       ],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "dispatch",
@@ -465,7 +464,6 @@
       "supported": true,
       "physical_id": "AMB-02",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "dispatch",
@@ -483,9 +481,6 @@
       "supported": true,
       "physical_id": "J-D1",
       "aliases": [],
-      "sensor_ids": [
-        "DTN-TRF-01"
-      ],
       "backup_ids": [],
       "commands": [
         "set_phase",
@@ -504,10 +499,6 @@
       "supported": true,
       "physical_id": "J-D2",
       "aliases": [],
-      "sensor_ids": [
-        "DTN-TRF-02",
-        "RES-TRF-01"
-      ],
       "backup_ids": [],
       "commands": [
         "set_phase",
@@ -523,10 +514,9 @@
       "family": "valve",
       "effect_tag": "valve_position",
       "target_id": "V-12",
-      "supported": false,
+      "supported": true,
       "physical_id": "V-12",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "set_opening"
@@ -545,7 +535,6 @@
       "aliases": [
         "A-SW-ESS"
       ],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "open",
@@ -566,12 +555,6 @@
       "physical_id": "F-IND",
       "aliases": [
         "A-SW-IND"
-      ],
-      "sensor_ids": [
-        "IND-TMP-01",
-        "IND-TMP-02",
-        "IND-PRS-01",
-        "IND-FLW-01"
       ],
       "backup_ids": [],
       "commands": [
@@ -594,15 +577,6 @@
       "aliases": [
         "A-SW-URBAN"
       ],
-      "sensor_ids": [
-        "PRT-WLV-01",
-        "PRT-WLV-02",
-        "PRT-FLW-01",
-        "PRT-PRS-01",
-        "RES-WLV-01",
-        "RES-PRS-01",
-        "RES-FLW-01"
-      ],
       "backup_ids": [],
       "commands": [
         "open",
@@ -619,10 +593,9 @@
       "family": "valve",
       "effect_tag": "valve_position",
       "target_id": "V-12",
-      "supported": false,
+      "supported": true,
       "physical_id": "V-12",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "set_opening"
@@ -640,9 +613,6 @@
       "physical_id": "J-D1",
       "aliases": [
         "A-SIG-01"
-      ],
-      "sensor_ids": [
-        "DTN-TRF-01"
       ],
       "backup_ids": [],
       "commands": [
@@ -664,10 +634,6 @@
       "aliases": [
         "A-SIG-02"
       ],
-      "sensor_ids": [
-        "DTN-TRF-02",
-        "RES-TRF-01"
-      ],
       "backup_ids": [],
       "commands": [
         "set_phase",
@@ -681,14 +647,13 @@
       "core_zone_id": "Z-RIVER",
       "type": "Pump",
       "family": "pump",
-      "effect_tag": "pump_speed",
+      "effect_tag": "pump_enable",
       "target_id": "P-03",
       "supported": true,
       "physical_id": "P-03",
       "aliases": [
         "A-PUMP-01"
       ],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "start",
@@ -707,7 +672,6 @@
       "supported": true,
       "physical_id": "POL-01",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "dispatch",
@@ -720,12 +684,11 @@
       "core_zone_id": "Z-RIVER",
       "type": "Pump",
       "family": "pump",
-      "effect_tag": "pump_speed",
+      "effect_tag": "pump_enable",
       "target_id": "P-03",
       "supported": true,
       "physical_id": "P-03",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [
         "PRT-PMP-02"
       ],
@@ -741,12 +704,11 @@
       "core_zone_id": "Z-RIVER",
       "type": "Pump",
       "family": "pump",
-      "effect_tag": "pump_speed",
+      "effect_tag": "pump_enable",
       "target_id": "P-03",
       "supported": true,
       "physical_id": "P-03",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [
         "PRT-PMP-01"
       ],
@@ -767,7 +729,6 @@
       "supported": false,
       "physical_id": null,
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "set_phase",
@@ -783,10 +744,9 @@
       "family": "valve",
       "effect_tag": "valve_position",
       "target_id": "V-12",
-      "supported": false,
+      "supported": true,
       "physical_id": "V-12",
       "aliases": [],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "set_opening"
@@ -805,7 +765,6 @@
       "aliases": [
         "A-VALVE-01"
       ],
-      "sensor_ids": [],
       "backup_ids": [],
       "commands": [
         "set_opening"

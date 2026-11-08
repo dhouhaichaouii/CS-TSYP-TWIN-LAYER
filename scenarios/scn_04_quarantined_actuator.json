@@ -6,7 +6,7 @@
   "Trigger": "python scenarios/run.py --scenario scn-04",
   "Expected: Twin": "Rejects the command to PRT-PMP-01 with FAILED and GUARDIAN_RESTRICTED; it does not claim that the command ran.",
   "Expected: Guardian": "Quarantines PRT-PMP-01 before Brain dispatch.",
-  "Expected: Brain": "Checks the restriction and records the rejection. PRT-PMP-02 shares the same CityCore pump target as PRT-PMP-01 and is not an independent fallback, so no alternate dispatch is claimed.",
+  "Expected: Brain": "Checks the restriction, records the rejection, queries compatible backups, and dispatches START to available PRT-PMP-02.",
   "How to verify": "Follow the quarantine, rejected command, compatible-device lookup, and backup command lifecycle in logs/scn-04-*.log.",
   "duration_ticks": 1,
   "triggers": [

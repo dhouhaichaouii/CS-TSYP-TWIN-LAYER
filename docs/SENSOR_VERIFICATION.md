@@ -1,23 +1,57 @@
-# Sensor Verification
+# Sensor fix verification
 
-## What the repository verifies
+Engineering completion: 29 October 2026. Supervisor authorized publication to this
+repository with commit message `fixing the sensors`. No teammate/partner sign-off
+or complete triplet readiness is implied.
 
-The Twin keeps private model truth separate from reported sensor values. Declared faults such as stuck or dead readings affect the report path; they do not establish that a real sensor was installed or that the modeled physical process is calibrated.
+Reviewed behavior sources are unchanged from the final local candidate with
+SHA-256 manifest digest
+`3688eef11946fa5946f0fb8e4f7c04665e8afd779f9a777663bf0790c4d8ae2e`.
+Repository packaging also replaces one pre-existing test reference to a missing
+parent-workspace document with an exact section-6 excerpt in
+`fixtures/effect_receipt_example.md`. All request/receipt assertions remain intact.
+A clean-checkout core run first reproduced this FileNotFoundError; the portable
+fixture removes that external dependency. No core behavior is changed. This manifest refers
+to the original workspace, not a Git tree hash.
 
-The latest campaign verifies the SCN-03 sensor inputs and safety result:
+Executed in the original workspace with Python 3.12.14 and bundled Node 24.22.1:
 
-- `DTN-TRF-01` reports its frozen value while its private scenario input differs.
-- `IND-TMP-01` reports unavailable under the declared dead-sensor fault.
-- `IND-TMP-02` reports the seeded industrial temperature value.
-- The traffic sensor has no registered backup. The industrial temperature reading is not a valid traffic backup, so the command to linked signal `DTN-TLT-01` is rejected and CityCore revision remains unchanged.
+- 117 original core tests passed, module executable-line coverage 93–100%.
+- 60 live tests passed, coverage 90–100%; new sensor physical model 100%.
+- 36 dashboard/request checks passed, coverage 92–100%.
+- Four Node checks and seven real Chrome browser runners passed, including all
+  sixteen healthy numeric sources, replacement, reported-view privacy and a
+  repeated 1340-tick city demonstration.
+- A finite 1800-tick run produced exactly the expected sample counts for all
+  sixteen sensors and stopped at its explicit budget.
+- Two actual independent combined review rounds completed. The first identified
+  a browser-fixture tick-budget mismatch and reported-map retired sensor markers;
+  both were corrected, regression-tested and independently verified in round two.
+  No unresolved verified BLOCKER/HIGH/MEDIUM finding remained.
 
-Evidence is in [`campaign.json`](../test-evidence/scenario-campaign-20261108T074306.489418Z-f1e94dce/campaign.json) and its SCN-03 event/audit files linked from [Status](STATUS.md).
+Reproduce the Python checks from this repository folder (Python 3.12.14 matches
+recorded replay fixtures):
 
-## What this does not verify
+```powershell
+python -X utf8 tools/run_checks.py --evidence verification/core
+python -X utf8 tools/run_live_checks.py --evidence verification/live
+python -X utf8 tools/run_dashboard_checks.py --evidence verification/dashboard
+```
 
-- Field sensor connectivity, calibration, accuracy, or deployment.
-- Automatic backup selection or failover.
-- Complete physical causality between every sensor and similarly named actuator.
-- Industrial valve operation; `IND-VLV-01` is unsupported.
+Browser runners under `dashboard_tests/` accept the Python executable, an existing
+Node module directory containing Playwright, a Chrome executable, and an evidence
+folder. No installation was performed as part of this change.
 
-Sensor models are illustrative. Do not present simulated readings as measured city telemetry. The source inventory is [Twin-Layer-Sensor-Specification.pdf](sources/Twin-Layer-Sensor-Specification.pdf).
+Only these sixteen sensor positions are active; PDF-compatible replacement IDs
+retire old IDs while keeping sixteen active positions. The selected inventory
+excludes original camera, power-load, air-quality and emergency-call sensor
+families, so full original whole-Twin coverage is not claimed. New linked actuator
+command APIs, automatic backup selection, durable registration across process
+restarts, Guardian/Brain policy and real partner integration remain separate work.
+The simple physical parameters are illustrative. Core-only replay excludes the
+extension; deterministic live repeat covers it. Reported mode retains historical
+readings and has no sensor-map markers; operator mode uses the active registry.
+
+Clean repository checkout verification before push: all 117 core tests, 60 live
+tests and 27 dashboard tests passed after the portable contract-fixture fix.
+The fixture preserves the original documented request/receipt assertions.

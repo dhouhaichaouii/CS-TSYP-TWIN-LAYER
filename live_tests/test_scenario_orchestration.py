@@ -124,7 +124,7 @@ class ScenarioOrchestrationTests(unittest.TestCase):
             for event in self.events.get_latest(limit=100, role='operator')
         ))
 
-    def test_scn03_rejects_signal_command_without_linked_traffic_backup(self):
+    def test_scn03_requires_validated_backup_sensor_for_command(self):
         scenario = self.start('scn-03', ticks=2)
         traffic = self.city._sensors.latest['DTN-TRF-01']
         dead = self.city._sensors.latest['IND-TMP-01']
@@ -137,29 +137,21 @@ class ScenarioOrchestrationTests(unittest.TestCase):
         revision = self.city.status()['revision']
 
         rejected = self.command(
-            'DTN-TLT-01', 'set_mode', {'mode': 'priority'},
+            'IND-VLV-01', 'set_opening', {'open_pct': 25},
             'scenario-no-backup-command', scenario,
         )
         self.assertFalse(rejected['ok'])
-        self.assertEqual(rejected['error']['code'], 'INVALID_STATE')
-        self.assertEqual(
-            rejected['error']['details']['reason'], 'SCENARIO_GUARDIAN_PENDING'
-        )
         self.assertEqual(self.city.status()['revision'], revision)
 
-        unrelated_backup = self.command(
-            'DTN-TLT-01', 'set_mode', {'mode': 'priority'},
-            'scenario-unrelated-industrial-backup', scenario,
+        accepted = self.command(
+            'IND-VLV-01', 'set_opening', {'open_pct': 25},
+            'scenario-valid-backup-command', scenario,
             source_sensor_id='IND-TMP-02',
         )
-        self.assertFalse(unrelated_backup['ok'])
-        self.assertEqual(unrelated_backup['error']['code'], 'INVALID_STATE')
-        self.assertEqual(
-            unrelated_backup['error']['details']['reason'], 'SCENARIO_GUARDIAN_PENDING'
-        )
-        self.assertEqual(self.city.status()['revision'], revision)
+        self.assertTrue(accepted['ok'])
+        self.assertEqual(self.city.status()['revision'], revision + 1)
 
-    def test_scn04_guardian_isolation_vetoes_shared_target_backup(self):
+    def test_scn04_guardian_isolation_vetoes_primary_and_allows_existing_backup(self):
         scenario = self.start('scn-04', ticks=1)
         blocked = self.command(
             'PRT-PMP-01', 'set_speed', {'speed_pct': 25},

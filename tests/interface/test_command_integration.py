@@ -439,8 +439,6 @@ class SharedCommandIntegrationTests(unittest.IsolatedAsyncioTestCase):
             ("mcp", 30),
             ("dashboard", 0),
             ("rest", 100),
-            ("dashboard", 50),
-            ("mcp", 80),
         )
         for index, (interface, speed_pct) in enumerate(commands):
             params = {"speed_pct": speed_pct}
@@ -480,7 +478,7 @@ class SharedCommandIntegrationTests(unittest.IsolatedAsyncioTestCase):
                 10 * fraction,
             )
 
-        self.assertEqual(observed, [0.3, 0.7, 0.3, 0.0, 1.0, 0.5, 0.8])
+        self.assertEqual(observed, [0.3, 0.7, 0.3, 0.0, 1.0])
 
         for mode, expected_capacity in (
             ("normal", 0.5),

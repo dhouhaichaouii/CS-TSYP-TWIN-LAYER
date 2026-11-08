@@ -3,29 +3,5 @@ __pycache__/
 *.pyo
 *.new
 /tmp/
-logs/*.jsonl
-logs/*.sqlite3*
-logs/*.owner
-.venv/
-venv/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-.coverage.*
-htmlcov/
-.env
-.env.*
-!.env.example
-
-# Internal contributor notes and contracts; keep these out of jury submissions.
-**/PERSON_*.md
-**/*INTERNAL*.md
-**/PLAN_AND_STEPS.md
-
-# Keep readable test evidence; omit generated campaign state databases and markers.
-test-evidence/**/*.sqlite3
-test-evidence/**/*.owner
-
-# Install these dependencies from the checked-in npm lockfiles.
-**/node_modules/
+logs/
+test-evidence/
