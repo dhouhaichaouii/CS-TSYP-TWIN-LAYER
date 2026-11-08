@@ -2,7 +2,7 @@
 
 The Twin Layer is the Phase 1 city's local simulation and interface boundary. It owns simulated city state, sensor readings, scenario inputs, actuator validation, and Twin-side event records. Brain and Guardian are represented by in-process mocks for the standalone demonstration; real partner services are not integrated or verified in this repository.
 
-**Current status (7 November 2026):** the standalone Twin-plus-mocks demo has passed; the latest scenario campaign passes all six individual scenarios, sequential execution, and cross-scenario checks. The campaign overall is **BLOCKED** because real Brain/Guardian outage checks require absent partner services. The current SCN-03 behavior and evidence are recorded in [Status](docs/STATUS.md), [Test Book](TESTBOOK.md), and [Scenario Book](docs/SCENARIO_BOOK.md).
+**Current status (8 November 2026):** the standalone Twin-plus-mocks demo has passed; the latest campaign passes all six individual scenarios, sequential execution, cross-scenario checks, and local process-restart checks. The overall campaign remains **BLOCKED** because real Brain/Guardian outage checks require absent partner services. SCN-03's updated supported-signal rejection behavior and evidence are recorded in [Status](docs/STATUS.md), [Test Book](TESTBOOK.md), and [Scenario Book](docs/SCENARIO_BOOK.md).
 
 
 ## What the Twin does
@@ -101,7 +101,7 @@ Launch one existing scenario through the shared dashboard/MCP owner:
 .venv\Scripts\python.exe -X utf8 scenarios/run.py --scenario scn-03
 ```
 
-The launcher prompts for the operator passphrase. Available IDs are `t5`, `scn-02`, `scn-03`, `scn-04`, `scn-05`, and `scn-06`. SCN-03's supported result is sensor fault reporting followed by safe command rejection: `IND-VLV-01` is unsupported and does not change CityCore.
+The launcher prompts for the operator passphrase. Available IDs are `t5`, `scn-02`, `scn-03`, `scn-04`, `scn-05`, and `scn-06`. SCN-03 targets supported signal `DTN-TLT-01`, linked to frozen `DTN-TRF-01`; without a registered traffic backup the command is safely rejected. The focused SCN-03 test and 8 November campaign passed; real partner behavior remains unverified.
 
 Run each project validation suite using the repository's Python 3.12 environment:
 
@@ -125,7 +125,7 @@ The campaign creates a new dated folder and returns nonzero when required extern
 - The latest dated campaign evidence, exact command results, and partner status are indexed in [docs/STATUS.md](docs/STATUS.md).
 - Real Brain/Guardian integration is **NOT VERIFIED**; outbound adapters and partner endpoints are absent.
 - Guardian enforcement is quarantine/veto-based; a positive request-bound Guardian authorization is not implemented.
-- SCN-03 validates sensor fault reporting and safe rejection. `IND-VLV-01` is catalogued unsupported; no actuator effect is claimed.
+- SCN-03 validates sensor fault reporting and safely rejects a command to linked signal `DTN-TLT-01` when `DTN-TRF-01` has no registered backup. The focused test and latest campaign passed. `IND-VLV-01` remains catalogued unsupported.
 - Some sensor-side physics are illustrative and are not coupled to similarly named CityCore assets. Sensor-to-actuator feedback is verified only for specific documented relationships.
 - `PRT-PMP-01` and `PRT-PMP-02` share CityCore target `P-03`; they are not independent redundant pumps.
 - Compose configuration can be validated locally, but a live deployment requires real credentials, an allowed host, container runtime, and persistent storage configuration.

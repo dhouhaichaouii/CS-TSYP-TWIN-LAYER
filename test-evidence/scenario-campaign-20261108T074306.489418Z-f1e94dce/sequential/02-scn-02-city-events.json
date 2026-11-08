@@ -1,0 +1,279 @@
+[
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": null,
+      "event_id": "event-72c6cfb9-16c0-4163-bf41-6231a87f5840",
+      "event_type": "RECEIVED",
+      "payload": {
+        "guardian_policy": "veto_only",
+        "name": "Seeded Harbour-level fixture and pump-command check",
+        "partner_mode": "existing inbound MCP/REST contracts"
+      },
+      "scenario_id": "SCN-02",
+      "source": "scenario_trigger",
+      "timestamp": "2026-10-18T00:00:00Z"
+    },
+    "device_id": null,
+    "event_id": "sequential-1-ac390f94:ev-0000000001",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 1,
+    "sim_tick": 0,
+    "timestamp": "2026-10-18T00:00:00Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-WLV-01",
+      "event_id": "event-70fe719a-17c8-4e45-b6bb-1300c1729a93",
+      "event_type": "SENSOR_EVENT_SCHEDULED",
+      "payload": {
+        "scenario_seeded": true,
+        "unit": "cm"
+      },
+      "scenario_id": "SCN-02",
+      "source": "scenario_seed",
+      "timestamp": "2026-10-18T00:00:01Z"
+    },
+    "device_id": "PRT-WLV-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000002",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 2,
+    "sim_tick": 0,
+    "timestamp": "2026-10-18T00:00:00Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-WLV-01",
+      "event_id": "event-3e91c2a7-1061-45d5-947f-c0916d8088f9",
+      "event_type": "TWIN_UPDATED",
+      "payload": {
+        "input_origin": "Twin SensorBank",
+        "reading": {
+          "available": true,
+          "backup_ids": [
+            "PRT-WLV-02"
+          ],
+          "delivery_tick": 1,
+          "linked_device_ids": [
+            "PRT-PMP-01"
+          ],
+          "reported_value": 110.0,
+          "sensor_id": "PRT-WLV-01",
+          "sim_tick": 1,
+          "status": "OK",
+          "type": "water_level",
+          "unit": "cm",
+          "zone_id": "PRT"
+        }
+      },
+      "scenario_id": "SCN-02",
+      "source": "twin",
+      "timestamp": "2026-10-18T00:00:01Z"
+    },
+    "device_id": "PRT-WLV-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000003",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 3,
+    "sim_tick": 1,
+    "timestamp": "2026-10-18T00:00:01Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-WLV-01",
+      "event_id": "event-b3fe557f-d23a-4096-879d-9f79c3ea1032",
+      "event_type": "GUARDIAN_PENDING",
+      "payload": {
+        "partner_status": "awaiting_real_guardian_call",
+        "positive_approval_supported": false,
+        "reason": "sensor event is available for Guardian review"
+      },
+      "scenario_id": "SCN-02",
+      "source": "twin",
+      "timestamp": "2026-10-18T00:00:01Z"
+    },
+    "device_id": "PRT-WLV-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000004",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 4,
+    "sim_tick": 1,
+    "timestamp": "2026-10-18T00:00:01Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-WLV-01",
+      "event_id": "event-44c525b0-6793-4c24-9076-865e25fed0c7",
+      "event_type": "BRAIN_PENDING",
+      "payload": {
+        "partner_status": "awaiting_real_brain_command",
+        "reason": "Twin observation is available for Brain review"
+      },
+      "scenario_id": "SCN-02",
+      "source": "twin",
+      "timestamp": "2026-10-18T00:00:01Z"
+    },
+    "device_id": "PRT-WLV-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000005",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 5,
+    "sim_tick": 1,
+    "timestamp": "2026-10-18T00:00:01Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": null,
+      "event_id": "event-08b32060-09cb-4afc-8b74-8daf65f6a5ce",
+      "event_type": "SCENARIO_WINDOW_COMPLETE",
+      "payload": {
+        "note": "Window complete does not imply Brain or Guardian completion.",
+        "partner_decisions_confirmed": false
+      },
+      "scenario_id": "SCN-02",
+      "source": "twin",
+      "timestamp": "2026-10-18T00:00:03Z"
+    },
+    "device_id": null,
+    "event_id": "sequential-1-ac390f94:ev-0000000006",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 6,
+    "sim_tick": 3,
+    "timestamp": "2026-10-18T00:00:03Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-PMP-01",
+      "event_id": "event-7b641707-86e1-4a59-9970-eb9893acfbec",
+      "event_type": "BRAIN_DECIDED",
+      "payload": {
+        "command": "set_speed",
+        "origin_event_ids": [
+          "event-3e91c2a7-1061-45d5-947f-c0916d8088f9"
+        ],
+        "request_id": "scn-02-pump-command",
+        "service_response": "real_inbound_brain_command"
+      },
+      "scenario_id": "SCN-02",
+      "source": "brain",
+      "timestamp": "2026-10-18T00:00:03Z"
+    },
+    "device_id": "PRT-PMP-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000007",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 7,
+    "sim_tick": 3,
+    "timestamp": "2026-10-18T00:00:03Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-PMP-01",
+      "event_id": "event-2bedc356-6a6d-4b28-87d7-0dde0ab02500",
+      "event_type": "COMMAND_PENDING",
+      "payload": {
+        "command": "set_speed",
+        "request_id": "scn-02-pump-command"
+      },
+      "scenario_id": "SCN-02",
+      "source": "brain",
+      "timestamp": "2026-10-18T00:00:03Z"
+    },
+    "device_id": "PRT-PMP-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000008",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 8,
+    "sim_tick": 3,
+    "timestamp": "2026-10-18T00:00:03Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-PMP-01",
+      "event_id": "event-b7c154a2-73c7-403f-802f-490170d90ac0",
+      "event_type": "COMMAND_EXECUTED",
+      "payload": {
+        "city_core_updated": true,
+        "command": "set_speed",
+        "effect_id": "live-0000000006",
+        "effective_revision": 9,
+        "origin_event_ids": [
+          "event-3e91c2a7-1061-45d5-947f-c0916d8088f9"
+        ],
+        "request_id": "scn-02-pump-command"
+      },
+      "scenario_id": "SCN-02",
+      "source": "twin",
+      "timestamp": "2026-10-18T00:00:03Z"
+    },
+    "device_id": "PRT-PMP-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000009",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 9,
+    "sim_tick": 3,
+    "timestamp": "2026-10-18T00:00:03Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  },
+  {
+    "details": {
+      "correlation_id": "sequential-1-ac390f94:SCN-02:b6879d0a-c8b1-469b-9616-ede8efc0cde3",
+      "device_id": "PRT-PMP-01",
+      "event_id": "event-c54d3ffd-01ab-4704-8bbf-966098e5c7d6",
+      "event_type": "COMPLETED",
+      "payload": {
+        "request_id": "scn-02-pump-command"
+      },
+      "scenario_id": "SCN-02",
+      "source": "twin",
+      "timestamp": "2026-10-18T00:00:03Z"
+    },
+    "device_id": "PRT-PMP-01",
+    "event_id": "sequential-1-ac390f94:ev-0000000010",
+    "incident_id": null,
+    "run_id": "sequential-1-ac390f94",
+    "schema_version": "twin-private-events-0.1-local",
+    "seq": 10,
+    "sim_tick": 3,
+    "timestamp": "2026-10-18T00:00:03Z",
+    "type": "SCENARIO_LIFECYCLE",
+    "zone_id": null
+  }
+]

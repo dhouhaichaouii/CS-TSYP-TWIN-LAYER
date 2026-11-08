@@ -1,0 +1,38 @@
+{
+  "requests": [
+    {
+      "request_id": "jury-restart-request",
+      "command_hash": "766b74c858f8b9afd54a2122d6ec42f11ef73bdb71fba7d4ef6ed4fd41f4d021",
+      "run_id": "durable-evidence-run",
+      "correlation_id": "jury-restart-correlation",
+      "scenario_id": "SCN-02",
+      "device_id": "PRT-PMP-01",
+      "command_type": "set_speed",
+      "status": "COMMITTED",
+      "result_json": "{\"city_core_updated\":true,\"command\":\"set_speed\",\"command_id\":\"jury-restart-request\",\"correlation_id\":\"jury-restart-correlation\",\"device_id\":\"PRT-PMP-01\",\"effect_id\":\"live-0000000001\",\"effective_effect\":{\"speed_fraction\":0.35,\"tag\":\"pump_speed\",\"target_id\":\"P-03\"},\"effective_revision\":1,\"execution_reason\":\"CITYCORE_EFFECT_COMMITTED\",\"execution_status\":\"EXECUTED\",\"requested_effect\":{\"speed_fraction\":0.35,\"tag\":\"pump_speed\",\"target_id\":\"P-03\"},\"status\":\"APPLIED\"}",
+      "resulting_revision": 1,
+      "created_at": "2026-11-08T07:43:07.521267+00:00",
+      "completed_at": "2026-11-08T07:43:07.522245+00:00"
+    }
+  ],
+  "operations": [
+    {
+      "operation_id": "command:jury-restart-request",
+      "request_id": "jury-restart-request",
+      "operation_type": "ACTUATOR_COMMAND",
+      "status": "DONE",
+      "created_at": "2026-11-08T07:43:07.521267+00:00",
+      "completed_at": "2026-11-08T07:43:07.522245+00:00",
+      "error_code": null
+    }
+  ],
+  "core_runs": [
+    {
+      "run_id": "durable-evidence-run",
+      "final_context_json": "{\"catalog_version\":\"pa-catalog-0.1-draft\",\"contract_version\":\"pa-internal-0.2-draft\",\"model_version\":\"pa-model-0.2-draft\",\"revision\":1,\"run_id\":\"durable-evidence-run\",\"sim_time_ms\":0,\"tick\":0}",
+      "final_digest": "2e0ae01e78549cbe4355238d58846e5686958a9b6fd235f2c50ea9776c61d228",
+      "updated_at": "2026-11-08T07:43:07.522245+00:00"
+    }
+  ],
+  "journal_mode": "wal"
+}

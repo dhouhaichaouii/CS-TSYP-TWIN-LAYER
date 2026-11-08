@@ -183,12 +183,12 @@ class Campaign:
             ))
         elif scenario_id == 'SCN-03':
             actions.append(self.brain_command(
-                facade, city, scenario, 'IND-VLV-01', 'set_opening',
-                {'open_pct': 25}, f'{scenario_id.lower()}-no-backup',
+                facade, city, scenario, 'DTN-TLT-01', 'set_mode',
+                {'mode': 'priority'}, f'{scenario_id.lower()}-no-traffic-backup',
             ))
             actions.append(self.brain_command(
-                facade, city, scenario, 'IND-VLV-01', 'set_opening',
-                {'open_pct': 25}, f'{scenario_id.lower()}-valid-backup',
+                facade, city, scenario, 'DTN-TLT-01', 'set_mode',
+                {'mode': 'priority'}, f'{scenario_id.lower()}-unrelated-industrial-backup',
                 source_sensor_id='IND-TMP-02',
             ))
         elif scenario_id == 'SCN-04':
@@ -312,11 +312,12 @@ class Campaign:
                     self.check(
                         checks, 'scenario_expected_safe_rejections',
                         rejection_reasons == [
-                            'SCENARIO_GUARDIAN_PENDING', 'UNSUPPORTED_DEVICE',
+                            'SCENARIO_GUARDIAN_PENDING', 'SCENARIO_GUARDIAN_PENDING',
                         ],
                         f'actual_rejection_reasons={rejection_reasons}; '
-                        'backup context clears the sensor safety gate, but the '
-                        'catalog does not support IND-VLV-01.',
+                        'DTN-TLT-01 is supported and linked to frozen DTN-TRF-01, '
+                        'which has no registered backup; unrelated IND-TMP-02 '
+                        'cannot clear the traffic safety gate.',
                     )
                 self.check(
                     checks, 'expected_effect_semantics',

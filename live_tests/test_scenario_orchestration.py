@@ -124,7 +124,7 @@ class ScenarioOrchestrationTests(unittest.TestCase):
             for event in self.events.get_latest(limit=100, role='operator')
         ))
 
-    def test_scn03_rejects_ambiguous_valve_even_with_valid_backup_sensor(self):
+    def test_scn03_rejects_signal_command_without_linked_traffic_backup(self):
         scenario = self.start('scn-03', ticks=2)
         traffic = self.city._sensors.latest['DTN-TRF-01']
         dead = self.city._sensors.latest['IND-TMP-01']
@@ -137,7 +137,7 @@ class ScenarioOrchestrationTests(unittest.TestCase):
         revision = self.city.status()['revision']
 
         rejected = self.command(
-            'IND-VLV-01', 'set_opening', {'open_pct': 25},
+            'DTN-TLT-01', 'set_mode', {'mode': 'priority'},
             'scenario-no-backup-command', scenario,
         )
         self.assertFalse(rejected['ok'])
@@ -147,15 +147,15 @@ class ScenarioOrchestrationTests(unittest.TestCase):
         )
         self.assertEqual(self.city.status()['revision'], revision)
 
-        still_unsupported = self.command(
-            'IND-VLV-01', 'set_opening', {'open_pct': 25},
-            'scenario-valid-backup-command', scenario,
+        unrelated_backup = self.command(
+            'DTN-TLT-01', 'set_mode', {'mode': 'priority'},
+            'scenario-unrelated-industrial-backup', scenario,
             source_sensor_id='IND-TMP-02',
         )
-        self.assertFalse(still_unsupported['ok'])
-        self.assertEqual(still_unsupported['error']['code'], 'DEVICE_NOT_FOUND')
+        self.assertFalse(unrelated_backup['ok'])
+        self.assertEqual(unrelated_backup['error']['code'], 'INVALID_STATE')
         self.assertEqual(
-            still_unsupported['error']['details']['reason'], 'UNSUPPORTED_DEVICE'
+            unrelated_backup['error']['details']['reason'], 'SCENARIO_GUARDIAN_PENDING'
         )
         self.assertEqual(self.city.status()['revision'], revision)
 
