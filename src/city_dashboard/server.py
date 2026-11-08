@@ -2,6 +2,7 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+from shutil import copyfileobj
 from threading import BoundedSemaphore, Thread
 
 from city_live.records import LiveError, exact_keys, integer
@@ -13,9 +14,14 @@ WEB = Path(__file__).with_name('web')
 ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
           **{f'/{name}': (name, 'text/javascript; charset=utf-8')
              for name in ('api.js', 'store.js', 'app.js', 'map.js', 'panels.js', 'controls.js', 'history.js', 'sensors.js', 'timeline.js')},
+          '/city3d-loader.js': ('city3d-loader.js', 'text/javascript; charset=utf-8'),
           '/styles.css': ('styles.css', 'text/css; charset=utf-8')}
 ASSETS.update({'/map-layout.json': ('map-layout.json', 'application/json'),
-               '/city-map.svg': ('city-map.svg', 'image/svg+xml')})
+               '/city-map.svg': ('city-map.svg', 'image/svg+xml'),
+               '/redesign.css': ('redesign.css', 'text/css; charset=utf-8'),
+               '/3d/assets/city3d-viewer.js': ('3d/assets/city3d-viewer.js', 'text/javascript; charset=utf-8'),
+               '/3d/assets/city3d.css': ('3d/assets/city3d.css', 'text/css; charset=utf-8'),
+               '/3d/models/city-cs-challenge.glb': ('3d/models/city-cs-challenge.glb', 'model/gltf-binary')})
 ERROR_STATUS = {'NOT_AUTHORIZED': 401, 'OLD_RUN': 409, 'HISTORY_GAP': 409,
                 'CURSOR_INVALID': 400, 'CLOSED': 503, 'RATE_LIMITED': 429,
                 'SESSION_LIMIT': 429, 'STATE_CONFLICT': 409, 'IDENTITY_CONFLICT': 409,
@@ -124,13 +130,27 @@ class DashboardBridge:
                 self.send_header('Cache-Control', 'no-store')
                 self.send_header('Referrer-Policy', 'no-referrer')
                 self.send_header('X-Content-Type-Options', 'nosniff')
-                self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
+                self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' blob:; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
                 self.send_header('Connection', 'close')
                 if cookie:
                     self.send_header('Set-Cookie', cookie)
                 self.end_headers()
                 self.close_connection = True
                 self.wfile.write(body)
+
+            def _reply_file(self, path, mime):
+                self.send_response(200)
+                self.send_header('Content-Type', mime)
+                self.send_header('Content-Length', str(path.stat().st_size))
+                self.send_header('Cache-Control', 'public, max-age=3600')
+                self.send_header('Referrer-Policy', 'no-referrer')
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' blob:; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
+                self.send_header('Connection', 'close')
+                self.end_headers()
+                self.close_connection = True
+                with path.open('rb') as asset:
+                    copyfileobj(asset, self.wfile, length=64 * 1024)
 
             def _error(self, code, name):
                 self._reply(code, {'ok': False, 'error': {'code': name}})
@@ -203,7 +223,11 @@ class DashboardBridge:
             def _route(self, body):
                 if self.command == 'GET' and self.path in ASSETS:
                     name, mime = ASSETS[self.path]
-                    self._reply(200, (WEB / name).read_bytes(), mime=mime)
+                    path = WEB / name
+                    if self.path == '/3d/models/city-cs-challenge.glb':
+                        self._reply_file(path, mime)
+                    else:
+                        self._reply(200, path.read_bytes(), mime=mime)
                 elif self.command == 'GET' and self.path in (
                     '/health', '/health/live', '/health/ready'
                 ):

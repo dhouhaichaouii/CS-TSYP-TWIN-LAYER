@@ -25,3 +25,5 @@ htmlcov/
 test-evidence/**/*.sqlite3
 test-evidence/**/*.owner
 
+# Install these dependencies from the checked-in npm lockfiles.
+**/node_modules/

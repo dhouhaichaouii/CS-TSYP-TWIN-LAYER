@@ -16,7 +16,7 @@ from .records import (Action, EPOCH, Event, LiveError, VERSION, identifier, inte
                       numeric, require, timestamp, utc_epoch)
 from .scenarios import PRESETS, effect_for, validate
 from .sensors import SensorBank
-from .b_scenarios import ScenarioRunner
+from .b_scenarios import ScenarioRunner, scenario_catalog
 from .demand import TrafficDemand
 from .operator import OperatorControls
 from .sensor_physics import SensorPhysics, advance as advance_sensor_physics, measurements as sensor_measurements
@@ -466,6 +466,11 @@ class LiveCity(OperatorControls):
                 'status': status, 'diagnostics': self.diagnostics(),
                 'comparisons': plain(tuple(self._sensors.latest.values())),
                 'readings': self.public.observations(), 'sensors': self.sensors(),
+                'actuators': self.actuator_inventory(),
+                'security': {'quarantined_devices': plain(tuple(
+                    self._quarantined_devices.values()
+                ))},
+                'scenario_catalog': scenario_catalog(),
                 'actions': self.actions(), 'events': self.events()['events'],
                 'scenario': self._scenario_runner.status()}
 
